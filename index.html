@@ -19,7 +19,11 @@
 </head>
 
 <body><script type="text/javascript" src="//localhost:35729/livereload.js?snipver=1" async="" defer=""></script>
-  <div id="elm"><button onmouseup="this.blur(); (function(self) { var e = document.createEvent('Event'); e.initEvent('touchcancel', true, true); self.lastChild.dispatchEvent(e); }(this));" onmouseleave="this.blur(); (function(self) { var e = document.createEvent('Event'); e.initEvent('touchcancel', true, true); self.lastChild.dispatchEvent(e); }(this));" ontouchend="this.blur(); (function(self) { var e = document.createEvent('Event'); e.initEvent('touchcancel', true, true); self.lastChild.dispatchEvent(e); }(this));" class="mdl-js-ripple-effect mdl-js-button mdl-button mdl-button--raised">test Button<span class="mdl-button__ripple-container"><span class="mdl-ripple is-animating" style="width: 258px; height: 258px; transform: translate(-50%, -50%) translate(84px, 25px);"></span></span></button></div>
+  <div id="elm">
+  <script src="elm.js"></script>
+  <script>
+      var game = Elm.ChangeMe.embed(document.getElementById('elm'));
+  </script>
 
 
 </body></html>
