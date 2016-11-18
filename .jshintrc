@@ -3,5 +3,7 @@
   "unused": true,
   "laxbreak": true,
   "laxcomma": true,
-  "asi": true
+  "asi": true,
+  "funcscope": true,
+  "shadow": true
 }
