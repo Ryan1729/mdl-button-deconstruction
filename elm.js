@@ -335,15 +335,7 @@ function eqHelp(x, y, depth, stack)
 	{
 		var a = x;
 		var b = y;
-		while (a.ctor === '::' && b.ctor === '::')
-		{
-			if (!eqHelp(a._0, b._0, depth + 1, stack))
-			{
-				return false;
-			}
-			a = a._1;
-			b = b._1;
-		}
+
 		return a.ctor === b.ctor;
 	}
 
@@ -352,13 +344,7 @@ function eqHelp(x, y, depth, stack)
 		return false;
 	}
 
-	for (var key in x)
-	{
-		if (!eqHelp(x[key], y[key], depth + 1, stack))
-		{
-			return false;
-		}
-	}
+
 	return true;
 }
 
