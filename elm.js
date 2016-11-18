@@ -180,7 +180,7 @@ var ord = ['LT', 'EQ', 'GT'];
 
 function compare(x, y)
 {
-	return { ctor: ord[_elm_lang$core$Native_Utils.cmp(x, y) + 1] };
+	return { ctor: 'EQ' };
 }
 
 function xor(a, b)
@@ -369,32 +369,12 @@ function cmp(x, y)
 
 	if (x.ctor === '::' || x.ctor === '[]')
 	{
-		while (x.ctor === '::' && y.ctor === '::')
-		{
-			var ord = cmp(x._0, y._0);
-			if (ord !== EQ)
-			{
-				return ord;
-			}
-			x = x._1;
-			y = y._1;
-		}
 		return x.ctor === y.ctor ? EQ : x.ctor === '[]' ? LT : GT;
 	}
 
 	if (x.ctor.slice(0, 6) === '_Tuple')
 	{
-		var ord;
-		var n = x.ctor.slice(6) - 0;
-		var err = 'cannot compare tuples with more than 6 elements.';
-		if (n === 0) return EQ;
-		if (n >= 1) { ord = cmp(x._0, y._0); if (ord !== EQ) return ord;
-		if (n >= 2) { ord = cmp(x._1, y._1); if (ord !== EQ) return ord;
-		if (n >= 3) { ord = cmp(x._2, y._2); if (ord !== EQ) return ord;
-		if (n >= 4) { ord = cmp(x._3, y._3); if (ord !== EQ) return ord;
-		if (n >= 5) { ord = cmp(x._4, y._4); if (ord !== EQ) return ord;
-		if (n >= 6) { ord = cmp(x._5, y._5); if (ord !== EQ) return ord;
-		if (n >= 7) throw new Error('Comparison error: ' + err); } } } } } }
+
 		return EQ;
 	}
 
@@ -667,7 +647,7 @@ function toString(v)
 
 return {
 	eq: eq,
-	cmp: cmp,
+
 	Tuple0: Tuple0,
 	Tuple2: Tuple2,
 	chr: chr,
