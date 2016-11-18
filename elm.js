@@ -714,7 +714,6 @@ var _elm_lang$core$Basics$tan = _elm_lang$core$Native_Basics.tan;
 var _elm_lang$core$Basics$sin = _elm_lang$core$Native_Basics.sin;
 var _elm_lang$core$Basics$cos = _elm_lang$core$Native_Basics.cos;
 
-_elm_lang$core$Basics_ops['^'] = _elm_lang$core$Native_Basics.exp;
 
 _elm_lang$core$Basics_ops['%'] = _elm_lang$core$Native_Basics.mod;
 var _elm_lang$core$Basics$rem = _elm_lang$core$Native_Basics.rem;
@@ -1644,17 +1643,17 @@ function addPublicModule(object, name, main)
 {
 	var init = main ? makeEmbed(name, main) : mainIsUndefined(name);
 
-	object['worker'] = function worker(flags)
+	object.worker = function worker(flags)
 	{
 		return init(undefined, flags, false);
 	}
 
-	object['embed'] = function embed(domNode, flags)
+	object.embed = function embed(domNode, flags)
 	{
 		return init(domNode, flags, true);
 	}
 
-	object['fullscreen'] = function fullscreen(flags)
+	object.fullscreen = function fullscreen(flags)
 	{
 		return init(document.body, flags, true);
 	};
@@ -7115,7 +7114,7 @@ var _elm_lang$core$Task$cmdMap = F2(
 		return _elm_lang$core$Task$T(
 			A2(_elm_lang$core$Task$map, tagger, _p11._0));
 	});
-_elm_lang$core$Native_Platform.effectManagers['Task'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Task$init, onEffects: _elm_lang$core$Task$onEffects, onSelfMsg: _elm_lang$core$Task$onSelfMsg, tag: 'cmd', cmdMap: _elm_lang$core$Task$cmdMap};
+_elm_lang$core$Native_Platform.effectManagers.Task = {pkg: 'elm-lang/core', init: _elm_lang$core$Task$init, onEffects: _elm_lang$core$Task$onEffects, onSelfMsg: _elm_lang$core$Task$onSelfMsg, tag: 'cmd', cmdMap: _elm_lang$core$Task$cmdMap};
 
 
 var _elm_lang$core$Process$kill = _elm_lang$core$Native_Scheduler.kill;
@@ -8776,7 +8775,7 @@ var _elm_lang$mouse$Mouse$subMap = F2(
 					_p13._1(_p14));
 			});
 	});
-_elm_lang$core$Native_Platform.effectManagers['Mouse'] = {pkg: 'elm-lang/mouse', init: _elm_lang$mouse$Mouse$init, onEffects: _elm_lang$mouse$Mouse$onEffects, onSelfMsg: _elm_lang$mouse$Mouse$onSelfMsg, tag: 'sub', subMap: _elm_lang$mouse$Mouse$subMap};
+_elm_lang$core$Native_Platform.effectManagers.Mouse = {pkg: 'elm-lang/mouse', init: _elm_lang$mouse$Mouse$init, onEffects: _elm_lang$mouse$Mouse$onEffects, onSelfMsg: _elm_lang$mouse$Mouse$onSelfMsg, tag: 'sub', subMap: _elm_lang$mouse$Mouse$subMap};
 
 var _debois$elm_mdl$Material_Icon$size48 = A2(_debois$elm_mdl$Material_Options$css, 'font-size', '48px');
 var _debois$elm_mdl$Material_Icon$size36 = A2(_debois$elm_mdl$Material_Options$css, 'font-size', '36px');
@@ -9261,7 +9260,7 @@ var _elm_lang$window$Window$subMap = F2(
 					_p7._0(_p8));
 			});
 	});
-_elm_lang$core$Native_Platform.effectManagers['Window'] = {pkg: 'elm-lang/window', init: _elm_lang$window$Window$init, onEffects: _elm_lang$window$Window$onEffects, onSelfMsg: _elm_lang$window$Window$onSelfMsg, tag: 'sub', subMap: _elm_lang$window$Window$subMap};
+_elm_lang$core$Native_Platform.effectManagers.Window = {pkg: 'elm-lang/window', init: _elm_lang$window$Window$init, onEffects: _elm_lang$window$Window$onEffects, onSelfMsg: _elm_lang$window$Window$onSelfMsg, tag: 'sub', subMap: _elm_lang$window$Window$subMap};
 
 var _debois$elm_mdl$Material_Layout$drawerView = F3(
 	function (lift, isVisible, elems) {
@@ -10156,10 +10155,10 @@ var _user$project$ChangeMe$main = {
 };
 
 var Elm = {};
-Elm['ChangeMe'] = Elm['ChangeMe'] || {};
-_elm_lang$core$Native_Platform.addPublicModule(Elm['ChangeMe'], 'ChangeMe', typeof _user$project$ChangeMe$main === 'undefined' ? null : _user$project$ChangeMe$main);
+Elm.ChangeMe = Elm.ChangeMe || {};
+_elm_lang$core$Native_Platform.addPublicModule(Elm.ChangeMe, 'ChangeMe', typeof _user$project$ChangeMe$main === 'undefined' ? null : _user$project$ChangeMe$main);
 
-if (typeof define === "function" && define['amd'])
+if (typeof define === "function" && define.amd)
 {
   define([], function() { return Elm; });
   return;
@@ -10167,14 +10166,14 @@ if (typeof define === "function" && define['amd'])
 
 if (typeof module === "object")
 {
-  module['exports'] = Elm;
+  module.exports = Elm;
   return;
 }
 
-var globalElm = this['Elm'];
+var globalElm = this.Elm;
 if (typeof globalElm === "undefined")
 {
-  this['Elm'] = Elm;
+  this.Elm = Elm;
   return;
 }
 
