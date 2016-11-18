@@ -7346,10 +7346,6 @@ var _debois$elm_mdl$Material_Ripple$computeMetrics = function (g) {
 			return _elm_lang$core$Maybe$Nothing;
 		}());
 };
-var _debois$elm_mdl$Material_Ripple$Model = F3(
-	function (a, b, c) {
-		return {animation: a, metrics: b, ignoringMouseDown: c};
-	});
 var _debois$elm_mdl$Material_Ripple$DOMState = F6(
 	function (a, b, c, d, e, f) {
 		return {rect: a, clientX: b, clientY: c, touchX: d, touchY: e, type$: f};
@@ -7489,72 +7485,19 @@ var _debois$elm_mdl$Material_Ripple$downOn$ = F2(
 				},
 				_debois$elm_mdl$Material_Ripple$geometryDecoder));
 	});
-var _debois$elm_mdl$Material_Ripple$downOn = _debois$elm_mdl$Material_Ripple$downOn$(_elm_lang$core$Basics$identity);
-var _debois$elm_mdl$Material_Ripple$view = function (_p7) {
-	return _debois$elm_mdl$Material_Ripple$view$(
-		A3(
-			_elm_lang$core$Basics$flip,
-			_elm_lang$core$List$append,
-			_elm_lang$core$Native_List.fromArray(
-				[
-					_debois$elm_mdl$Material_Ripple$upOn('mouseup'),
-					_debois$elm_mdl$Material_Ripple$upOn('mouseleave'),
-					_debois$elm_mdl$Material_Ripple$upOn('touchend'),
-					_debois$elm_mdl$Material_Ripple$upOn('blur'),
-					_debois$elm_mdl$Material_Ripple$downOn('mousedown'),
-					_debois$elm_mdl$Material_Ripple$downOn('touchstart')
-				]),
-			_p7));
-};
-
-var _debois$elm_mdl$Material_Button$icon = _debois$elm_mdl$Material_Options$cs('mdl-button--icon');
-var _debois$elm_mdl$Material_Button$minifab = _debois$elm_mdl$Material_Options$cs('mdl-button--mini-fab');
-var _debois$elm_mdl$Material_Button$fab = _debois$elm_mdl$Material_Options$cs('mdl-button--fab');
 var _debois$elm_mdl$Material_Button$raised = _debois$elm_mdl$Material_Options$cs('mdl-button--raised');
-var _debois$elm_mdl$Material_Button$flat = _debois$elm_mdl$Material_Options$nop;
 var _debois$elm_mdl$Material_Button$blurAndForward = function (event) {
 	return A2(
 		_elm_lang$html$Html_Attributes$attribute,
 		A2(_elm_lang$core$Basics_ops['++'], 'on', event),
 		'this.blur(); (function(self) { var e = document.createEvent(\'Event\'); e.initEvent(\'touchcancel\', true, true); self.lastChild.dispatchEvent(e); }(this));');
 };
-var _debois$elm_mdl$Material_Button$type$ = function (tp) {
-	return _debois$elm_mdl$Material_Options$set(
-		function (options) {
-			return _elm_lang$core$Native_Utils.update(
-				options,
-				{
-					type$: _elm_lang$core$Maybe$Just(tp)
-				});
-		});
-};
-var _debois$elm_mdl$Material_Button$accent = _debois$elm_mdl$Material_Options$cs('mdl-button--accent');
-var _debois$elm_mdl$Material_Button$primary = _debois$elm_mdl$Material_Options$cs('mdl-button--primary');
-var _debois$elm_mdl$Material_Button$colored = _debois$elm_mdl$Material_Options$cs('mdl-button--colored');
-var _debois$elm_mdl$Material_Button$plain = _debois$elm_mdl$Material_Options$nop;
-var _debois$elm_mdl$Material_Button$disabled = _debois$elm_mdl$Material_Options$set(
-	function (options) {
-		return _elm_lang$core$Native_Utils.update(
-			options,
-			{disabled: true});
-	});
 var _debois$elm_mdl$Material_Button$ripple = _debois$elm_mdl$Material_Options$set(
 	function (options) {
 		return _elm_lang$core$Native_Utils.update(
 			options,
 			{ripple: true});
 	});
-var _debois$elm_mdl$Material_Button$onClick = function (x) {
-	return _debois$elm_mdl$Material_Options$set(
-		function (options) {
-			return _elm_lang$core$Native_Utils.update(
-				options,
-				{
-					onClick: _elm_lang$core$Maybe$Just(
-						_elm_lang$html$Html_Events$onClick(x))
-				});
-		});
-};
 var _debois$elm_mdl$Material_Button$defaultConfig = {ripple: false, onClick: _elm_lang$core$Maybe$Nothing, disabled: false, type$: _elm_lang$core$Maybe$Nothing};
 var _debois$elm_mdl$Material_Button$view = F4(
 	function (lift, model, config, html) {
@@ -7655,12 +7598,6 @@ var _debois$elm_mdl$Material_Button$render = A5(
 				{button: x});
 		}),
 	_debois$elm_mdl$Material_Ripple$model);
-var _debois$elm_mdl$Material_Button$defaultModel = _debois$elm_mdl$Material_Ripple$model;
-var _debois$elm_mdl$Material_Button$Config = F4(
-	function (a, b, c, d) {
-		return {ripple: a, onClick: b, disabled: c, type$: d};
-	});
-
 
 var _elm_lang$dom$Native_Dom = function() {
 
@@ -8069,12 +8006,6 @@ var _elm_lang$window$Window$onSelfMsg = F3(
 	});
 var _elm_lang$window$Window$init = _elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing);
 var _elm_lang$window$Window$size = _elm_lang$window$Native_Window.size;
-var _elm_lang$window$Window$width = A2(
-	_elm_lang$core$Task$map,
-	function (_) {
-		return _.width;
-	},
-	_elm_lang$window$Window$size);
 
 var _elm_lang$window$Window$onEffects = F3(
 	function (router, newSubs, oldState) {
