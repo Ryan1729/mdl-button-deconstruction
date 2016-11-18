@@ -176,17 +176,11 @@ function clamp(lo, hi, n)
 			: n;
 }
 
-var ord = ['LT', 'EQ', 'GT'];
-
 function compare(x, y)
 {
 	return { ctor: 'EQ' };
 }
 
-function xor(a, b)
-{
-	return a !== b;
-}
 function not(b)
 {
 	return !b;
@@ -353,37 +347,6 @@ function eqHelp(x, y, depth, stack)
 
 var LT = -1, EQ = 0, GT = 1;
 
-function cmp(x, y)
-{
-	if (typeof x !== 'object')
-	{
-		return x === y ? EQ : x < y ? LT : GT;
-	}
-
-	if (x instanceof String)
-	{
-		var a = x.valueOf();
-		var b = y.valueOf();
-		return a === b ? EQ : a < b ? LT : GT;
-	}
-
-	if (x.ctor === '::' || x.ctor === '[]')
-	{
-		return x.ctor === y.ctor ? EQ : x.ctor === '[]' ? LT : GT;
-	}
-
-	if (x.ctor.slice(0, 6) === '_Tuple')
-	{
-
-		return EQ;
-	}
-
-	throw new Error(
-		'Comparison error: comparison is only defined on ints, '
-		+ 'floats, times, chars, strings, lists of comparable values, '
-		+ 'and tuples of comparable values.'
-	);
-}
 
 
 // COMMON VALUES
@@ -663,16 +626,7 @@ return {
 };
 
 }();
-var _elm_lang$core$Basics$uncurry = F2(
-	function (f, _p0) {
-		var _p1 = _p0;
-		return A2(f, _p1._0, _p1._1);
-	});
-var _elm_lang$core$Basics$curry = F3(
-	function (f, a, b) {
-		return f(
-			{ctor: '_Tuple2', _0: a, _1: b});
-	});
+
 var _elm_lang$core$Basics$flip = F3(
 	function (f, b, a) {
 		return A2(f, a, b);
@@ -697,24 +651,24 @@ _elm_lang$core$Basics_ops['<|'] = F2(
 	function (f, x) {
 		return f(x);
 	});
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
+
 _elm_lang$core$Basics_ops['|>'] = F2(
 	function (x, f) {
 		return f(x);
 	});
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
+
 _elm_lang$core$Basics_ops['>>'] = F3(
 	function (f, g, x) {
 		return g(
 			f(x));
 	});
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
+
 _elm_lang$core$Basics_ops['<<'] = F3(
 	function (g, f, x) {
 		return g(
 			f(x));
 	});
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
+
 _elm_lang$core$Basics_ops['++'] = _elm_lang$core$Native_Utils.append;
 var _elm_lang$core$Basics$toString = _elm_lang$core$Native_Utils.toString;
 var _elm_lang$core$Basics$isInfinite = _elm_lang$core$Native_Basics.isInfinite;
@@ -726,24 +680,24 @@ var _elm_lang$core$Basics$truncate = _elm_lang$core$Native_Basics.truncate;
 var _elm_lang$core$Basics$round = _elm_lang$core$Native_Basics.round;
 var _elm_lang$core$Basics$not = _elm_lang$core$Native_Basics.not;
 var _elm_lang$core$Basics$xor = _elm_lang$core$Native_Basics.xor;
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
+
 _elm_lang$core$Basics_ops['||'] = _elm_lang$core$Native_Basics.or;
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
+
 _elm_lang$core$Basics_ops['&&'] = _elm_lang$core$Native_Basics.and;
 var _elm_lang$core$Basics$max = _elm_lang$core$Native_Basics.max;
 var _elm_lang$core$Basics$min = _elm_lang$core$Native_Basics.min;
 var _elm_lang$core$Basics$compare = _elm_lang$core$Native_Basics.compare;
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
+
 _elm_lang$core$Basics_ops['>='] = _elm_lang$core$Native_Basics.ge;
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
+
 _elm_lang$core$Basics_ops['<='] = _elm_lang$core$Native_Basics.le;
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
+
 _elm_lang$core$Basics_ops['>'] = _elm_lang$core$Native_Basics.gt;
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
+
 _elm_lang$core$Basics_ops['<'] = _elm_lang$core$Native_Basics.lt;
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
+
 _elm_lang$core$Basics_ops['/='] = _elm_lang$core$Native_Basics.neq;
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
+
 _elm_lang$core$Basics_ops['=='] = _elm_lang$core$Native_Basics.eq;
 var _elm_lang$core$Basics$e = _elm_lang$core$Native_Basics.e;
 var _elm_lang$core$Basics$pi = _elm_lang$core$Native_Basics.pi;
@@ -759,20 +713,20 @@ var _elm_lang$core$Basics$acos = _elm_lang$core$Native_Basics.acos;
 var _elm_lang$core$Basics$tan = _elm_lang$core$Native_Basics.tan;
 var _elm_lang$core$Basics$sin = _elm_lang$core$Native_Basics.sin;
 var _elm_lang$core$Basics$cos = _elm_lang$core$Native_Basics.cos;
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
+
 _elm_lang$core$Basics_ops['^'] = _elm_lang$core$Native_Basics.exp;
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
+
 _elm_lang$core$Basics_ops['%'] = _elm_lang$core$Native_Basics.mod;
 var _elm_lang$core$Basics$rem = _elm_lang$core$Native_Basics.rem;
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
+
 _elm_lang$core$Basics_ops['//'] = _elm_lang$core$Native_Basics.div;
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
+
 _elm_lang$core$Basics_ops['/'] = _elm_lang$core$Native_Basics.floatDiv;
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
+
 _elm_lang$core$Basics_ops['*'] = _elm_lang$core$Native_Basics.mul;
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
+
 _elm_lang$core$Basics_ops['-'] = _elm_lang$core$Native_Basics.sub;
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
+
 _elm_lang$core$Basics_ops['+'] = _elm_lang$core$Native_Basics.add;
 var _elm_lang$core$Basics$toPolar = _elm_lang$core$Native_Basics.toPolar;
 var _elm_lang$core$Basics$fromPolar = _elm_lang$core$Native_Basics.fromPolar;
@@ -10427,40 +10381,6 @@ var _debois$elm_mdl$Material_Layout$update$ = F3(
 			switch (_p5.ctor) {
 				case 'NOP':
 					return _elm_lang$core$Maybe$Nothing;
-				case 'Resize':
-					var _p6 = _p5._0;
-					var tabScrollState = A2(
-						_elm_lang$core$Maybe$withDefault,
-						model.tabScrollState,
-						A2(
-							_elm_lang$core$Maybe$map,
-							function (tabsWidth) {
-								var tabScrollState = model.tabScrollState;
-								return _elm_lang$core$Native_Utils.update(
-									tabScrollState,
-									{
-										canScrollRight: _elm_lang$core$Native_Utils.cmp(tabsWidth + (2 * 56), _p6) > 0
-									});
-							},
-							model.tabScrollState.width));
-					var isSmall = _elm_lang$core$Native_Utils.cmp(1024, _p6) > 0;
-					return (_elm_lang$core$Native_Utils.eq(isSmall, model.isSmallScreen) && _elm_lang$core$Native_Utils.eq(tabScrollState.canScrollRight, model.tabScrollState.canScrollRight)) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
-						_debois$elm_mdl$Material_Helpers$pure(
-							_elm_lang$core$Native_Utils.update(
-								model,
-								{
-									isSmallScreen: isSmall,
-									isDrawerOpen: _elm_lang$core$Basics$not(isSmall) && model.isDrawerOpen,
-									tabScrollState: tabScrollState
-								})));
-				case 'ToggleDrawer':
-					return _elm_lang$core$Maybe$Just(
-						_debois$elm_mdl$Material_Helpers$pure(
-							_elm_lang$core$Native_Utils.update(
-								model,
-								{
-									isDrawerOpen: _elm_lang$core$Basics$not(model.isDrawerOpen)
-								})));
 				case 'Ripple':
 					var _p8 = _p5._0;
 					return _elm_lang$core$Maybe$Just(
@@ -10487,41 +10407,6 @@ var _debois$elm_mdl$Material_Layout$update$ = F3(
 										_elm_lang$core$Maybe$withDefault,
 										_debois$elm_mdl$Material_Ripple$model,
 										A2(_elm_lang$core$Dict$get, _p8, model.ripples))))));
-				case 'ScrollTab':
-					var _p9 = _p5._0;
-					return (!_elm_lang$core$Native_Utils.eq(model.tabScrollState, _p9)) ? _elm_lang$core$Maybe$Just(
-						_debois$elm_mdl$Material_Helpers$pure(
-							_elm_lang$core$Native_Utils.update(
-								model,
-								{tabScrollState: _p9}))) : _elm_lang$core$Maybe$Nothing;
-				case 'ScrollPane':
-					var isScrolled = _elm_lang$core$Native_Utils.cmp(0.0, _p5._1) < 0;
-					if (!_elm_lang$core$Native_Utils.eq(isScrolled, model.isScrolled)) {
-						var _v3 = f,
-							_v4 = _debois$elm_mdl$Material_Layout$TransitionHeader(
-							{toCompact: isScrolled, fixedHeader: _p5._0}),
-							_v5 = _elm_lang$core$Native_Utils.update(
-							model,
-							{isScrolled: isScrolled});
-						f = _v3;
-						action = _v4;
-						model = _v5;
-						continue update$;
-					} else {
-						return _elm_lang$core$Maybe$Nothing;
-					}
-				case 'TransitionHeader':
-					return _elm_lang$core$Basics$not(model.isAnimating) ? _elm_lang$core$Maybe$Just(
-						{
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Native_Utils.update(
-								model,
-								{
-									isCompact: _p5._0.toCompact,
-									isAnimating: _elm_lang$core$Basics$not(model.isSmallScreen) || _p5._0.fixedHeader
-								}),
-							_1: _elm_lang$core$Platform_Cmd$none
-						}) : _elm_lang$core$Maybe$Nothing;
 				default:
 					return _elm_lang$core$Maybe$Just(
 						_debois$elm_mdl$Material_Helpers$pure(
