@@ -4509,71 +4509,12 @@ var _elm_lang$core$Json_Decode$dict = function (decoder) {
 };
 var _elm_lang$core$Json_Decode$Decoder = {ctor: 'Decoder'};
 
-var _debois$elm_dom$DOM$className = A2(
-	_elm_lang$core$Json_Decode$at,
-	_elm_lang$core$Native_List.fromArray(
-		['className']),
-	_elm_lang$core$Json_Decode$string);
 var _debois$elm_dom$DOM$scrollTop = A2(_elm_lang$core$Json_Decode_ops[':='], 'scrollTop', _elm_lang$core$Json_Decode$float);
 var _debois$elm_dom$DOM$scrollLeft = A2(_elm_lang$core$Json_Decode_ops[':='], 'scrollLeft', _elm_lang$core$Json_Decode$float);
 var _debois$elm_dom$DOM$offsetTop = A2(_elm_lang$core$Json_Decode_ops[':='], 'offsetTop', _elm_lang$core$Json_Decode$float);
 var _debois$elm_dom$DOM$offsetLeft = A2(_elm_lang$core$Json_Decode_ops[':='], 'offsetLeft', _elm_lang$core$Json_Decode$float);
 var _debois$elm_dom$DOM$offsetHeight = A2(_elm_lang$core$Json_Decode_ops[':='], 'offsetHeight', _elm_lang$core$Json_Decode$float);
 var _debois$elm_dom$DOM$offsetWidth = A2(_elm_lang$core$Json_Decode_ops[':='], 'offsetWidth', _elm_lang$core$Json_Decode$float);
-var _debois$elm_dom$DOM$childNodes = function (decoder) {
-	var loop = F2(
-		function (idx, xs) {
-			return A2(
-				_elm_lang$core$Json_Decode$andThen,
-				_elm_lang$core$Json_Decode$maybe(
-					A2(
-						_elm_lang$core$Json_Decode_ops[':='],
-						_elm_lang$core$Basics$toString(idx),
-						decoder)),
-				function (_p0) {
-					return A2(
-						_elm_lang$core$Maybe$withDefault,
-						_elm_lang$core$Json_Decode$succeed(xs),
-						A2(
-							_elm_lang$core$Maybe$map,
-							function (x) {
-								return A2(
-									loop,
-									idx + 1,
-									A2(_elm_lang$core$List_ops['::'], x, xs));
-							},
-							_p0));
-				});
-		});
-	return A2(
-		_elm_lang$core$Json_Decode$map,
-		_elm_lang$core$List$reverse,
-		A2(
-			_elm_lang$core$Json_Decode_ops[':='],
-			'childNodes',
-			A2(
-				loop,
-				0,
-				_elm_lang$core$Native_List.fromArray(
-					[]))));
-};
-var _debois$elm_dom$DOM$childNode = function (idx) {
-	return _elm_lang$core$Json_Decode$at(
-		_elm_lang$core$Native_List.fromArray(
-			[
-				'childNodes',
-				_elm_lang$core$Basics$toString(idx)
-			]));
-};
-var _debois$elm_dom$DOM$parentElement = function (decoder) {
-	return A2(_elm_lang$core$Json_Decode_ops[':='], 'parentElement', decoder);
-};
-var _debois$elm_dom$DOM$previousSibling = function (decoder) {
-	return A2(_elm_lang$core$Json_Decode_ops[':='], 'previousSibling', decoder);
-};
-var _debois$elm_dom$DOM$nextSibling = function (decoder) {
-	return A2(_elm_lang$core$Json_Decode_ops[':='], 'nextSibling', decoder);
-};
 var _debois$elm_dom$DOM$offsetParent = F2(
 	function (x, decoder) {
 		return _elm_lang$core$Json_Decode$oneOf(
@@ -4623,11 +4564,6 @@ var _debois$elm_dom$DOM$boundingClientRect = A4(
 var _debois$elm_dom$DOM$target = function (decoder) {
 	return A2(_elm_lang$core$Json_Decode_ops[':='], 'target', decoder);
 };
-var _debois$elm_dom$DOM$Rectangle = F4(
-	function (a, b, c, d) {
-		return {top: a, left: b, width: c, height: d};
-	});
-
 var _debois$elm_parts$Parts$map2nd = F2(
 	function (f, _p0) {
 		var _p1 = _p0;
@@ -4653,14 +4589,6 @@ var _debois$elm_parts$Parts$generalize = F4(
 				_debois$elm_parts$Parts$map2nd,
 				_elm_lang$core$Platform_Cmd$map(f),
 				A2(upd, m, c)));
-	});
-var _debois$elm_parts$Parts$update = F2(
-	function (_p4, c) {
-		var _p5 = _p4;
-		return A2(
-			_elm_lang$core$Maybe$withDefault,
-			{ctor: '_Tuple2', _0: c, _1: _elm_lang$core$Platform_Cmd$none},
-			_p5._0(c));
 	});
 var _debois$elm_parts$Parts$update$ = F2(
 	function (_p6, c) {
@@ -4694,34 +4622,6 @@ var _debois$elm_parts$Parts$indexed = F3(
 				})
 		};
 	});
-var _debois$elm_parts$Parts$accessors = F4(
-	function (get0, set0, model0, idx) {
-		var _p8 = A3(_debois$elm_parts$Parts$indexed, get0, set0, model0);
-		var get = _p8._0;
-		var set = _p8._1;
-		return {
-			get: get(idx),
-			set: set(idx),
-			map: F2(
-				function (f, c) {
-					return A3(
-						_elm_lang$core$Basics$flip,
-						set(idx),
-						c,
-						f(
-							A2(get, idx, c)));
-				}),
-			reset: function (c) {
-				return function (m) {
-					return A2(set0, m, c);
-				}(
-					A2(
-						_elm_lang$core$Dict$remove,
-						idx,
-						get0(c)));
-			}
-		};
-	});
 var _debois$elm_parts$Parts$embedUpdate = F6(
 	function (get, set, update, f, msg, c) {
 		return A2(
@@ -4740,10 +4640,6 @@ var _debois$elm_parts$Parts$embedView = F2(
 			return view(
 				get(_p9));
 		};
-	});
-var _debois$elm_parts$Parts$Accessors = F4(
-	function (a, b, c, d) {
-		return {get: a, set: b, map: c, reset: d};
 	});
 var _debois$elm_parts$Parts$Msg = function (a) {
 	return {ctor: 'Msg', _0: a};
@@ -4806,22 +4702,6 @@ var _debois$elm_parts$Parts$pack1 = F4(
 					_p13));
 		};
 	});
-var _debois$elm_parts$Parts$create1 = F5(
-	function (view, update, get, set, fwd) {
-		var embeddedUpdate = function (_p14) {
-			return fwd(
-				A3(
-					_debois$elm_parts$Parts$partial,
-					fwd,
-					A3(_debois$elm_parts$Parts$embedUpdate, get, set, update),
-					_p14));
-		};
-		return A2(
-			_debois$elm_parts$Parts$embedView,
-			get,
-			view(embeddedUpdate));
-	});
-
 //import Native.Json //
 
 var _elm_lang$virtual_dom$Native_VirtualDom = function() {
