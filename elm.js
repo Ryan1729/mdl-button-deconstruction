@@ -4561,9 +4561,6 @@ var _debois$elm_dom$DOM$boundingClientRect = A4(
 	A2(_debois$elm_dom$DOM$position, 0, 0),
 	_debois$elm_dom$DOM$offsetWidth,
 	_debois$elm_dom$DOM$offsetHeight);
-var _debois$elm_dom$DOM$target = function (decoder) {
-	return A2(_elm_lang$core$Json_Decode_ops[':='], 'target', decoder);
-};
 var _debois$elm_parts$Parts$map2nd = F2(
 	function (f, _p0) {
 		var _p1 = _p0;
@@ -4634,13 +4631,6 @@ var _debois$elm_parts$Parts$embedUpdate = F6(
 				msg,
 				get(c)));
 	});
-var _debois$elm_parts$Parts$embedView = F2(
-	function (get, view) {
-		return function (_p9) {
-			return view(
-				get(_p9));
-		};
-	});
 var _debois$elm_parts$Parts$Msg = function (a) {
 	return {ctor: 'Msg', _0: a};
 };
@@ -4690,17 +4680,6 @@ var _debois$elm_parts$Parts$create = F6(
 					embeddedUpdate(idx),
 					A2(get, idx, c));
 			});
-	});
-var _debois$elm_parts$Parts$pack1 = F4(
-	function (update, get, set, fwd) {
-		return function (_p13) {
-			return fwd(
-				A3(
-					_debois$elm_parts$Parts$partial,
-					fwd,
-					A3(_debois$elm_parts$Parts$embedUpdate, get, set, update),
-					_p13));
-		};
 	});
 //import Native.Json //
 
@@ -6791,14 +6770,6 @@ var _elm_lang$core$Process$kill = _elm_lang$core$Native_Scheduler.kill;
 var _elm_lang$core$Process$sleep = _elm_lang$core$Native_Scheduler.sleep;
 var _elm_lang$core$Process$spawn = _elm_lang$core$Native_Scheduler.spawn;
 
-var _debois$elm_mdl$Material_Helpers$noAttr = A2(_elm_lang$html$Html_Attributes$attribute, 'data-elm-mdl-noop', '');
-var _debois$elm_mdl$Material_Helpers$aria = F2(
-	function (name, value) {
-		return value ? A2(
-			_elm_lang$html$Html_Attributes$attribute,
-			A2(_elm_lang$core$Basics_ops['++'], 'aria-', name),
-			'true') : _debois$elm_mdl$Material_Helpers$noAttr;
-	});
 var _debois$elm_mdl$Material_Helpers$delay = F2(
 	function (t, x) {
 		return A3(
@@ -6810,50 +6781,6 @@ var _debois$elm_mdl$Material_Helpers$delay = F2(
 var _debois$elm_mdl$Material_Helpers$cssTransitionStep = function (x) {
 	return A2(_debois$elm_mdl$Material_Helpers$delay, 50, x);
 };
-var _debois$elm_mdl$Material_Helpers$cmd = function (msg) {
-	return A3(
-		_elm_lang$core$Task$perform,
-		_elm_lang$core$Basics$always(msg),
-		_elm_lang$core$Basics$always(msg),
-		_elm_lang$core$Task$succeed(msg));
-};
-var _debois$elm_mdl$Material_Helpers$lift = F6(
-	function (get, set, fwd, update, action, model) {
-		var _p0 = A2(
-			update,
-			action,
-			get(model));
-		var submodel$ = _p0._0;
-		var e = _p0._1;
-		return {
-			ctor: '_Tuple2',
-			_0: A2(set, model, submodel$),
-			_1: A2(_elm_lang$core$Platform_Cmd$map, fwd, e)
-		};
-	});
-var _debois$elm_mdl$Material_Helpers$lift$ = F5(
-	function (get, set, update, action, model) {
-		return {
-			ctor: '_Tuple2',
-			_0: A2(
-				set,
-				model,
-				A2(
-					update,
-					action,
-					get(model))),
-			_1: _elm_lang$core$Platform_Cmd$none
-		};
-	});
-var _debois$elm_mdl$Material_Helpers$map2nd = F2(
-	function (f, _p1) {
-		var _p2 = _p1;
-		return {
-			ctor: '_Tuple2',
-			_0: _p2._0,
-			_1: f(_p2._1)
-		};
-	});
 var _debois$elm_mdl$Material_Helpers$map1st = F2(
 	function (f, _p3) {
 		var _p4 = _p3;
@@ -6874,18 +6801,6 @@ var _debois$elm_mdl$Material_Helpers$effect = F2(
 		return {ctor: '_Tuple2', _0: x, _1: e};
 	});
 var _debois$elm_mdl$Material_Helpers$pure = _debois$elm_mdl$Material_Helpers$effect(_elm_lang$core$Platform_Cmd$none);
-var _debois$elm_mdl$Material_Helpers$filter = F3(
-	function (elem, attr, html) {
-		return A2(
-			elem,
-			attr,
-			A2(
-				_elm_lang$core$List$filterMap,
-				function (x) {
-					return x;
-				},
-				html));
-	});
 
 var _elm_lang$html$Html_Events$keyCode = A2(_elm_lang$core$Json_Decode_ops[':='], 'keyCode', _elm_lang$core$Json_Decode$int);
 var _elm_lang$html$Html_Events$targetChecked = A2(
@@ -7030,94 +6945,17 @@ var _debois$elm_mdl$Material_Options_Internal$None = {ctor: 'None'};
 var _debois$elm_mdl$Material_Options_Internal$Set = function (a) {
 	return {ctor: 'Set', _0: a};
 };
-var _debois$elm_mdl$Material_Options_Internal$Many = function (a) {
-	return {ctor: 'Many', _0: a};
-};
-var _debois$elm_mdl$Material_Options_Internal$Attribute = function (a) {
-	return {ctor: 'Attribute', _0: a};
-};
-var _debois$elm_mdl$Material_Options_Internal$attribute = _debois$elm_mdl$Material_Options_Internal$Attribute;
-var _debois$elm_mdl$Material_Options_Internal$CSS = function (a) {
-	return {ctor: 'CSS', _0: a};
-};
 var _debois$elm_mdl$Material_Options_Internal$Class = function (a) {
 	return {ctor: 'Class', _0: a};
 };
-
-var _debois$elm_mdl$Material_Options$id = function (_p0) {
-	return _debois$elm_mdl$Material_Options_Internal$Attribute(
-		_elm_lang$html$Html_Attributes$id(_p0));
-};
-var _debois$elm_mdl$Material_Options$attribute = _debois$elm_mdl$Material_Options_Internal$Attribute;
-var _debois$elm_mdl$Material_Options$stylesheet = function (css) {
-	return A3(
-		_elm_lang$html$Html$node,
-		'style',
-		_elm_lang$core$Native_List.fromArray(
-			[]),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html$text(css)
-			]));
-};
-var _debois$elm_mdl$Material_Options$data = F2(
-	function (key, val) {
-		return _debois$elm_mdl$Material_Options_Internal$Attribute(
-			A2(
-				_elm_lang$html$Html_Attributes$attribute,
-				A2(_elm_lang$core$Basics_ops['++'], 'data-', key),
-				val));
-	});
 var _debois$elm_mdl$Material_Options$set = _debois$elm_mdl$Material_Options_Internal$Set;
-var _debois$elm_mdl$Material_Options$inner = function (options) {
-	return _debois$elm_mdl$Material_Options$set(
-		function (c) {
-			return _elm_lang$core$Native_Utils.update(
-				c,
-				{
-					inner: A2(_elm_lang$core$Basics_ops['++'], options, c.inner)
-				});
-		});
-};
 var _debois$elm_mdl$Material_Options$nop = _debois$elm_mdl$Material_Options_Internal$None;
 var _debois$elm_mdl$Material_Options$when = F2(
 	function (prop, guard) {
 		return guard ? prop : _debois$elm_mdl$Material_Options$nop;
 	});
-var _debois$elm_mdl$Material_Options$maybe = function (prop) {
-	return A2(_elm_lang$core$Maybe$withDefault, _debois$elm_mdl$Material_Options$nop, prop);
-};
-var _debois$elm_mdl$Material_Options$many = _debois$elm_mdl$Material_Options_Internal$Many;
-var _debois$elm_mdl$Material_Options$css = F2(
-	function (key, value) {
-		return _debois$elm_mdl$Material_Options_Internal$CSS(
-			{ctor: '_Tuple2', _0: key, _1: value});
-	});
-var _debois$elm_mdl$Material_Options$center = _debois$elm_mdl$Material_Options$many(
-	_elm_lang$core$Native_List.fromArray(
-		[
-			A2(_debois$elm_mdl$Material_Options$css, 'display', 'flex'),
-			A2(_debois$elm_mdl$Material_Options$css, 'align-items', 'center'),
-			A2(_debois$elm_mdl$Material_Options$css, 'justify-content', 'center')
-		]));
-var _debois$elm_mdl$Material_Options$scrim = function (opacity) {
-	return A2(
-		_debois$elm_mdl$Material_Options$css,
-		'background',
-		A2(
-			_elm_lang$core$Basics_ops['++'],
-			'linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, ',
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				_elm_lang$core$Basics$toString(opacity),
-				'))')));
-};
 var _debois$elm_mdl$Material_Options$cs = function (c) {
 	return _debois$elm_mdl$Material_Options_Internal$Class(c);
-};
-var _debois$elm_mdl$Material_Options$disabled = function (v) {
-	return _debois$elm_mdl$Material_Options_Internal$Attribute(
-		_elm_lang$html$Html_Attributes$disabled(v));
 };
 var _debois$elm_mdl$Material_Options$addAttributes = F2(
 	function (summary, attrs) {
@@ -7222,48 +7060,6 @@ var _debois$elm_mdl$Material_Options$collect = function (_p3) {
 				[]),
 			_p3));
 };
-var _debois$elm_mdl$Material_Options$collect$ = A2(
-	_elm_lang$core$List$foldl,
-	_debois$elm_mdl$Material_Options$collect1$,
-	A4(
-		_debois$elm_mdl$Material_Options$Summary,
-		_elm_lang$core$Native_List.fromArray(
-			[]),
-		_elm_lang$core$Native_List.fromArray(
-			[]),
-		_elm_lang$core$Native_List.fromArray(
-			[]),
-		{ctor: '_Tuple0'}));
-var _debois$elm_mdl$Material_Options$styled = F2(
-	function (ctor, props) {
-		return ctor(
-			A2(
-				_debois$elm_mdl$Material_Options$addAttributes,
-				_debois$elm_mdl$Material_Options$collect$(props),
-				_elm_lang$core$Native_List.fromArray(
-					[])));
-	});
-var _debois$elm_mdl$Material_Options$div = _debois$elm_mdl$Material_Options$styled(_elm_lang$html$Html$div);
-var _debois$elm_mdl$Material_Options$span = _debois$elm_mdl$Material_Options$styled(_elm_lang$html$Html$span);
-var _debois$elm_mdl$Material_Options$styled$ = F3(
-	function (ctor, props, attrs) {
-		return ctor(
-			A2(
-				_debois$elm_mdl$Material_Options$addAttributes,
-				_debois$elm_mdl$Material_Options$collect$(props),
-				attrs));
-	});
-var _debois$elm_mdl$Material_Options$img = F2(
-	function (options, attrs) {
-		return A4(
-			_debois$elm_mdl$Material_Options$styled$,
-			_elm_lang$html$Html$img,
-			options,
-			attrs,
-			_elm_lang$core$Native_List.fromArray(
-				[]));
-	});
-
 var _debois$elm_mdl$Material_Ripple$styles = F2(
 	function (m, frame) {
 		var r = m.rect;
