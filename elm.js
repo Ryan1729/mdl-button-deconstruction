@@ -638,60 +638,14 @@ var _elm_lang$core$Basics$identity = function (x) {
 	return x;
 };
 var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
-_elm_lang$core$Basics_ops['<|'] = F2(
-	function (f, x) {
-		return f(x);
-	});
 
-_elm_lang$core$Basics_ops['|>'] = F2(
-	function (x, f) {
-		return f(x);
-	});
-
-_elm_lang$core$Basics_ops['>>'] = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
-
-_elm_lang$core$Basics_ops['<<'] = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-
-_elm_lang$core$Basics_ops['++'] = _elm_lang$core$Native_Utils.append;
 var _elm_lang$core$Basics$toString = _elm_lang$core$Native_Utils.toString;
 var _elm_lang$core$Basics$round = _elm_lang$core$Native_Basics.round;
-_elm_lang$core$Basics_ops['||'] = _elm_lang$core$Native_Basics.or;
 
-_elm_lang$core$Basics_ops['&&'] = _elm_lang$core$Native_Basics.and;
+
 var _elm_lang$core$Basics$compare = _elm_lang$core$Native_Basics.compare;
 
-_elm_lang$core$Basics_ops['>='] = _elm_lang$core$Native_Basics.ge;
-
-_elm_lang$core$Basics_ops['<='] = _elm_lang$core$Native_Basics.le;
-
-_elm_lang$core$Basics_ops['>'] = _elm_lang$core$Native_Basics.gt;
-
-_elm_lang$core$Basics_ops['<'] = _elm_lang$core$Native_Basics.lt;
-
-_elm_lang$core$Basics_ops['/='] = _elm_lang$core$Native_Basics.neq;
-
-_elm_lang$core$Basics_ops['=='] = _elm_lang$core$Native_Basics.eq;
 var _elm_lang$core$Basics$sqrt = _elm_lang$core$Native_Basics.sqrt;
-
-_elm_lang$core$Basics_ops['%'] = _elm_lang$core$Native_Basics.mod;
-
-_elm_lang$core$Basics_ops['//'] = _elm_lang$core$Native_Basics.div;
-
-_elm_lang$core$Basics_ops['/'] = _elm_lang$core$Native_Basics.floatDiv;
-
-_elm_lang$core$Basics_ops['*'] = _elm_lang$core$Native_Basics.mul;
-
-_elm_lang$core$Basics_ops['-'] = _elm_lang$core$Native_Basics.sub;
-
-_elm_lang$core$Basics_ops['+'] = _elm_lang$core$Native_Basics.add;
 
 //import Native.Utils //
 
@@ -794,7 +748,6 @@ var _elm_lang$core$List$foldl = F3(
 		}
 	});
 var _elm_lang$core$List_ops = _elm_lang$core$List_ops || {};
-_elm_lang$core$List_ops['::'] = _elm_lang$core$Native_List.cons;
 var _elm_lang$core$List$map = F2(
 	function (f, xs) {
 		return A3(
@@ -802,7 +755,7 @@ var _elm_lang$core$List$map = F2(
 			F2(
 				function (x, acc) {
 					return A2(
-						_elm_lang$core$List_ops['::'],
+						_elm_lang$core$Native_List.cons,
 						f(x),
 						acc);
 				}),
@@ -814,7 +767,7 @@ var _elm_lang$core$List$filter = F2(
 	function (pred, xs) {
 		var conditionalCons = F2(
 			function (x, xs$) {
-				return pred(x) ? A2(_elm_lang$core$List_ops['::'], x, xs$) : xs$;
+				return pred(x) ? A2(_elm_lang$core$Native_List.cons, x, xs$) : xs$;
 			});
 		return A3(
 			_elm_lang$core$List$foldr,
@@ -833,7 +786,7 @@ var _elm_lang$core$List$append = F2(
 				_elm_lang$core$List$foldr,
 				F2(
 					function (x, y) {
-						return A2(_elm_lang$core$List_ops['::'], x, y);
+						return A2(_elm_lang$core$Native_List.cons, x, y);
 					}),
 				ys,
 				xs);
@@ -847,38 +800,6 @@ var _elm_lang$core$List$concat = function (lists) {
 			[]),
 		lists);
 };
-var _elm_lang$core$List$takeReverse = F3(
-	function (n, list, taken) {
-		takeReverse:
-		while (true) {
-			if (_elm_lang$core$Native_Utils.cmp(n, 0) < 1) {
-				return taken;
-			} else {
-				var _p22 = list;
-				if (_p22.ctor === '[]') {
-					return taken;
-				} else {
-					var _v23 = n - 1,
-						_v24 = _p22._1,
-						_v25 = A2(_elm_lang$core$List_ops['::'], _p22._0, taken);
-					n = _v23;
-					list = _v24;
-					taken = _v25;
-					continue takeReverse;
-				}
-			}
-		}
-	});
-var _elm_lang$core$List$takeTailRec = F2(
-	function (n, list) {
-		return _elm_lang$core$List$reverse(
-			A3(
-				_elm_lang$core$List$takeReverse,
-				n,
-				list,
-				_elm_lang$core$Native_List.fromArray(
-					[])));
-	});
 
 var _elm_lang$core$Result$Err = function (a) {
 	return {ctor: 'Err', _0: a};
@@ -2172,7 +2093,7 @@ var _elm_lang$core$Dict$toList = function (dict) {
 		F3(
 			function (key, value, list) {
 				return A2(
-					_elm_lang$core$List_ops['::'],
+					_elm_lang$core$Native_List.cons,
 					{ctor: '_Tuple2', _0: key, _1: value},
 					list);
 			}),
@@ -5223,7 +5144,7 @@ var _elm_lang$core$Task$sequence = function (tasks) {
 			_elm_lang$core$Task$map2,
 			F2(
 				function (x, y) {
-					return A2(_elm_lang$core$List_ops['::'], x, y);
+					return A2(_elm_lang$core$Native_List.cons, x, y);
 				}),
 			_p2._0,
 			_elm_lang$core$Task$sequence(_p2._1));
@@ -5342,10 +5263,10 @@ var _debois$elm_mdl$Material_Options$addAttributes = F2(
 			_elm_lang$core$List$append,
 			attrs,
 			A2(
-				_elm_lang$core$List_ops['::'],
+				_elm_lang$core$Native_List.cons,
 				_elm_lang$html$Html_Attributes$style(summary.css),
 				A2(
-					_elm_lang$core$List_ops['::'],
+					_elm_lang$core$Native_List.cons,
 					_elm_lang$html$Html_Attributes$class(
 						A2(_elm_lang$core$Native_String.join, ' ', summary.classes)),
 					summary.attrs)));
@@ -5358,19 +5279,19 @@ var _debois$elm_mdl$Material_Options$collect1$ = F2(
 				return _elm_lang$core$Native_Utils.update(
 					acc,
 					{
-						classes: A2(_elm_lang$core$List_ops['::'], _p1._0, acc.classes)
+						classes: A2(_elm_lang$core$Native_List.cons, _p1._0, acc.classes)
 					});
 			case 'CSS':
 				return _elm_lang$core$Native_Utils.update(
 					acc,
 					{
-						css: A2(_elm_lang$core$List_ops['::'], _p1._0, acc.css)
+						css: A2(_elm_lang$core$Native_List.cons, _p1._0, acc.css)
 					});
 			case 'Attribute':
 				return _elm_lang$core$Native_Utils.update(
 					acc,
 					{
-						attrs: A2(_elm_lang$core$List_ops['::'], _p1._0, acc.attrs)
+						attrs: A2(_elm_lang$core$Native_List.cons, _p1._0, acc.attrs)
 					});
 			case 'Many':
 				return A3(_elm_lang$core$List$foldl, _debois$elm_mdl$Material_Options$collect1$, acc, _p1._0);
@@ -5388,19 +5309,19 @@ var _debois$elm_mdl$Material_Options$collect1 = F2(
 				return _elm_lang$core$Native_Utils.update(
 					acc,
 					{
-						classes: A2(_elm_lang$core$List_ops['::'], _p2._0, acc.classes)
+						classes: A2(_elm_lang$core$Native_List.cons, _p2._0, acc.classes)
 					});
 			case 'CSS':
 				return _elm_lang$core$Native_Utils.update(
 					acc,
 					{
-						css: A2(_elm_lang$core$List_ops['::'], _p2._0, acc.css)
+						css: A2(_elm_lang$core$Native_List.cons, _p2._0, acc.css)
 					});
 			case 'Attribute':
 				return _elm_lang$core$Native_Utils.update(
 					acc,
 					{
-						attrs: A2(_elm_lang$core$List_ops['::'], _p2._0, acc.attrs)
+						attrs: A2(_elm_lang$core$Native_List.cons, _p2._0, acc.attrs)
 					});
 			case 'Many':
 				return A3(_elm_lang$core$List$foldl, _debois$elm_mdl$Material_Options$collect1, acc, _p2._0);
@@ -5444,31 +5365,31 @@ var _debois$elm_mdl$Material_Ripple$styles = F2(
 		var r = m.rect;
 		var toPx = function (k) {
 			return A2(
-				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Native_Utils.append,
 				_elm_lang$core$Basics$toString(
 					_elm_lang$core$Basics$round(k)),
 				'px');
 		};
 		var offset = A2(
-			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$Native_Utils.append,
 			'translate(',
 			A2(
-				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Native_Utils.append,
 				toPx(m.x),
 				A2(
-					_elm_lang$core$Basics_ops['++'],
+					_elm_lang$core$Native_Utils.append,
 					', ',
 					A2(
-						_elm_lang$core$Basics_ops['++'],
+						_elm_lang$core$Native_Utils.append,
 						toPx(m.y),
 						')'))));
 		var rippleSize = toPx(
 			(_elm_lang$core$Basics$sqrt((r.width * r.width) + (r.height * r.height)) * 2.0) + 2.0);
 		var scale = _elm_lang$core$Native_Utils.eq(frame, 0) ? 'scale(0.0001, 0.0001)' : '';
 		var transformString = A2(
-			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$Native_Utils.append,
 			'translate(-50%, -50%) ',
-			A2(_elm_lang$core$Basics_ops['++'], offset, scale));
+			A2(_elm_lang$core$Native_Utils.append, offset, scale));
 		return _elm_lang$core$Native_List.fromArray(
 			[
 				{ctor: '_Tuple2', _0: 'width', _1: rippleSize},
@@ -5659,7 +5580,7 @@ var _debois$elm_mdl$Material_Button$raised = _debois$elm_mdl$Material_Options$cs
 var _debois$elm_mdl$Material_Button$blurAndForward = function (event) {
 	return A2(
 		_elm_lang$html$Html_Attributes$attribute,
-		A2(_elm_lang$core$Basics_ops['++'], 'on', event),
+		A2(_elm_lang$core$Native_Utils.append, 'on', event),
 		'this.blur(); (function(self) { var e = document.createEvent(\'Event\'); e.initEvent(\'touchcancel\', true, true); self.lastChild.dispatchEvent(e); }(this));');
 };
 var _debois$elm_mdl$Material_Button$view = F4(
@@ -5723,8 +5644,7 @@ var _debois$elm_mdl$Material_Button$render =
 	F2(
 		function (x, y) {
 			return x
-		}))
-	(_debois$elm_mdl$Material_Ripple$model);
+		}))(_debois$elm_mdl$Material_Ripple$model);
 
 
 var _elm_lang$window$Native_Window = function()
@@ -5824,7 +5744,6 @@ var _debois$elm_mdl$Material$update = F2(
 					}),
 				A2(_debois$elm_parts$Parts$update$, msg, model.mdl)));
 	});
-var _debois$elm_mdl$Material$model =  _elm_lang$core$Dict$empty;
 
 var _user$project$ChangeMe$materialUpdate = F2(
 	function (msg, materialModel) {
@@ -5857,7 +5776,7 @@ var _user$project$ChangeMe$view = function (mdl) {
 };
 var _user$project$ChangeMe$main = {
 	main: _elm_lang$html$Html_App$beginnerProgram(
-		{model: _debois$elm_mdl$Material$model, update: _user$project$ChangeMe$materialUpdate, view: _user$project$ChangeMe$view})
+		{model: _elm_lang$core$Dict$empty, update: _user$project$ChangeMe$materialUpdate, view: _user$project$ChangeMe$view})
 };
 
 var Elm = {};
