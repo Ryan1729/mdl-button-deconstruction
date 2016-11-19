@@ -4,7 +4,6 @@
   "laxcomma": true,
   "asi": true,
   "funcscope": true,
-  /*"maxerr": 255,*/
-  "maxerr": 300,
+  "maxerr": 255,
   "shadow": true
 }
