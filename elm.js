@@ -86,8 +86,6 @@ let round= Math.round;
 
 
 
-var _elm_lang$core$Native_Utils = function() {
-
 // COMPARISONS
 
 function eq(x, y)
@@ -269,42 +267,6 @@ function append(xs, ys)
 }
 
 
-// CRASHES
-
-function crash(moduleName, region)
-{
-	return function(message) {
-		throw new Error(
-			'Ran into a `Debug.crash` in module `' + moduleName + '` ' + regionToString(region) + '\n'
-			+ 'The message provided by the code author is:\n\n    '
-			+ message
-		);
-	};
-}
-
-function crashCase(moduleName, region, value)
-{
-	return function(message) {
-		throw new Error(
-			'Ran into a `Debug.crash` in module `' + moduleName + '`\n\n'
-			+ 'This was caused by the `case` expression ' + regionToString(region) + '.\n'
-			+ 'One of the branches ended with a crash and the following value got through:\n\n    ' + toString(value) + '\n\n'
-			+ 'The message provided by the code author is:\n\n    '
-			+ message
-		);
-	};
-}
-
-function regionToString(region)
-{
-	if (region.start.line == region.end.line)
-	{
-		return 'on line ' + region.start.line;
-	}
-	return 'between lines ' + region.start.line + ' and ' + region.end.line;
-}
-
-
 // TO STRING
 
 function toString(v)
@@ -443,25 +405,8 @@ function toString(v)
 	return '<internal structure>';
 }
 
+	append = F2(append)
 
-return {
-	eq: eq,
-
-	Tuple0: Tuple0,
-	Tuple2: Tuple2,
-	chr: chr,
-	update: update,
-	guid: guid,
-
-	append: F2(append),
-
-	crash: crash,
-	crashCase: crashCase,
-
-	toString: toString
-};
-
-}();
 
 var _elm_lang$core$Basics$flip = F3(
 	function (f, b, a) {
@@ -484,7 +429,7 @@ var _elm_lang$core$Basics$identity = function (x) {
 };
 var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
 
-var _elm_lang$core$Basics$toString = _elm_lang$core$Native_Utils.toString;
+var _elm_lang$core$Basics$toString = toString;
 var _elm_lang$core$Basics$round = round;
 
 
@@ -640,8 +585,46 @@ var _elm_lang$core$Result$Ok = function (a) {
 
 //import //
 
-var _elm_lang$core$Native_Platform = function() {
+function addPublicModule(object, name, main)
+{
+	var init = makeEmbed(name, main)
 
+	object.worker = function worker(flags)
+	{
+		return init(undefined, flags, false);
+	}
+
+	object.embed = function embed(domNode, flags)
+	{
+		return init(domNode, flags, true);
+	}
+
+	object.fullscreen = function fullscreen(flags)
+	{
+		return init(document.body, flags, true);
+	};
+}
+
+function makeEmbed(moduleName, main)
+{
+	return function embed(rootDomNode, flags, withRenderer)
+	{
+		try
+		{
+			var program = mainToProgram(moduleName, main);
+			if (!withRenderer)
+			{
+				program.renderer = dummyRenderer;
+			}
+			return makeEmbedHelp(moduleName, program, rootDomNode, flags);
+		}
+		catch (e)
+		{
+			rootDomNode.innerHTML = errorHtml(e.message);
+			throw e;
+		}
+	};
+}
 
 // PROGRAMS
 
@@ -726,8 +709,8 @@ function mainToProgram(moduleName, wrappedMain)
 	if (typeof main.init === 'undefined')
 	{
 		var emptyBag = batch(Nil);
-		var noChange = _elm_lang$core$Native_Utils.Tuple2(
-			_elm_lang$core$Native_Utils.Tuple0,
+		var noChange = Tuple2(
+			Tuple0,
 			emptyBag
 		);
 
@@ -805,9 +788,6 @@ function makeEmbedHelp(moduleName, program, rootDomNode, flags)
 		var results = init(flags);
 		var model = results._0;
 		renderer = makeRenderer(rootDomNode, enqueue, view(model));
-		var cmds = results._1;
-		var subs = subscriptions(model);
-		dispatchEffects(managers, cmds, subs);
 		callback(_elm_lang$core$Native_Scheduler.succeed(model));
 	});
 
@@ -817,9 +797,6 @@ function makeEmbedHelp(moduleName, program, rootDomNode, flags)
 			var results = A2(update, msg, model);
 			model = results._0;
 			renderer.update(view(model));
-			var cmds = results._1;
-			var subs = subscriptions(model);
-			dispatchEffects(managers, cmds, subs);
 			callback(_elm_lang$core$Native_Scheduler.succeed(model));
 		});
 	}
@@ -831,93 +808,13 @@ function makeEmbedHelp(moduleName, program, rootDomNode, flags)
 		_elm_lang$core$Native_Scheduler.rawSend(mainProcess, msg);
 	}
 
-	var ports = setupEffects(managers, enqueue);
-
-	return ports ? { ports: ports } : {};
+	return {};
 }
 
 
 // EFFECT MANAGERS
 
 var effectManagers = {};
-
-function setupEffects(managers, callback)
-{
-	var ports;
-
-	// setup all necessary effect managers
-	for (var key in effectManagers)
-	{
-		var manager = effectManagers[key];
-
-		if (manager.isForeign)
-		{
-			ports = ports || {};
-			ports[key] = manager.tag === 'cmd'
-				? setupOutgoingPort(key)
-				: setupIncomingPort(key, callback);
-		}
-
-		managers[key] = makeManager(manager, callback);
-	}
-
-	return ports;
-}
-
-function makeManager(info, callback)
-{
-	var router = {
-		main: callback,
-		self: undefined
-	};
-
-	var tag = info.tag;
-	var onEffects = info.onEffects;
-	var onSelfMsg = info.onSelfMsg;
-
-	function onMessage(msg, state)
-	{
-		if (msg.ctor === 'self')
-		{
-			return A3(onSelfMsg, router, msg._0, state);
-		}
-
-		var fx = msg._0;
-		switch (tag)
-		{
-			case 'cmd':
-				return A3(onEffects, router, fx.cmds, state);
-
-			case 'sub':
-				return A3(onEffects, router, fx.subs, state);
-
-			case 'fx':
-				return A4(onEffects, router, fx.cmds, fx.subs, state);
-		}
-	}
-
-	var process = spawnLoop(info.init, onMessage);
-	router.self = process;
-	return process;
-}
-
-function sendToApp(router, msg)
-{
-	return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
-	{
-		router.main(msg);
-		callback(_elm_lang$core$Native_Scheduler.succeed(_elm_lang$core$Native_Utils.Tuple0));
-	});
-}
-
-function sendToSelf(router, msg)
-{
-	return A2(_elm_lang$core$Native_Scheduler.send, router.self, {
-		ctor: 'self',
-		_0: msg
-	});
-}
-
 
 // HELPER for STATEFUL LOOPS
 
@@ -961,101 +858,6 @@ function batch(list)
 	};
 }
 
-function map(tagger, bag)
-{
-	return {
-		type: 'map',
-		tagger: tagger,
-		tree: bag
-	}
-}
-
-
-// PIPE BAGS INTO EFFECT MANAGERS
-
-function dispatchEffects(managers, cmdBag, subBag)
-{
-	var effectsDict = {};
-	gatherEffects(true, cmdBag, effectsDict, null);
-	gatherEffects(false, subBag, effectsDict, null);
-
-	for (var home in managers)
-	{
-		var fx = home in effectsDict
-			? effectsDict[home]
-			: {
-				cmds: Nil,
-				subs: Nil
-			};
-
-		_elm_lang$core$Native_Scheduler.rawSend(managers[home], { ctor: 'fx', _0: fx });
-	}
-}
-
-function gatherEffects(isCmd, bag, effectsDict, taggers)
-{
-	switch (bag.type)
-	{
-		case 'leaf':
-			var home = bag.home;
-			var effect = toEffect(isCmd, home, taggers, bag.value);
-			effectsDict[home] = insert(isCmd, effect, effectsDict[home]);
-			return;
-
-		case 'node':
-			var list = bag.branches;
-			while (list.ctor !== '[]')
-			{
-				gatherEffects(isCmd, list._0, effectsDict, taggers);
-				list = list._1;
-			}
-			return;
-
-		case 'map':
-			gatherEffects(isCmd, bag.tree, effectsDict, {
-				tagger: bag.tagger,
-				rest: taggers
-			});
-			return;
-	}
-}
-
-function toEffect(isCmd, home, taggers, value)
-{
-	function applyTaggers(x)
-	{
-		var temp = taggers;
-		while (temp)
-		{
-			x = temp.tagger(x);
-			temp = temp.rest;
-		}
-		return x;
-	}
-
-	var map = isCmd
-		? effectManagers[home].cmdMap
-		: effectManagers[home].subMap;
-
-	return A2(map, applyTaggers, value)
-}
-
-function insert(isCmd, newEffect, effects)
-{
-	effects = effects || {
-		cmds: Nil,
-		subs: Nil
-	};
-	if (isCmd)
-	{
-		effects.cmds = Cons(newEffect, effects.cmds);
-		return effects;
-	}
-	effects.subs = Cons(newEffect, effects.subs);
-	return effects;
-}
-
-
 // PORTS
 
 function checkPortName(name)
@@ -1067,187 +869,6 @@ function checkPortName(name)
 }
 
 
-// OUTGOING PORTS
-
-function outgoingPort(name, converter)
-{
-	checkPortName(name);
-	effectManagers[name] = {
-		tag: 'cmd',
-		cmdMap: outgoingPortMap,
-		converter: converter,
-		isForeign: true
-	};
-	return leaf(name);
-}
-
-var outgoingPortMap = F2(function cmdMap(tagger, value) {
-	return value;
-});
-
-function setupOutgoingPort(name)
-{
-	var subs = [];
-	var converter = effectManagers[name].converter;
-
-	// CREATE MANAGER
-
-	var init = _elm_lang$core$Native_Scheduler.succeed(null);
-
-	function onEffects(router, cmdList, state)
-	{
-		while (cmdList.ctor !== '[]')
-		{
-			var value = converter(cmdList._0);
-			for (var i = 0; i < subs.length; i++)
-			{
-				subs[i](value);
-			}
-			cmdList = cmdList._1;
-		}
-		return init;
-	}
-
-	effectManagers[name].init = init;
-	effectManagers[name].onEffects = F3(onEffects);
-
-	// PUBLIC API
-
-	function subscribe(callback)
-	{
-		subs.push(callback);
-	}
-
-	function unsubscribe(callback)
-	{
-		var index = subs.indexOf(callback);
-		if (index >= 0)
-		{
-			subs.splice(index, 1);
-		}
-	}
-
-	return {
-		subscribe: subscribe,
-		unsubscribe: unsubscribe
-	};
-}
-
-
-// INCOMING PORTS
-
-function incomingPort(name, converter)
-{
-	checkPortName(name);
-	effectManagers[name] = {
-		tag: 'sub',
-		subMap: incomingPortMap,
-		converter: converter,
-		isForeign: true
-	};
-	return leaf(name);
-}
-
-var incomingPortMap = F2(function subMap(tagger, finalTagger)
-{
-	return function(value)
-	{
-		return tagger(finalTagger(value));
-	};
-});
-
-function setupIncomingPort(name, callback)
-{
-	var sentBeforeInit = [];
-	var subs = Nil;
-	var converter = effectManagers[name].converter;
-	var currentOnEffects = preInitOnEffects;
-	var currentSend = preInitSend;
-
-	// CREATE MANAGER
-
-	var init = _elm_lang$core$Native_Scheduler.succeed(null);
-
-	function preInitOnEffects(router, subList, state)
-	{
-		var postInitResult = postInitOnEffects(router, subList, state);
-
-		for(var i = 0; i < sentBeforeInit.length; i++)
-		{
-			postInitSend(sentBeforeInit[i]);
-		}
-
-		sentBeforeInit = null; // to release objects held in queue
-		currentSend = postInitSend;
-		currentOnEffects = postInitOnEffects;
-		return postInitResult;
-	}
-
-	function postInitOnEffects(router, subList, state)
-	{
-		subs = subList;
-		return init;
-	}
-
-	function onEffects(router, subList, state)
-	{
-		return currentOnEffects(router, subList, state);
-	}
-
-	effectManagers[name].init = init;
-	effectManagers[name].onEffects = F3(onEffects);
-
-	// PUBLIC API
-
-	function preInitSend(value)
-	{
-		sentBeforeInit.push(value);
-	}
-
-	function postInitSend(incomingValue)
-	{
-		var result = A2(_elm_lang$core$Json_Decode$decodeValue, converter, incomingValue);
-		if (result.ctor === 'Err')
-		{
-			throw new Error('Trying to send an unexpected type of value through port `' + name + '`:\n' + result._0);
-		}
-
-		var value = result._0;
-		var temp = subs;
-		while (temp.ctor !== '[]')
-		{
-			callback(temp._0(value));
-			temp = temp._1;
-		}
-	}
-
-	function send(incomingValue)
-	{
-		currentSend(incomingValue);
-	}
-
-	return { send: send };
-}
-
-return {
-	// routers
-	sendToApp: F2(sendToApp),
-	sendToSelf: F2(sendToSelf),
-
-	// global setup
-	mainToProgram: mainToProgram,
-	effectManagers: effectManagers,
-	outgoingPort: outgoingPort,
-	incomingPort: incomingPort,
-	addPublicModule: addPublicModule,
-
-	// effect bags
-	leaf: leaf,
-	batch: batch,
-	map: F2(map)
-};
-
-}();
 
 //import Native.Utils //
 
@@ -1316,7 +937,7 @@ function rawSpawn(task)
 {
 	var process = {
 		ctor: '_Process',
-		id: _elm_lang$core$Native_Utils.guid(),
+		id: guid(),
 		root: task,
 		stack: null,
 		mailbox: []
@@ -1345,7 +966,7 @@ function send(process, msg)
 {
 	return nativeBinding(function(callback) {
 		rawSend(process, msg);
-		callback(succeed(_elm_lang$core$Native_Utils.Tuple0));
+		callback(succeed(Tuple0));
 	});
 }
 
@@ -1360,7 +981,7 @@ function kill(process)
 
 		process.root = null;
 
-		callback(succeed(_elm_lang$core$Native_Utils.Tuple0));
+		callback(succeed(Tuple0));
 	});
 }
 
@@ -1368,7 +989,7 @@ function sleep(time)
 {
 	return nativeBinding(function(callback) {
 		var id = setTimeout(function() {
-			callback(succeed(_elm_lang$core$Native_Utils.Tuple0));
+			callback(succeed(Tuple0));
 		}, time);
 
 		return function() { clearTimeout(id); };
@@ -1530,28 +1151,17 @@ return {
 };
 
 }();
-var _elm_lang$core$Platform$sendToSelf = _elm_lang$core$Native_Platform.sendToSelf;
-var _elm_lang$core$Platform$sendToApp = _elm_lang$core$Native_Platform.sendToApp;
-
-var _elm_lang$core$Platform_Cmd$batch = _elm_lang$core$Native_Platform.batch;
-var _elm_lang$core$Platform_Cmd$none = _elm_lang$core$Platform_Cmd$batch(
-	fromArray(
-		[]));
+var _elm_lang$core$Platform_Cmd$none = {}
 var _elm_lang$core$Platform_Cmd_ops = _elm_lang$core$Platform_Cmd_ops || {};
 _elm_lang$core$Platform_Cmd_ops['!'] = F2(
 	function (model, commands) {
 		return {
 			ctor: '_Tuple2',
 			_0: model,
-			_1: _elm_lang$core$Platform_Cmd$batch(commands)
+			_1: {}
 		};
 	});
-var _elm_lang$core$Platform_Cmd$map = _elm_lang$core$Native_Platform.map;
 
-var _elm_lang$core$Platform_Sub$batch = _elm_lang$core$Native_Platform.batch;
-var _elm_lang$core$Platform_Sub$none = _elm_lang$core$Platform_Sub$batch(
-	fromArray(
-		[]));
 
 //import Native.List //
 
@@ -1574,7 +1184,7 @@ function uncons(str)
 	var hd = str[0];
 	if (hd)
 	{
-		return _elm_lang$core$Maybe$Just(_elm_lang$core$Native_Utils.Tuple2(_elm_lang$core$Native_Utils.chr(hd), str.slice(1)));
+		return _elm_lang$core$Maybe$Just(Tuple2(chr(hd), str.slice(1)));
 	}
 	return _elm_lang$core$Maybe$Nothing;
 }
@@ -1595,13 +1205,13 @@ function map(f, str)
 	var out = str.split('');
 	for (var i = out.length; i--; )
 	{
-		out[i] = f(_elm_lang$core$Native_Utils.chr(out[i]));
+		out[i] = f(chr(out[i]));
 	}
 	return out.join('');
 }
 function filter(pred, str)
 {
-	return str.split('').map(_elm_lang$core$Native_Utils.chr).filter(pred).join('');
+	return str.split('').map(chr).filter(pred).join('');
 }
 function reverse(str)
 {
@@ -1612,7 +1222,7 @@ function foldl(f, b, str)
 	var len = str.length;
 	for (var i = 0; i < len; ++i)
 	{
-		b = A2(f, _elm_lang$core$Native_Utils.chr(str[i]), b);
+		b = A2(f, chr(str[i]), b);
 	}
 	return b;
 }
@@ -1620,7 +1230,7 @@ function foldr(f, b, str)
 {
 	for (var i = str.length; i--; )
 	{
-		b = A2(f, _elm_lang$core$Native_Utils.chr(str[i]), b);
+		b = A2(f, chr(str[i]), b);
 	}
 	return b;
 }
@@ -1714,7 +1324,7 @@ function any(pred, str)
 {
 	for (var i = str.length; i--; )
 	{
-		if (pred(_elm_lang$core$Native_Utils.chr(str[i])))
+		if (pred(chr(str[i])))
 		{
 			return true;
 		}
@@ -1725,7 +1335,7 @@ function all(pred, str)
 {
 	for (var i = str.length; i--; )
 	{
-		if (!pred(_elm_lang$core$Native_Utils.chr(str[i])))
+		if (!pred(chr(str[i])))
 		{
 			return false;
 		}
@@ -1833,7 +1443,7 @@ function toFloat(s)
 
 function toList(str)
 {
-	return fromArray(str.split('').map(_elm_lang$core$Native_Utils.chr));
+	return fromArray(str.split('').map(chr));
 }
 function fromList(chars)
 {
@@ -2043,7 +1653,7 @@ var _elm_lang$core$Dict$blackish = function (t) {
 	var _p19 = t;
 	if (_p19.ctor === 'RBNode_elm_builtin') {
 		var _p20 = _p19._0;
-		return _elm_lang$core$Native_Utils.eq(_p20, _elm_lang$core$Dict$Black) || _elm_lang$core$Native_Utils.eq(_p20, _elm_lang$core$Dict$BBlack);
+		return eq(_p20, _elm_lang$core$Dict$Black) || eq(_p20, _elm_lang$core$Dict$BBlack);
 	} else {
 		return true;
 	}
@@ -2964,7 +2574,7 @@ function runHelp(decoder, value)
 				{
 					return badField(key, result);
 				}
-				var pair = _elm_lang$core$Native_Utils.Tuple2(key, result.value);
+				var pair = Tuple2(key, result.value);
 				keyValuePairs = Cons(pair, keyValuePairs);
 			}
 			return ok(keyValuePairs);
@@ -3289,7 +2899,7 @@ var _debois$elm_parts$Parts$generalize = F4(
 		return _elm_lang$core$Maybe$Just(
 			A2(
 				_debois$elm_parts$Parts$map2nd,
-				_elm_lang$core$Platform_Cmd$map(f),
+				f,
 				A2(upd, m, c)));
 	});
 var _debois$elm_parts$Parts$update$ = F2(
@@ -4890,15 +4500,6 @@ var _elm_lang$html$Html_Attributes$style = _elm_lang$virtual_dom$VirtualDom$styl
 
 var _elm_lang$core$Task$onError = _elm_lang$core$Native_Scheduler.onError;
 var _elm_lang$core$Task$andThen = _elm_lang$core$Native_Scheduler.andThen;
-var _elm_lang$core$Task$spawnCmd = F2(
-	function (router, _p0) {
-		var _p1 = _p0;
-		return _elm_lang$core$Native_Scheduler.spawn(
-			A2(
-				_elm_lang$core$Task$andThen,
-				_p1._0,
-				_elm_lang$core$Platform$sendToApp(router)));
-	});
 var _elm_lang$core$Task$succeed = _elm_lang$core$Native_Scheduler.succeed;
 var _elm_lang$core$Task$map = F2(
 	function (func, taskA) {
@@ -4942,27 +4543,7 @@ var _elm_lang$core$Task$sequence = function (tasks) {
 			_elm_lang$core$Task$sequence(_p2._1));
 	}
 };
-var _elm_lang$core$Task$onEffects = F3(
-	function (router, commands, state) {
-		return A2(
-			_elm_lang$core$Task$map,
-			function (_p3) {
-				return {ctor: '_Tuple0'};
-			},
-			_elm_lang$core$Task$sequence(
-				A2(
-					_elm_lang$core$List$map,
-					_elm_lang$core$Task$spawnCmd(router),
-					commands)));
-	});
-var _elm_lang$core$Task$init = _elm_lang$core$Task$succeed(
-	{ctor: '_Tuple0'});
-var _elm_lang$core$Task$onSelfMsg = F3(
-	function (_p9, _p8, _p7) {
-		return _elm_lang$core$Task$succeed(
-			{ctor: '_Tuple0'});
-	});
-var _elm_lang$core$Task$command = _elm_lang$core$Native_Platform.leaf('Task');
+var _elm_lang$core$Task$command = leaf('Task');
 var _elm_lang$core$Task$T = function (a) {
 	return {ctor: 'T', _0: a};
 };
@@ -4978,18 +4559,9 @@ var _elm_lang$core$Task$perform = F3(
 							onFail(x));
 					})));
 	});
-var _elm_lang$core$Task$cmdMap = F2(
-	function (tagger, _p10) {
-		var _p11 = _p10;
-		return _elm_lang$core$Task$T(
-			A2(_elm_lang$core$Task$map, tagger, _p11._0));
-	});
-_elm_lang$core$Native_Platform.effectManagers.Task = {pkg: 'elm-lang/core', init: _elm_lang$core$Task$init, onEffects: _elm_lang$core$Task$onEffects, onSelfMsg: _elm_lang$core$Task$onSelfMsg, tag: 'cmd', cmdMap: _elm_lang$core$Task$cmdMap};
 
 
-var _elm_lang$core$Process$kill = _elm_lang$core$Native_Scheduler.kill;
 var _elm_lang$core$Process$sleep = _elm_lang$core$Native_Scheduler.sleep;
-var _elm_lang$core$Process$spawn = _elm_lang$core$Native_Scheduler.spawn;
 
 var _debois$elm_mdl$Material_Helpers$delay = F2(
 	function (t, x) {
@@ -5041,7 +4613,7 @@ var _elm_lang$html$Html_App$beginnerProgram = function (_p1) {
 				}),
 			view: _p2.view,
 			subscriptions: function (_p4) {
-				return _elm_lang$core$Platform_Sub$none;
+				return {};
 			}
 		});
 };
@@ -5068,19 +4640,19 @@ var _debois$elm_mdl$Material_Options$collect1$ = F2(
 		var _p1 = options;
 		switch (_p1.ctor) {
 			case 'Class':
-				return _elm_lang$core$Native_Utils.update(
+				return update(
 					acc,
 					{
 						classes: A2(F2(Cons), _p1._0, acc.classes)
 					});
 			case 'CSS':
-				return _elm_lang$core$Native_Utils.update(
+				return update(
 					acc,
 					{
 						css: A2(F2(Cons), _p1._0, acc.css)
 					});
 			case 'Attribute':
-				return _elm_lang$core$Native_Utils.update(
+				return update(
 					acc,
 					{
 						attrs: A2(F2(Cons), _p1._0, acc.attrs)
@@ -5098,19 +4670,19 @@ var _debois$elm_mdl$Material_Options$collect1 = F2(
 		var _p2 = option;
 		switch (_p2.ctor) {
 			case 'Class':
-				return _elm_lang$core$Native_Utils.update(
+				return update(
 					acc,
 					{
 						classes: A2(F2(Cons), _p2._0, acc.classes)
 					});
 			case 'CSS':
-				return _elm_lang$core$Native_Utils.update(
+				return update(
 					acc,
 					{
 						css: A2(F2(Cons), _p2._0, acc.css)
 					});
 			case 'Attribute':
-				return _elm_lang$core$Native_Utils.update(
+				return update(
 					acc,
 					{
 						attrs: A2(F2(Cons), _p2._0, acc.attrs)
@@ -5118,7 +4690,7 @@ var _debois$elm_mdl$Material_Options$collect1 = F2(
 			case 'Many':
 				return A3(_elm_lang$core$List$foldl, _debois$elm_mdl$Material_Options$collect1, acc, _p2._0);
 			case 'Set':
-				return _elm_lang$core$Native_Utils.update(
+				return update(
 					acc,
 					{
 						config: _p2._0(acc.config)
@@ -5157,31 +4729,31 @@ var _debois$elm_mdl$Material_Ripple$styles = F2(
 		var r = m.rect;
 		var toPx = function (k) {
 			return A2(
-				_elm_lang$core$Native_Utils.append,
+				append,
 				_elm_lang$core$Basics$toString(
 					_elm_lang$core$Basics$round(k)),
 				'px');
 		};
 		var offset = A2(
-			_elm_lang$core$Native_Utils.append,
+			append,
 			'translate(',
 			A2(
-				_elm_lang$core$Native_Utils.append,
+				append,
 				toPx(m.x),
 				A2(
-					_elm_lang$core$Native_Utils.append,
+					append,
 					', ',
 					A2(
-						_elm_lang$core$Native_Utils.append,
+						append,
 						toPx(m.y),
 						')'))));
 		var rippleSize = toPx(
 			(_elm_lang$core$Basics$sqrt((r.width * r.width) + (r.height * r.height)) * 2.0) + 2.0);
-		var scale = _elm_lang$core$Native_Utils.eq(frame, 0) ? 'scale(0.0001, 0.0001)' : '';
+		var scale = eq(frame, 0) ? 'scale(0.0001, 0.0001)' : '';
 		var transformString = A2(
-			_elm_lang$core$Native_Utils.append,
+			append,
 			'translate(-50%, -50%) ',
-			A2(_elm_lang$core$Native_Utils.append, offset, scale));
+			A2(append, offset, scale));
 		return fromArray(
 			[
 				{ctor: '_Tuple2', _0: 'width', _1: rippleSize},
@@ -5290,14 +4862,14 @@ var _debois$elm_mdl$Material_Ripple$view$ = F2(
 									{
 									ctor: '_Tuple2',
 									_0: 'is-animating',
-									_1: !_elm_lang$core$Native_Utils.eq(
+									_1: !eq(
 										model.animation,
 										_debois$elm_mdl$Material_Ripple$Frame(0))
 								},
 									{
 									ctor: '_Tuple2',
 									_0: 'is-visible',
-									_1: !_elm_lang$core$Native_Utils.eq(model.animation, _debois$elm_mdl$Material_Ripple$Inert)
+									_1: !eq(model.animation, _debois$elm_mdl$Material_Ripple$Inert)
 								}
 								])),
 							_elm_lang$html$Html_Attributes$style(styling)
@@ -5313,29 +4885,29 @@ var _debois$elm_mdl$Material_Ripple$update = F2(
 		switch (_p4.ctor) {
 			case 'Down':
 				var _p5 = _p4._0;
-				return (_elm_lang$core$Native_Utils.eq(_p5.type$, 'mousedown') && model.ignoringMouseDown) ? _debois$elm_mdl$Material_Helpers$pure(
-					_elm_lang$core$Native_Utils.update(
+				return (eq(_p5.type$, 'mousedown') && model.ignoringMouseDown) ? _debois$elm_mdl$Material_Helpers$pure(
+					update(
 						model,
 						{ignoringMouseDown: false})) : A2(
 					_debois$elm_mdl$Material_Helpers$effect,
 					_debois$elm_mdl$Material_Helpers$cssTransitionStep(_debois$elm_mdl$Material_Ripple$Tick),
-					_elm_lang$core$Native_Utils.update(
+					update(
 						model,
 						{
 							animation: _debois$elm_mdl$Material_Ripple$Frame(0),
 							metrics: _debois$elm_mdl$Material_Ripple$computeMetrics(_p5),
-							ignoringMouseDown: _elm_lang$core$Native_Utils.eq(_p5.type$, 'touchstart') ? true : model.ignoringMouseDown
+							ignoringMouseDown: eq(_p5.type$, 'touchstart') ? true : model.ignoringMouseDown
 						}));
 			case 'Up':
 				return _debois$elm_mdl$Material_Helpers$pure(
-					_elm_lang$core$Native_Utils.update(
+					update(
 						model,
 						{animation: _debois$elm_mdl$Material_Ripple$Inert}));
 			default:
-				return _elm_lang$core$Native_Utils.eq(
+				return eq(
 					model.animation,
 					_debois$elm_mdl$Material_Ripple$Frame(0)) ? _debois$elm_mdl$Material_Helpers$pure(
-					_elm_lang$core$Native_Utils.update(
+					update(
 						model,
 						{
 							animation: _debois$elm_mdl$Material_Ripple$Frame(1)
@@ -5372,7 +4944,7 @@ var _debois$elm_mdl$Material_Button$raised = _debois$elm_mdl$Material_Options$cs
 var _debois$elm_mdl$Material_Button$blurAndForward = function (event) {
 	return A2(
 		_elm_lang$html$Html_Attributes$attribute,
-		A2(_elm_lang$core$Native_Utils.append, 'on', event),
+		A2(append, 'on', event),
 		'this.blur(); (function(self) { var e = document.createEvent(\'Event\'); e.initEvent(\'touchcancel\', true, true); self.lastChild.dispatchEvent(e); }(this));');
 };
 var _debois$elm_mdl$Material_Button$view = F4(
@@ -5446,67 +5018,6 @@ _elm_lang$window$Window_ops['&>'] = F2(
 				return t2;
 			});
 	});
-var _elm_lang$window$Window$init = _elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing);
-var _elm_lang$window$Window$size = _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)	{
-	callback(_elm_lang$core$Native_Scheduler.succeed({
-		width: window.innerWidth,
-		height: window.innerHeight
-	}));
-});;
-
-var _elm_lang$window$Window$onEffects = F3(
-	function (router, newSubs, oldState) {
-		var _p4 = {ctor: '_Tuple2', _0: oldState, _1: newSubs};
-		if (_p4._0.ctor === 'Nothing') {
-			if (_p4._1.ctor === '[]') {
-				return _elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing);
-			} else {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					_elm_lang$core$Process$spawn(
-						A3(
-							_elm_lang$dom$Dom_LowLevel$onWindow,
-							'resize',
-							_elm_lang$core$Json_Decode$succeed(
-								{ctor: '_Tuple0'}),
-							function (_p5) {
-								return A2(
-									_elm_lang$core$Task$andThen,
-									_elm_lang$window$Window$size,
-									_elm_lang$core$Platform$sendToSelf(router));
-							})),
-					function (pid) {
-						return _elm_lang$core$Task$succeed(
-							_elm_lang$core$Maybe$Just(
-								{subs: newSubs, pid: pid}));
-					});
-			}
-		} else {
-			if (_p4._1.ctor === '[]') {
-				return A2(
-					_elm_lang$window$Window_ops['&>'],
-					_elm_lang$core$Process$kill(_p4._0._0.pid),
-					_elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing));
-			} else {
-				return _elm_lang$core$Task$succeed(
-					_elm_lang$core$Maybe$Just(
-						{subs: newSubs, pid: _p4._0._0.pid}));
-			}
-		}
-	});
-var _elm_lang$window$Window$MySub = function (a) {
-	return {ctor: 'MySub', _0: a};
-};
-var _elm_lang$window$Window$subMap = F2(
-	function (func, _p6) {
-		var _p7 = _p6;
-		return _elm_lang$window$Window$MySub(
-			function (_p8) {
-				return func(
-					_p7._0(_p8));
-			});
-	});
-_elm_lang$core$Native_Platform.effectManagers.Window = {pkg: 'elm-lang/window', init: _elm_lang$window$Window$init, onEffects: _elm_lang$window$Window$onEffects, tag: 'sub', subMap: _elm_lang$window$Window$subMap};
 
 var _debois$elm_mdl$Material$update = F2(
 	function (msg, model) {
@@ -5517,7 +5028,7 @@ var _debois$elm_mdl$Material$update = F2(
 				_elm_lang$core$Maybe$map,
 				_debois$elm_mdl$Material_Helpers$map1st(
 					function (mdl) {
-						return _elm_lang$core$Native_Utils.update(
+						return update(
 							model,
 							{mdl: mdl});
 					}),
@@ -5560,7 +5071,7 @@ var _user$project$ChangeMe$main = {
 
 var Elm = {};
 Elm.ChangeMe = Elm.ChangeMe || {};
-_elm_lang$core$Native_Platform.addPublicModule(Elm.ChangeMe, 'ChangeMe', typeof _user$project$ChangeMe$main === 'undefined' ? null : _user$project$ChangeMe$main);
+addPublicModule(Elm.ChangeMe, 'ChangeMe', typeof _user$project$ChangeMe$main === 'undefined' ? null : _user$project$ChangeMe$main);
 
 this.Elm = Elm;
 return;
