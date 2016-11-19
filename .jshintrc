@@ -5,6 +5,6 @@
   "asi": true,
   "funcscope": true,
   /*"maxerr": 255,*/
-  "maxerr": 512,
+  "maxerr": 300,
   "shadow": true
 }
