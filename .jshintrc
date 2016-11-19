@@ -1,5 +1,5 @@
 {
-  "unused": true,
+  "unused": "strict",
   "laxbreak": true,
   "laxcomma": true,
   "asi": true,

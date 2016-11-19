@@ -6790,12 +6790,6 @@ var _debois$elm_mdl$Material_Helpers$map1st = F2(
 			_1: _p4._1
 		};
 	});
-var _debois$elm_mdl$Material_Helpers$blurOn = function (evt) {
-	return A2(
-		_elm_lang$html$Html_Attributes$attribute,
-		A2(_elm_lang$core$Basics_ops['++'], 'on', evt),
-		'this.blur()');
-};
 var _debois$elm_mdl$Material_Helpers$effect = F2(
 	function (e, x) {
 		return {ctor: '_Tuple2', _0: x, _1: e};
@@ -6945,9 +6939,6 @@ var _debois$elm_mdl$Material_Options_Internal$None = {ctor: 'None'};
 var _debois$elm_mdl$Material_Options_Internal$Set = function (a) {
 	return {ctor: 'Set', _0: a};
 };
-var _debois$elm_mdl$Material_Options_Internal$Class = function (a) {
-	return {ctor: 'Class', _0: a};
-};
 var _debois$elm_mdl$Material_Options$set = _debois$elm_mdl$Material_Options_Internal$Set;
 var _debois$elm_mdl$Material_Options$nop = _debois$elm_mdl$Material_Options_Internal$None;
 var _debois$elm_mdl$Material_Options$when = F2(
@@ -6955,7 +6946,7 @@ var _debois$elm_mdl$Material_Options$when = F2(
 		return guard ? prop : _debois$elm_mdl$Material_Options$nop;
 	});
 var _debois$elm_mdl$Material_Options$cs = function (c) {
-	return _debois$elm_mdl$Material_Options_Internal$Class(c);
+	 return {ctor: 'Class', _0: c};
 };
 var _debois$elm_mdl$Material_Options$addAttributes = F2(
 	function (summary, attrs) {
@@ -7099,10 +7090,6 @@ var _debois$elm_mdl$Material_Ripple$styles = F2(
 				{ctor: '_Tuple2', _0: 'transform', _1: transformString}
 			]);
 	});
-var _debois$elm_mdl$Material_Ripple$Metrics = F3(
-	function (a, b, c) {
-		return {rect: a, x: b, y: c};
-	});
 var _debois$elm_mdl$Material_Ripple$computeMetrics = function (g) {
 	var rect = g.rect;
 	var set = F2(
@@ -7113,8 +7100,7 @@ var _debois$elm_mdl$Material_Ripple$computeMetrics = function (g) {
 	return A2(
 		_elm_lang$core$Maybe$map,
 		function (_p0) {
-			var _p1 = _p0;
-			return A3(_debois$elm_mdl$Material_Ripple$Metrics, rect, _p1._0, _p1._1);
+      return {rect: rect, x:  _p0._0, y: _p0._1};
 		},
 		function () {
 			var _p2 = {ctor: '_Tuple4', _0: g.clientX, _1: g.clientY, _2: g.touchX, _3: g.touchY};
@@ -7298,32 +7284,23 @@ var _debois$elm_mdl$Material_Button$defaultConfig = {ripple: false, onClick: _el
 var _debois$elm_mdl$Material_Button$view = F4(
 	function (lift, model, config, html) {
 		var summary = A2(_debois$elm_mdl$Material_Options$collect, _debois$elm_mdl$Material_Button$defaultConfig, config);
-		var startListeners = summary.config.ripple ? _elm_lang$core$Native_List.fromArray(
+		var startListeners = _elm_lang$core$Native_List.fromArray(
 			[
 				_elm_lang$core$Maybe$Just(
 				A2(_debois$elm_mdl$Material_Ripple$downOn$, lift, 'mousedown')),
 				_elm_lang$core$Maybe$Just(
 				A2(_debois$elm_mdl$Material_Ripple$downOn$, lift, 'touchstart'))
-			]) : _elm_lang$core$Native_List.fromArray(
-			[]);
-		var stopListeners = function () {
-			var handle = function (_p0) {
-				return _elm_lang$core$Maybe$Just(
-					(summary.config.ripple ? _debois$elm_mdl$Material_Button$blurAndForward : _debois$elm_mdl$Material_Helpers$blurOn)(_p0));
-			};
-			return _elm_lang$core$Native_List.fromArray(
-				[
-					handle('mouseup'),
-					handle('mouseleave'),
-					handle('touchend')
-				]);
-		}();
-		var misc = _elm_lang$core$Native_List.fromArray(
-			[
-				summary.config.onClick,
-				summary.config.disabled ? _elm_lang$core$Maybe$Just(
-				_elm_lang$html$Html_Attributes$disabled(true)) : _elm_lang$core$Maybe$Nothing
 			]);
+		var stopListeners =
+			_elm_lang$core$Native_List.fromArray(
+				[
+          _elm_lang$core$Maybe$Just(
+  					_debois$elm_mdl$Material_Button$blurAndForward('mouseup')),
+            _elm_lang$core$Maybe$Just(
+    					_debois$elm_mdl$Material_Button$blurAndForward('mouseleave')),
+              _elm_lang$core$Maybe$Just(
+      					_debois$elm_mdl$Material_Button$blurAndForward('touchend'))
+				]);
 		var type$ = function () {
 			var _p1 = summary.config.type$;
 			if (_p1.ctor === 'Nothing') {
@@ -7355,8 +7332,8 @@ var _debois$elm_mdl$Material_Button$view = F4(
 				_elm_lang$core$Basics$identity,
 				_elm_lang$core$List$concat(
 					_elm_lang$core$Native_List.fromArray(
-						[startListeners, stopListeners, misc, type$]))),
-			summary.config.ripple ? _elm_lang$core$List$concat(
+						[startListeners, stopListeners, type$]))),
+			_elm_lang$core$List$concat(
 				_elm_lang$core$Native_List.fromArray(
 					[
 						html,
@@ -7375,7 +7352,7 @@ var _debois$elm_mdl$Material_Button$view = F4(
 									]),
 								model))
 						])
-					])) : html);
+					])));
 	});
 var _debois$elm_mdl$Material_Button$update = function (action) {
 	return _debois$elm_mdl$Material_Ripple$update(action);
@@ -7573,188 +7550,6 @@ return {
 var _elm_lang$dom$Dom_LowLevel$onWindow = _elm_lang$dom$Native_Dom.onWindow;
 var _elm_lang$dom$Dom_LowLevel$onDocument = _elm_lang$dom$Native_Dom.onDocument;
 
-var _elm_lang$mouse$Mouse$onSelfMsg = F3(
-	function (router, _p0, state) {
-		var _p1 = _p0;
-		var _p2 = A2(_elm_lang$core$Dict$get, _p1.category, state);
-		if (_p2.ctor === 'Nothing') {
-			return _elm_lang$core$Task$succeed(state);
-		} else {
-			var send = function (tagger) {
-				return A2(
-					_elm_lang$core$Platform$sendToApp,
-					router,
-					tagger(_p1.position));
-			};
-			return A2(
-				_elm_lang$core$Task$andThen,
-				_elm_lang$core$Task$sequence(
-					A2(_elm_lang$core$List$map, send, _p2._0.taggers)),
-				function (_p3) {
-					return _elm_lang$core$Task$succeed(state);
-				});
-		}
-	});
-var _elm_lang$mouse$Mouse_ops = _elm_lang$mouse$Mouse_ops || {};
-_elm_lang$mouse$Mouse_ops['&>'] = F2(
-	function (t1, t2) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			t1,
-			function (_p4) {
-				return t2;
-			});
-	});
-var _elm_lang$mouse$Mouse$init = _elm_lang$core$Task$succeed(_elm_lang$core$Dict$empty);
-var _elm_lang$mouse$Mouse$categorizeHelpHelp = F2(
-	function (value, maybeValues) {
-		var _p5 = maybeValues;
-		if (_p5.ctor === 'Nothing') {
-			return _elm_lang$core$Maybe$Just(
-				_elm_lang$core$Native_List.fromArray(
-					[value]));
-		} else {
-			return _elm_lang$core$Maybe$Just(
-				A2(_elm_lang$core$List_ops['::'], value, _p5._0));
-		}
-	});
-var _elm_lang$mouse$Mouse$categorizeHelp = F2(
-	function (subs, subDict) {
-		categorizeHelp:
-		while (true) {
-			var _p6 = subs;
-			if (_p6.ctor === '[]') {
-				return subDict;
-			} else {
-				var _v4 = _p6._1,
-					_v5 = A3(
-					_elm_lang$core$Dict$update,
-					_p6._0._0,
-					_elm_lang$mouse$Mouse$categorizeHelpHelp(_p6._0._1),
-					subDict);
-				subs = _v4;
-				subDict = _v5;
-				continue categorizeHelp;
-			}
-		}
-	});
-var _elm_lang$mouse$Mouse$categorize = function (subs) {
-	return A2(_elm_lang$mouse$Mouse$categorizeHelp, subs, _elm_lang$core$Dict$empty);
-};
-var _elm_lang$mouse$Mouse$subscription = _elm_lang$core$Native_Platform.leaf('Mouse');
-var _elm_lang$mouse$Mouse$Position = F2(
-	function (a, b) {
-		return {x: a, y: b};
-	});
-var _elm_lang$mouse$Mouse$position = A3(
-	_elm_lang$core$Json_Decode$object2,
-	_elm_lang$mouse$Mouse$Position,
-	A2(_elm_lang$core$Json_Decode_ops[':='], 'pageX', _elm_lang$core$Json_Decode$int),
-	A2(_elm_lang$core$Json_Decode_ops[':='], 'pageY', _elm_lang$core$Json_Decode$int));
-var _elm_lang$mouse$Mouse$Watcher = F2(
-	function (a, b) {
-		return {taggers: a, pid: b};
-	});
-var _elm_lang$mouse$Mouse$Msg = F2(
-	function (a, b) {
-		return {category: a, position: b};
-	});
-var _elm_lang$mouse$Mouse$onEffects = F3(
-	function (router, newSubs, oldState) {
-		var rightStep = F3(
-			function (category, taggers, task) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					task,
-					function (state) {
-						return A2(
-							_elm_lang$core$Task$andThen,
-							_elm_lang$core$Process$spawn(
-								A3(
-									_elm_lang$dom$Dom_LowLevel$onDocument,
-									category,
-									_elm_lang$mouse$Mouse$position,
-									function (_p7) {
-										return A2(
-											_elm_lang$core$Platform$sendToSelf,
-											router,
-											A2(_elm_lang$mouse$Mouse$Msg, category, _p7));
-									})),
-							function (pid) {
-								return _elm_lang$core$Task$succeed(
-									A3(
-										_elm_lang$core$Dict$insert,
-										category,
-										A2(_elm_lang$mouse$Mouse$Watcher, taggers, pid),
-										state));
-							});
-					});
-			});
-		var bothStep = F4(
-			function (category, _p8, taggers, task) {
-				var _p9 = _p8;
-				return A2(
-					_elm_lang$core$Task$andThen,
-					task,
-					function (state) {
-						return _elm_lang$core$Task$succeed(
-							A3(
-								_elm_lang$core$Dict$insert,
-								category,
-								A2(_elm_lang$mouse$Mouse$Watcher, taggers, _p9.pid),
-								state));
-					});
-			});
-		var leftStep = F3(
-			function (category, _p10, task) {
-				var _p11 = _p10;
-				return A2(
-					_elm_lang$mouse$Mouse_ops['&>'],
-					_elm_lang$core$Process$kill(_p11.pid),
-					task);
-			});
-		return A6(
-			_elm_lang$core$Dict$merge,
-			leftStep,
-			bothStep,
-			rightStep,
-			oldState,
-			_elm_lang$mouse$Mouse$categorize(newSubs),
-			_elm_lang$core$Task$succeed(_elm_lang$core$Dict$empty));
-	});
-var _elm_lang$mouse$Mouse$MySub = F2(
-	function (a, b) {
-		return {ctor: 'MySub', _0: a, _1: b};
-	});
-var _elm_lang$mouse$Mouse$clicks = function (tagger) {
-	return _elm_lang$mouse$Mouse$subscription(
-		A2(_elm_lang$mouse$Mouse$MySub, 'click', tagger));
-};
-var _elm_lang$mouse$Mouse$moves = function (tagger) {
-	return _elm_lang$mouse$Mouse$subscription(
-		A2(_elm_lang$mouse$Mouse$MySub, 'mousemove', tagger));
-};
-var _elm_lang$mouse$Mouse$downs = function (tagger) {
-	return _elm_lang$mouse$Mouse$subscription(
-		A2(_elm_lang$mouse$Mouse$MySub, 'mousedown', tagger));
-};
-var _elm_lang$mouse$Mouse$ups = function (tagger) {
-	return _elm_lang$mouse$Mouse$subscription(
-		A2(_elm_lang$mouse$Mouse$MySub, 'mouseup', tagger));
-};
-var _elm_lang$mouse$Mouse$subMap = F2(
-	function (func, _p12) {
-		var _p13 = _p12;
-		return A2(
-			_elm_lang$mouse$Mouse$MySub,
-      _p13._0,
-      function (_p14) {
-        return func(
-          _p13._1(_p14));
-      });
-  });
-_elm_lang$core$Native_Platform.effectManagers.Mouse = {pkg: 'elm-lang/mouse', init: _elm_lang$mouse$Mouse$init, onEffects: _elm_lang$mouse$Mouse$onEffects, onSelfMsg: _elm_lang$mouse$Mouse$onSelfMsg, tag: 'sub', subMap: _elm_lang$mouse$Mouse$subMap};
-
 var _elm_lang$window$Native_Window = function()
 {
 
@@ -7846,10 +7641,6 @@ var _elm_lang$window$Window$onEffects = F3(
 var _elm_lang$window$Window$subscription = _elm_lang$core$Native_Platform.leaf('Window');
 var _elm_lang$window$Window$MySub = function (a) {
 	return {ctor: 'MySub', _0: a};
-};
-var _elm_lang$window$Window$resizes = function (tagger) {
-	return _elm_lang$window$Window$subscription(
-		_elm_lang$window$Window$MySub(tagger));
 };
 var _elm_lang$window$Window$subMap = F2(
 	function (func, _p6) {
