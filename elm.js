@@ -424,9 +424,7 @@ var _elm_lang$core$Basics$always = F2(
 	function (a) {
 		return a;
 	});
-var _elm_lang$core$Basics$identity = function (x) {
-	return x;
-};
+
 var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
 
 var _elm_lang$core$Basics$toString = toString;
@@ -858,15 +856,6 @@ function batch(list)
 	};
 }
 
-// PORTS
-
-function checkPortName(name)
-{
-	if (name in effectManagers)
-	{
-		throw new Error('There can only be one port named `' + name + '`, but your program has multiple.');
-	}
-}
 
 
 
@@ -2801,7 +2790,6 @@ return {
 }();
 
 var _elm_lang$core$Json_Decode$andThen = _elm_lang$core$Native_Json.andThen;
-var _elm_lang$core$Json_Decode$decodeValue = _elm_lang$core$Native_Json.run;
 var _elm_lang$core$Json_Decode$maybe = function (decoder) {
 	return A2(_elm_lang$core$Native_Json.decodeContainer, 'maybe', decoder);
 };
@@ -4915,15 +4903,13 @@ var _debois$elm_mdl$Material_Ripple$update = F2(
 		}
 	});
 var _debois$elm_mdl$Material_Ripple$Up = {ctor: 'Up'};
-var _debois$elm_mdl$Material_Ripple$upOn$ = F2(
-	function (f, name) {
-		return A2(
-			_elm_lang$html$Html_Events$on,
-			name,
-			_elm_lang$core$Native_Json.succeed(
-				f(_debois$elm_mdl$Material_Ripple$Up)));
-	});
-var _debois$elm_mdl$Material_Ripple$upOn = _debois$elm_mdl$Material_Ripple$upOn$(_elm_lang$core$Basics$identity);
+var _debois$elm_mdl$Material_Ripple$upOn = function (name) {
+  return A2(
+    _elm_lang$html$Html_Events$on,
+    name,
+    _elm_lang$core$Native_Json.succeed(
+      _debois$elm_mdl$Material_Ripple$Up));
+};
 var _debois$elm_mdl$Material_Ripple$Down = function (a) {
 	return {ctor: 'Down', _0: a};
 };
