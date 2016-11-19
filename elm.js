@@ -6935,16 +6935,10 @@ var _elm_lang$html$Html_App$beginnerProgram = function (_p1) {
 };
 var _elm_lang$html$Html_App$map = _elm_lang$virtual_dom$VirtualDom$map;
 
-var _debois$elm_mdl$Material_Options_Internal$None = {ctor: 'None'};
 var _debois$elm_mdl$Material_Options_Internal$Set = function (a) {
 	return {ctor: 'Set', _0: a};
 };
 var _debois$elm_mdl$Material_Options$set = _debois$elm_mdl$Material_Options_Internal$Set;
-var _debois$elm_mdl$Material_Options$nop = _debois$elm_mdl$Material_Options_Internal$None;
-var _debois$elm_mdl$Material_Options$when = F2(
-	function (prop, guard) {
-		return guard ? prop : _debois$elm_mdl$Material_Options$nop;
-	});
 var _debois$elm_mdl$Material_Options$cs = function (c) {
 	 return {ctor: 'Class', _0: c};
 };
@@ -7280,7 +7274,7 @@ var _debois$elm_mdl$Material_Button$ripple = _debois$elm_mdl$Material_Options$se
 			options,
 			{ripple: true});
 	});
-var _debois$elm_mdl$Material_Button$defaultConfig = {ripple: false, onClick: _elm_lang$core$Maybe$Nothing, disabled: false, type$: _elm_lang$core$Maybe$Nothing};
+var _debois$elm_mdl$Material_Button$defaultConfig = { onClick: _elm_lang$core$Maybe$Nothing, disabled: false, type$: _elm_lang$core$Maybe$Nothing};
 var _debois$elm_mdl$Material_Button$view = F4(
 	function (lift, model, config, html) {
 		var summary = A2(_debois$elm_mdl$Material_Options$collect, _debois$elm_mdl$Material_Button$defaultConfig, config);
@@ -7305,10 +7299,7 @@ var _debois$elm_mdl$Material_Button$view = F4(
 				[
 					_debois$elm_mdl$Material_Options$cs('mdl-button'),
 					_debois$elm_mdl$Material_Options$cs('mdl-js-button'),
-					A2(
-					_debois$elm_mdl$Material_Options$when,
-					_debois$elm_mdl$Material_Options$cs('mdl-js-ripple-effect'),
-					summary.config.ripple)
+					_debois$elm_mdl$Material_Options$cs('mdl-js-ripple-effect')
 				]),
 			listeners,
 			_elm_lang$core$List$concat(
@@ -7335,20 +7326,20 @@ var _debois$elm_mdl$Material_Button$view = F4(
 var _debois$elm_mdl$Material_Button$update = function (action) {
 	return _debois$elm_mdl$Material_Ripple$update(action);
 };
-var _debois$elm_mdl$Material_Button$render = A5(
-	_debois$elm_parts$Parts$create,
-	_debois$elm_mdl$Material_Button$view,
-	_debois$elm_parts$Parts$generalize(_debois$elm_mdl$Material_Button$update),
+var _debois$elm_mdl$Material_Button$render =
+	_debois$elm_parts$Parts$create(
+	_debois$elm_mdl$Material_Button$view)(
+	_debois$elm_parts$Parts$generalize(_debois$elm_mdl$Material_Button$update))(
 	function (_) {
 		return _.button;
-	},
+	})(
 	F2(
 		function (x, y) {
 			return _elm_lang$core$Native_Utils.update(
 				y,
 				{button: x});
-		}),
-	_debois$elm_mdl$Material_Ripple$model);
+		}))
+	(_debois$elm_mdl$Material_Ripple$model);
 
 var _elm_lang$dom$Native_Dom = function() {
 
@@ -7671,7 +7662,7 @@ var _user$project$ChangeMe$view = function (mdl) {
 			[0]),
 		mdl,
 		_elm_lang$core$Native_List.fromArray(
-			[_debois$elm_mdl$Material_Button$raised, _debois$elm_mdl$Material_Button$ripple]),
+			[_debois$elm_mdl$Material_Button$raised]),
 		_elm_lang$core$Native_List.fromArray(
 			[
 				_elm_lang$html$Html$text('a test Button with a long label')
