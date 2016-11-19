@@ -7284,36 +7284,19 @@ var _debois$elm_mdl$Material_Button$defaultConfig = {ripple: false, onClick: _el
 var _debois$elm_mdl$Material_Button$view = F4(
 	function (lift, model, config, html) {
 		var summary = A2(_debois$elm_mdl$Material_Options$collect, _debois$elm_mdl$Material_Button$defaultConfig, config);
-		var startListeners = _elm_lang$core$Native_List.fromArray(
+		var listeners = _elm_lang$core$Native_List.fromArray(
 			[
-				_elm_lang$core$Maybe$Just(
-				A2(_debois$elm_mdl$Material_Ripple$downOn$, lift, 'mousedown')),
-				_elm_lang$core$Maybe$Just(
-				A2(_debois$elm_mdl$Material_Ripple$downOn$, lift, 'touchstart'))
-			]);
-		var stopListeners =
-			_elm_lang$core$Native_List.fromArray(
-				[
-          _elm_lang$core$Maybe$Just(
-  					_debois$elm_mdl$Material_Button$blurAndForward('mouseup')),
-            _elm_lang$core$Maybe$Just(
-    					_debois$elm_mdl$Material_Button$blurAndForward('mouseleave')),
-              _elm_lang$core$Maybe$Just(
-      					_debois$elm_mdl$Material_Button$blurAndForward('touchend'))
+
+				A2(_debois$elm_mdl$Material_Ripple$downOn$, lift, 'mousedown'),
+
+				A2(_debois$elm_mdl$Material_Ripple$downOn$, lift, 'touchstart'),
+
+  					_debois$elm_mdl$Material_Button$blurAndForward('mouseup'),
+
+    					_debois$elm_mdl$Material_Button$blurAndForward('mouseleave'),
+
+      					_debois$elm_mdl$Material_Button$blurAndForward('touchend')
 				]);
-		var type$ = function () {
-			var _p1 = summary.config.type$;
-			if (_p1.ctor === 'Nothing') {
-				return _elm_lang$core$Native_List.fromArray(
-					[]);
-			} else {
-				return _elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$core$Maybe$Just(
-						_elm_lang$html$Html_Attributes$type$(_p1._0))
-					]);
-			}
-		}();
 		return A5(
 			_debois$elm_mdl$Material_Options$apply,
 			summary,
@@ -7327,12 +7310,7 @@ var _debois$elm_mdl$Material_Button$view = F4(
 					_debois$elm_mdl$Material_Options$cs('mdl-js-ripple-effect'),
 					summary.config.ripple)
 				]),
-			A2(
-				_elm_lang$core$List$filterMap,
-				_elm_lang$core$Basics$identity,
-				_elm_lang$core$List$concat(
-					_elm_lang$core$Native_List.fromArray(
-						[startListeners, stopListeners, type$]))),
+			listeners,
 			_elm_lang$core$List$concat(
 				_elm_lang$core$Native_List.fromArray(
 					[
