@@ -7268,12 +7268,6 @@ var _debois$elm_mdl$Material_Button$blurAndForward = function (event) {
 		A2(_elm_lang$core$Basics_ops['++'], 'on', event),
 		'this.blur(); (function(self) { var e = document.createEvent(\'Event\'); e.initEvent(\'touchcancel\', true, true); self.lastChild.dispatchEvent(e); }(this));');
 };
-var _debois$elm_mdl$Material_Button$ripple = _debois$elm_mdl$Material_Options$set(
-	function (options) {
-		return _elm_lang$core$Native_Utils.update(
-			options,
-			{ripple: true});
-	});
 var _debois$elm_mdl$Material_Button$defaultConfig = { onClick: _elm_lang$core$Maybe$Nothing, disabled: false, type$: _elm_lang$core$Maybe$Nothing};
 var _debois$elm_mdl$Material_Button$view = F4(
 	function (lift, model, config, html) {
@@ -7331,13 +7325,11 @@ var _debois$elm_mdl$Material_Button$render =
 	_debois$elm_mdl$Material_Button$view)(
 	_debois$elm_parts$Parts$generalize(_debois$elm_mdl$Material_Button$update))(
 	function (_) {
-		return _.button;
+		return _;
 	})(
 	F2(
 		function (x, y) {
-			return _elm_lang$core$Native_Utils.update(
-				y,
-				{button: x});
+			return x
 		}))
 	(_debois$elm_mdl$Material_Ripple$model);
 
@@ -7637,7 +7629,7 @@ var _debois$elm_mdl$Material$update = F2(
 					}),
 				A2(_debois$elm_parts$Parts$update$, msg, model.mdl)));
 	});
-var _debois$elm_mdl$Material$model = {button: _elm_lang$core$Dict$empty, textfield: _elm_lang$core$Dict$empty, menu: _elm_lang$core$Dict$empty, snackbar: _elm_lang$core$Maybe$Nothing, toggles: _elm_lang$core$Dict$empty, tooltip: _elm_lang$core$Dict$empty, tabs: _elm_lang$core$Dict$empty};
+var _debois$elm_mdl$Material$model =  _elm_lang$core$Dict$empty;
 
 var _user$project$ChangeMe$materialUpdate = F2(
 	function (msg, materialModel) {
