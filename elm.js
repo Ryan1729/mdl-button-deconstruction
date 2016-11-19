@@ -3354,10 +3354,6 @@ function runHelp(decoder, value)
 				return ok(value);
 			}
 
-			if (isFinite(value) && !(value % 1)) {
-				return ok(value);
-			}
-
 			return badPrimitive('an Int', value);
 
 		case 'float':
@@ -4111,7 +4107,7 @@ function on(name, options, decoder)
 
 function equalEvents(a, b)
 {
-	if (!a.options === b.options)
+	if ((!a.options) === b.options)
 	{
 		if (a.stopPropagation !== b.stopPropagation || a.preventDefault !== b.preventDefault)
 		{
@@ -6246,32 +6242,9 @@ var Elm = {};
 Elm.ChangeMe = Elm.ChangeMe || {};
 _elm_lang$core$Native_Platform.addPublicModule(Elm.ChangeMe, 'ChangeMe', typeof _user$project$ChangeMe$main === 'undefined' ? null : _user$project$ChangeMe$main);
 
-if (typeof define === "function" && define.amd)
-{
-  define([], function() { return Elm; });
-  return;
-}
+this.Elm = Elm;
+return;
 
-if (typeof module === "object")
-{
-  module.exports = Elm;
-  return;
-}
 
-var globalElm = this.Elm;
-if (typeof globalElm === "undefined")
-{
-  this.Elm = Elm;
-  return;
-}
-
-for (var publicModule in Elm)
-{
-  if (publicModule in globalElm)
-  {
-    throw new Error('There are two Elm modules called `' + publicModule + '` on this page! Rename one of them.');
-  }
-  globalElm[publicModule] = Elm[publicModule];
-}
 
 }).call(this);
