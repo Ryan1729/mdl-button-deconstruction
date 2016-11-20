@@ -2559,7 +2559,7 @@ var _debois$elm_parts$Parts$indexed = F2(
 			_1: F3(
 				function (idx, model, c) {
 					return A2(
-						set,
+						idOf2,
 						A3(
 							_elm_lang$core$Dict$insert,
 							idx,
@@ -2598,9 +2598,9 @@ var _debois$elm_parts$Parts$partial = F3(
 					c);
 			});
 	});
-var _debois$elm_parts$Parts$pack = F3(
-	function (set0, model0) {
-		var _p11 = A2(_debois$elm_parts$Parts$indexed, set0, model0);
+var _debois$elm_parts$Parts$pack = F2(
+	function (set0) {
+		var _p11 = _debois$elm_parts$Parts$indexed(idOf2)(_debois$elm_mdl$Material_Ripple$model);
 		var get = _p11._0;
 		var set = _p11._1;
 		return function (idx) {
@@ -4334,6 +4334,8 @@ var _debois$elm_mdl$Material_Ripple$geometryDecoder =
 	_debois$elm_mdl$Material_Ripple$DOMState, [currentTarget,clientX ,clientY ,touchesX ,touchesY, decodeType]);
 var _debois$elm_mdl$Material_Ripple$Inert = {ctor: 'Inert'};
 var _debois$elm_mdl$Material_Ripple$model = {animation: _debois$elm_mdl$Material_Ripple$Inert, metrics: _elm_lang$core$Maybe$Nothing, ignoringMouseDown: false};
+var $$$a = _debois$elm_parts$Parts$indexed(idOf2)(_debois$elm_mdl$Material_Ripple$model);
+
 var _debois$elm_mdl$Material_Ripple$Frame = function (a) {
 	return {ctor: 'Frame', _0: a};
 };
@@ -4506,17 +4508,18 @@ var _debois$elm_mdl$Material_Button$view = F4(
 	});
 
 
+var get$render = $$$a._0
+
 var _debois$elm_mdl$Material_Button$render =
 	function (fwd) {
-		var embeddedUpdate = A3(_debois$elm_parts$Parts$pack, idOf2, _debois$elm_mdl$Material_Ripple$model);
-		var get = _elm_lang$core$Basics$fst(
-			A2(_debois$elm_parts$Parts$indexed, idOf2, _debois$elm_mdl$Material_Ripple$model));
+    var embeddedUpdate = A2(_debois$elm_parts$Parts$pack, idOf2);
+
 		return F2(
 			function (idx, c) {
 				return A2(
 					_debois$elm_mdl$Material_Button$view,
 					embeddedUpdate(idx),
-					A2(get, idx, c));
+					A2(get$render, idx, c));
 			});
 	};
 
