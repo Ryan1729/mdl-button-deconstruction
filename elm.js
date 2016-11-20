@@ -434,15 +434,6 @@ var _elm_lang$core$Basics$sqrt = sqrt;
 
 //import Native.Utils //
 
-var _elm_lang$core$Maybe$withDefault = F2(
-	function ($default, maybe) {
-		var _p0 = maybe;
-		if (_p0.ctor === 'Just') {
-			return _p0._0;
-		} else {
-			return $default;
-		}
-	});
 var _elm_lang$core$Maybe$Nothing = {ctor: 'Nothing'};
 var _elm_lang$core$Maybe$Just = function (a) {
 	return {ctor: 'Just', _0: a};
@@ -1253,34 +1244,6 @@ var _elm_lang$core$Dict$isBBlack = function (dict) {
 	} while(false);
 	return false;
 };
-var _elm_lang$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			var _p15 = dict;
-			if (_p15.ctor === 'RBEmpty_elm_builtin') {
-				return _elm_lang$core$Maybe$Nothing;
-			} else {
-				var _p16 = A2(_elm_lang$core$Basics$compare, targetKey, _p15._1);
-				switch (_p16.ctor) {
-					case 'LT':
-						var _v20 = targetKey,
-							_v21 = _p15._3;
-						targetKey = _v20;
-						dict = _v21;
-						continue get;
-					case 'EQ':
-						return _elm_lang$core$Maybe$Just(_p15._2);
-					default:
-						var _v22 = targetKey,
-							_v23 = _p15._4;
-						targetKey = _v22;
-						dict = _v23;
-						continue get;
-				}
-			}
-		}
-	});
 var _elm_lang$core$Dict$maxWithDefault = F3(
 	function (k, v, r) {
 		maxWithDefault:
@@ -1838,15 +1801,6 @@ var _elm_lang$core$Dict$update = F3(
 			default:
 				return _elm_lang$core$Dict$blacken(updatedDict);
 		}
-	});
-var _elm_lang$core$Dict$insert = F3(
-	function (key, value, dict) {
-		return A3(
-			_elm_lang$core$Dict$update,
-			key,
-			_elm_lang$core$Basics$always(
-				_elm_lang$core$Maybe$Just(value)),
-			dict);
 	});
 
 //import Maybe, Native.Array, Native.List, Native.Utils, Result //
@@ -2542,33 +2496,6 @@ var _debois$elm_parts$Parts$update$ = F2(
 		var _p7 = _p6;
 		return _p7._0(c);
 	});
-var _debois$elm_parts$Parts$indexed = F2(
-	function (set, model0) {
-		return {
-			ctor: '_Tuple2',
-			_0: F2(
-				function (idx, c) {
-					return A2(
-						_elm_lang$core$Maybe$withDefault,
-						model0,
-						A2(
-							_elm_lang$core$Dict$get,
-							idx,
-							c));
-				}),
-			_1: F3(
-				function (idx, model, c) {
-					return A2(
-						idOf2,
-						A3(
-							_elm_lang$core$Dict$insert,
-							idx,
-							model,
-							c),
-						c);
-				})
-		};
-	});
 var _debois$elm_parts$Parts$embedUpdate = F6(
 	function (get, set, update, f, msg, c) {
 		return A2(
@@ -2598,11 +2525,32 @@ var _debois$elm_parts$Parts$partial = F3(
 					c);
 			});
 	});
+var get$indexed = F2(
+  function (idx, c) {
+			return c._2 || _debois$elm_mdl$Material_Ripple$model;
+  });
+
 var _debois$elm_parts$Parts$pack = F2(
 	function (set0) {
-		var _p11 = _debois$elm_parts$Parts$indexed(idOf2)(_debois$elm_mdl$Material_Ripple$model);
-		var get = _p11._0;
-		var set = _p11._1;
+		var set = F3(
+      function (idx, model, c) {
+        return A2(
+          idOf2,
+          A3(
+            F3(
+            	function (key, value, dict) {
+            		return A3(
+            			_elm_lang$core$Dict$update,
+            			key,
+            			_elm_lang$core$Basics$always(
+            				_elm_lang$core$Maybe$Just(value)),
+            			dict);
+            	}),
+            idx,
+            model,
+            c),
+          c);
+      });
 		return function (idx) {
 			return function (_p12) {
 				return _user$project$ChangeMe$Mdl(
@@ -2611,7 +2559,7 @@ var _debois$elm_parts$Parts$pack = F2(
 						_user$project$ChangeMe$Mdl,
 						A3(
 							_debois$elm_parts$Parts$embedUpdate,
-							get(idx),
+							get$indexed(idx),
 							set(idx),
 							up1),
 						_p12));
@@ -4334,7 +4282,7 @@ var _debois$elm_mdl$Material_Ripple$geometryDecoder =
 	_debois$elm_mdl$Material_Ripple$DOMState, [currentTarget,clientX ,clientY ,touchesX ,touchesY, decodeType]);
 var _debois$elm_mdl$Material_Ripple$Inert = {ctor: 'Inert'};
 var _debois$elm_mdl$Material_Ripple$model = {animation: _debois$elm_mdl$Material_Ripple$Inert, metrics: _elm_lang$core$Maybe$Nothing, ignoringMouseDown: false};
-var $$$a = _debois$elm_parts$Parts$indexed(idOf2)(_debois$elm_mdl$Material_Ripple$model);
+
 
 var _debois$elm_mdl$Material_Ripple$Frame = function (a) {
 	return {ctor: 'Frame', _0: a};
@@ -4507,21 +4455,14 @@ var _debois$elm_mdl$Material_Button$view = F4(
 					])));
 	});
 
-
-var get$render = $$$a._0
-
-var _debois$elm_mdl$Material_Button$render =
-	function (fwd) {
-    var embeddedUpdate = A2(_debois$elm_parts$Parts$pack, idOf2);
-
-		return F2(
+var embeddedUpdate = A2(_debois$elm_parts$Parts$pack, idOf2);
+var _debois$elm_mdl$Material_Button$render = F2(
 			function (idx, c) {
 				return A2(
 					_debois$elm_mdl$Material_Button$view,
 					embeddedUpdate(idx),
-					A2(get$render, idx, c));
+					get$indexed(idx)(c));
 			});
-	};
 
 
 var up1 = F3(
@@ -4547,7 +4488,15 @@ _elm_lang$window$Window_ops['&>'] = F2(
 var _debois$elm_mdl$Material$update = F2(
 	function (msg, model) {
 		return A2(
-			_elm_lang$core$Maybe$withDefault,
+      F2(
+      	function ($default, maybe) {
+      		var _p0 = maybe;
+      		if (_p0.ctor === 'Just') {
+      			return _p0._0;
+      		} else {
+      			return $default;
+      		}
+      	}),
 			{ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none},
 			A2(
 				_elm_lang$core$Maybe$map,
@@ -4577,7 +4526,7 @@ var _user$project$ChangeMe$Mdl = function (a) {
 };
 var _user$project$ChangeMe$view = function (mdl) {
 	return A4(
-		_debois$elm_mdl$Material_Button$render(_user$project$ChangeMe$Mdl),
+		_debois$elm_mdl$Material_Button$render,
 		fromArray(
 			[0]),
 		mdl,
