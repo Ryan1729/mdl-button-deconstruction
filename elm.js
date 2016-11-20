@@ -198,12 +198,6 @@ function Tuple2(x, y)
 	};
 }
 
-function chr(c)
-{
-	return new String(c);
-}
-
-
 // GUID
 
 var count = 0;
@@ -2655,7 +2649,7 @@ var _debois$elm_parts$Parts$create = F5(
 	});
 //import Native.Json //
 
-var _elm_lang$virtual_dom$Native_VirtualDom = function() {
+
 
 var STYLE_KEY = 'STYLE';
 var EVENT_KEY = 'EVENT';
@@ -2711,48 +2705,6 @@ function nodeHelp(tag, factList, kidList)
 	};
 }
 
-
-function keyedNode(tag, factList, kidList)
-{
-	var organized = organizeFacts(factList);
-	var namespace = organized.namespace;
-	var facts = organized.facts;
-
-	var children = [];
-	var descendantsCount = 0;
-	while (kidList.ctor !== '[]')
-	{
-		var kid = kidList._0;
-		descendantsCount += (kid._1.descendantsCount || 0);
-		children.push(kid);
-		kidList = kidList._1;
-	}
-	descendantsCount += children.length;
-
-	return {
-		type: 'keyed-node',
-		tag: tag,
-		facts: facts,
-		children: children,
-		namespace: namespace,
-		descendantsCount: descendantsCount
-	};
-}
-
-
-function custom(factList, model, impl)
-{
-	var facts = organizeFacts(factList).facts;
-
-	return {
-		type: 'custom',
-		facts: facts,
-		model: model,
-		impl: impl
-	};
-}
-
-
 function map(tagger, node)
 {
 	return {
@@ -2761,39 +2713,6 @@ function map(tagger, node)
 		node: node,
 		descendantsCount: 1 + (node.descendantsCount || 0)
 	};
-}
-
-
-function thunk(func, args, thunk)
-{
-	return {
-		type: 'thunk',
-		func: func,
-		args: args,
-		thunk: thunk,
-		node: undefined
-	};
-}
-
-function lazy(fn, a)
-{
-	return thunk(fn, [a], function() {
-		return fn(a);
-	});
-}
-
-function lazy2(fn, a, b)
-{
-	return thunk(fn, [a,b], function() {
-		return A2(fn, a, b);
-	});
-}
-
-function lazy3(fn, a, b, c)
-{
-	return thunk(fn, [a,b,c], function() {
-		return A3(fn, a, b, c);
-	});
 }
 
 
@@ -2876,20 +2795,6 @@ function attribute(key, value)
 		value: value
 	};
 }
-
-
-function attributeNS(namespace, key, value)
-{
-	return {
-		key: ATTR_NS_KEY,
-		realKey: key,
-		value: {
-			value: value,
-			namespace: namespace
-		}
-	};
-}
-
 
 function on(name, options, decoder)
 {
@@ -4088,42 +3993,19 @@ function programWithFlags(details)
 }
 
 
-return {
-	node: node,
-	text: text,
-
-	custom: custom,
-
-	map: F2(map),
-
-	on: F3(on),
-	style: style,
-	property: F2(property),
-	attribute: F2(attribute),
-	attributeNS: F3(attributeNS),
-
-	lazy: F2(lazy),
-	lazy2: F3(lazy2),
-	lazy3: F4(lazy3),
-	keyedNode: F3(keyedNode),
-
-	programWithFlags: programWithFlags
-};
-
-}();
-var _elm_lang$virtual_dom$VirtualDom$programWithFlags = _elm_lang$virtual_dom$Native_VirtualDom.programWithFlags;
+var _elm_lang$virtual_dom$VirtualDom$programWithFlags = programWithFlags;
 var _elm_lang$virtual_dom$VirtualDom$defaultOptions = {stopPropagation: false, preventDefault: false};
-var _elm_lang$virtual_dom$VirtualDom$onWithOptions = _elm_lang$virtual_dom$Native_VirtualDom.on;
+var _elm_lang$virtual_dom$VirtualDom$onWithOptions = F3(on);
 var _elm_lang$virtual_dom$VirtualDom$on = F2(
 	function (eventName, decoder) {
 		return A3(_elm_lang$virtual_dom$VirtualDom$onWithOptions, eventName, _elm_lang$virtual_dom$VirtualDom$defaultOptions, decoder);
 	});
-var _elm_lang$virtual_dom$VirtualDom$style = _elm_lang$virtual_dom$Native_VirtualDom.style;
-var _elm_lang$virtual_dom$VirtualDom$attribute = _elm_lang$virtual_dom$Native_VirtualDom.attribute;
-var _elm_lang$virtual_dom$VirtualDom$property = _elm_lang$virtual_dom$Native_VirtualDom.property;
-var _elm_lang$virtual_dom$VirtualDom$map = _elm_lang$virtual_dom$Native_VirtualDom.map;
-var _elm_lang$virtual_dom$VirtualDom$text = _elm_lang$virtual_dom$Native_VirtualDom.text;
-var _elm_lang$virtual_dom$VirtualDom$node = _elm_lang$virtual_dom$Native_VirtualDom.node;
+var _elm_lang$virtual_dom$VirtualDom$style = style;
+var _elm_lang$virtual_dom$VirtualDom$attribute = F2(attribute);
+var _elm_lang$virtual_dom$VirtualDom$property = F2(property);
+var _elm_lang$virtual_dom$VirtualDom$map = F2(map);
+var _elm_lang$virtual_dom$VirtualDom$text = text;
+var _elm_lang$virtual_dom$VirtualDom$node = node;
 
 var _elm_lang$html$Html$text = _elm_lang$virtual_dom$VirtualDom$text;
 var _elm_lang$html$Html$node = _elm_lang$virtual_dom$VirtualDom$node;
