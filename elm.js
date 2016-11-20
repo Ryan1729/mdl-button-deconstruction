@@ -2537,11 +2537,6 @@ var _debois$elm_parts$Parts$map1st = F2(
 			_1: _p3._1
 		};
 	});
-var _debois$elm_parts$Parts$generalize = F4(
-	function (upd, f, m, c) {
-		return _elm_lang$core$Maybe$Just(
-				A2(upd, m, c));
-	});
 var _debois$elm_parts$Parts$update$ = F2(
 	function (_p6, c) {
 		var _p7 = _p6;
@@ -2603,8 +2598,8 @@ var _debois$elm_parts$Parts$partial = F3(
 					c);
 			});
 	});
-var _debois$elm_parts$Parts$pack = F5(
-	function (update, set0, model0, fwd) {
+var _debois$elm_parts$Parts$pack = F4(
+	function (set0, model0, fwd) {
 		var _p11 = A2(_debois$elm_parts$Parts$indexed, set0, model0);
 		var get = _p11._0;
 		var set = _p11._1;
@@ -2618,7 +2613,7 @@ var _debois$elm_parts$Parts$pack = F5(
 							_debois$elm_parts$Parts$embedUpdate,
 							get(idx),
 							set(idx),
-							update),
+							up1),
 						_p12));
 			};
 		};
@@ -4511,11 +4506,11 @@ var _debois$elm_mdl$Material_Button$view = F4(
 	});
 
 
-var _debois$elm_parts$Parts$create = F3(
-	function (set0, model0, fwd) {
-		var embeddedUpdate = A5(_debois$elm_parts$Parts$pack, up1, set0, model0, fwd);
+var _debois$elm_mdl$Material_Button$render =
+	function (fwd) {
+		var embeddedUpdate = A4(_debois$elm_parts$Parts$pack, idOf2, _debois$elm_mdl$Material_Ripple$model, fwd);
 		var get = _elm_lang$core$Basics$fst(
-			A2(_debois$elm_parts$Parts$indexed, set0, model0));
+			A2(_debois$elm_parts$Parts$indexed, idOf2, _debois$elm_mdl$Material_Ripple$model));
 		return F2(
 			function (idx, c) {
 				return A2(
@@ -4523,16 +4518,18 @@ var _debois$elm_parts$Parts$create = F3(
 					embeddedUpdate(idx),
 					A2(get, idx, c));
 			});
+	};
+
+
+var up1 = F3(
+	function (f, m, c) {
+		return _elm_lang$core$Maybe$Just(
+				A2(_debois$elm_mdl$Material_Button$update, m, c));
 	});
-
-var up1 = _debois$elm_parts$Parts$generalize(_debois$elm_mdl$Material_Button$update)
-  var _debois$elm_mdl$Material_Button$render =
-  	_debois$elm_parts$Parts$create(
-  	F2(
-  		function (x, y) {
-  			return x
-  		}))(_debois$elm_mdl$Material_Ripple$model);
-
+var idOf2 = F2(
+  function (x, y) {
+    return x
+  })
 var _elm_lang$window$Window_ops = _elm_lang$window$Window_ops || {};
 _elm_lang$window$Window_ops['&>'] = F2(
 	function (t1, t2) {
