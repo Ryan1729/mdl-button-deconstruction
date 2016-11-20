@@ -2598,17 +2598,17 @@ var _debois$elm_parts$Parts$partial = F3(
 					c);
 			});
 	});
-var _debois$elm_parts$Parts$pack = F4(
-	function (set0, model0, fwd) {
+var _debois$elm_parts$Parts$pack = F3(
+	function (set0, model0) {
 		var _p11 = A2(_debois$elm_parts$Parts$indexed, set0, model0);
 		var get = _p11._0;
 		var set = _p11._1;
 		return function (idx) {
 			return function (_p12) {
-				return fwd(
+				return _user$project$ChangeMe$Mdl(
 					A3(
 						_debois$elm_parts$Parts$partial,
-						fwd,
+						_user$project$ChangeMe$Mdl,
 						A3(
 							_debois$elm_parts$Parts$embedUpdate,
 							get(idx),
@@ -4508,7 +4508,7 @@ var _debois$elm_mdl$Material_Button$view = F4(
 
 var _debois$elm_mdl$Material_Button$render =
 	function (fwd) {
-		var embeddedUpdate = A4(_debois$elm_parts$Parts$pack, idOf2, _debois$elm_mdl$Material_Ripple$model, fwd);
+		var embeddedUpdate = A3(_debois$elm_parts$Parts$pack, idOf2, _debois$elm_mdl$Material_Ripple$model);
 		var get = _elm_lang$core$Basics$fst(
 			A2(_debois$elm_parts$Parts$indexed, idOf2, _debois$elm_mdl$Material_Ripple$model));
 		return F2(
@@ -4573,9 +4573,8 @@ var _user$project$ChangeMe$Mdl = function (a) {
 	return {ctor: 'Mdl', _0: a};
 };
 var _user$project$ChangeMe$view = function (mdl) {
-	return A5(
-		_debois$elm_mdl$Material_Button$render,
-		_user$project$ChangeMe$Mdl,
+	return A4(
+		_debois$elm_mdl$Material_Button$render(_user$project$ChangeMe$Mdl),
 		fromArray(
 			[0]),
 		mdl,
