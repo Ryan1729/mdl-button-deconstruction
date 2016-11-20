@@ -1823,34 +1823,20 @@ var _debois$elm_parts$Parts$update$ = F2(
 		var _p7 = _p6;
 		return _p7._0(c);
 	});
-var _debois$elm_parts$Parts$embedUpdate = F6(
-	function (get, set, update, f, msg, c) {
+var _debois$elm_parts$Parts$embedUpdate = F5(
+	function (get, set, update, msg, c) {
 		return A2(
 			_elm_lang$core$Maybe$map,
 			_debois$elm_parts$Parts$map1st(
 				A2(_elm_lang$core$Basics$flip, set, c)),
-			A3(
+			A2(
 				update,
-				f,
 				msg,
 				get(c)));
 	});
 var _debois$elm_parts$Parts$Msg = function (a) {
 	return {ctor: 'Msg', _0: a};
 };
-var _debois$elm_parts$Parts$partial = F3(
-	function (fwd, upd, msg) {
-		return _debois$elm_parts$Parts$Msg(
-			function (c) {
-				return A3(
-					upd,
-					function (_p10) {
-            
-					},
-					msg,
-					c);
-			});
-	});
 var get$indexed =
   function (c) {
 			return c._0 || _debois$elm_mdl$Material_Ripple$model;
@@ -1861,19 +1847,26 @@ var _debois$elm_parts$Parts$pack = F2(
 		return function (idx) {
 			return function (_p12) {
 				return _user$project$ChangeMe$Mdl(
-					A3(
-						_debois$elm_parts$Parts$partial,
-						_user$project$ChangeMe$Mdl,
-						A3(
-							_debois$elm_parts$Parts$embedUpdate,
-							get$indexed,
-              F2(
-              	function (value, dict) {
-                  dict._0 = value
-              		return dict
-              	}),
-							up1),
-						_p12));
+					 _debois$elm_parts$Parts$Msg(
+            			function (c) {
+            				return A2(
+                      A3(
+          							_debois$elm_parts$Parts$embedUpdate,
+          							get$indexed,
+                        F2(
+                        	function (value, dict) {
+                            dict._0 = value
+                        		return dict
+                        	}),
+                          F2(
+                          	function (m, c) {
+                          		return _elm_lang$core$Maybe$Just(
+                          				A2(_debois$elm_mdl$Material_Button$update, m, c));
+                          	})),
+            					_p12,
+            					c);
+            			})
+            	)
 			};
 		};
 	});
@@ -3774,13 +3767,6 @@ var _debois$elm_mdl$Material_Button$render = F2(
 					embeddedUpdate(idx),
 					get$indexed(c));
 			});
-
-
-var up1 = F3(
-	function (f, m, c) {
-		return _elm_lang$core$Maybe$Just(
-				A2(_debois$elm_mdl$Material_Button$update, m, c));
-	});
 var idOf2 = F2(
   function (x, y) {
     return x
