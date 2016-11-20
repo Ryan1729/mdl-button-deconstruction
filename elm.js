@@ -402,6 +402,9 @@ function toString(v)
 	append = F2(append)
 
 
+
+
+
 var _elm_lang$core$Basics$flip = F3(
 	function (f, b, a) {
 		return A2(f, a, b);
@@ -771,7 +774,6 @@ function makeEmbedHelp(moduleName, program, rootDomNode, flags)
 	var makeRenderer = program.renderer;
 
 	// ambient state
-	var managers = {};
 	var renderer;
 
 	// init and update state in main process
@@ -1123,7 +1125,6 @@ return {
 	spawn: spawn,
 	kill: kill,
 	sleep: sleep,
-	send: F2(send),
 
 	rawSpawn: rawSpawn,
 	rawSend: rawSend
@@ -2527,15 +2528,6 @@ var _debois$elm_dom$DOM$boundingClientRect = A4(
 	A2(_debois$elm_dom$DOM$position, 0, 0),
 	_debois$elm_dom$DOM$offsetWidth,
 	_debois$elm_dom$DOM$offsetHeight);
-var _debois$elm_parts$Parts$map2nd = F2(
-	function (f, _p0) {
-		var _p1 = _p0;
-		return {
-			ctor: '_Tuple2',
-			_0: _p1._0,
-			_1: f(_p1._1)
-		};
-	});
 var _debois$elm_parts$Parts$map1st = F2(
 	function (f, _p2) {
 		var _p3 = _p2;
@@ -2548,10 +2540,7 @@ var _debois$elm_parts$Parts$map1st = F2(
 var _debois$elm_parts$Parts$generalize = F4(
 	function (upd, f, m, c) {
 		return _elm_lang$core$Maybe$Just(
-			A2(
-				_debois$elm_parts$Parts$map2nd,
-				f,
-				A2(upd, m, c)));
+				A2(upd, m, c));
 	});
 var _debois$elm_parts$Parts$update$ = F2(
 	function (_p6, c) {
@@ -2634,19 +2623,7 @@ var _debois$elm_parts$Parts$pack = F5(
 			};
 		};
 	});
-var _debois$elm_parts$Parts$create = F5(
-	function (view, update, set0, model0, fwd) {
-		var embeddedUpdate = A5(_debois$elm_parts$Parts$pack, update, set0, model0, fwd);
-		var get = _elm_lang$core$Basics$fst(
-			A2(_debois$elm_parts$Parts$indexed, set0, model0));
-		return F2(
-			function (idx, c) {
-				return A2(
-					view,
-					embeddedUpdate(idx),
-					A2(get, idx, c));
-			});
-	});
+
 //import Native.Json //
 
 
@@ -2681,7 +2658,6 @@ function node(tag)
 function nodeHelp(tag, factList, kidList)
 {
 	var organized = organizeFacts(factList);
-	var namespace = organized.namespace;
 	var facts = organized.facts;
 
 	var children = [];
@@ -2700,7 +2676,7 @@ function nodeHelp(tag, factList, kidList)
 		tag: tag,
 		facts: facts,
 		children: children,
-		namespace: namespace,
+		// namespace: namespace,
 		descendantsCount: descendantsCount
 	};
 }
@@ -2924,9 +2900,7 @@ function render(vNode, eventNode)
 			return document.createTextNode(vNode.text);
 
 		case 'node':
-			var domNode = vNode.namespace
-				? document.createElementNS(vNode.namespace, vNode.tag)
-				: document.createElement(vNode.tag);
+			var domNode = document.createElement(vNode.tag);
 
 			applyFacts(domNode, eventNode, vNode.facts);
 
@@ -2940,9 +2914,7 @@ function render(vNode, eventNode)
 			return domNode;
 
 		case 'keyed-node':
-			var domNode = vNode.namespace
-				? document.createElementNS(vNode.namespace, vNode.tag)
-				: document.createElement(vNode.tag);
+			var domNode = document.createElement(vNode.tag);
 
 			applyFacts(domNode, eventNode, vNode.facts);
 
@@ -4484,6 +4456,11 @@ var _debois$elm_mdl$Material_Button$blurAndForward = function (event) {
 		A2(append, 'on', event),
 		'this.blur(); (function(self) { var e = document.createEvent(\'Event\'); e.initEvent(\'touchcancel\', true, true); self.lastChild.dispatchEvent(e); }(this));');
 };
+
+var _debois$elm_mdl$Material_Button$update = function (action) {
+	return _debois$elm_mdl$Material_Ripple$update(action);
+};
+
 var _debois$elm_mdl$Material_Button$view = F4(
 	function (lift, model, config, html) {
 		var summary = A2(_debois$elm_mdl$Material_Options$collect, {}, config);
@@ -4532,18 +4509,29 @@ var _debois$elm_mdl$Material_Button$view = F4(
 						])
 					])));
 	});
-var _debois$elm_mdl$Material_Button$update = function (action) {
-	return _debois$elm_mdl$Material_Ripple$update(action);
-};
-var _debois$elm_mdl$Material_Button$render =
-	_debois$elm_parts$Parts$create(
-	_debois$elm_mdl$Material_Button$view)(
-	_debois$elm_parts$Parts$generalize(_debois$elm_mdl$Material_Button$update))(
-	F2(
-		function (x, y) {
-			return x
-		}))(_debois$elm_mdl$Material_Ripple$model);
 
+
+var _debois$elm_parts$Parts$create = F3(
+	function (set0, model0, fwd) {
+		var embeddedUpdate = A5(_debois$elm_parts$Parts$pack, up1, set0, model0, fwd);
+		var get = _elm_lang$core$Basics$fst(
+			A2(_debois$elm_parts$Parts$indexed, set0, model0));
+		return F2(
+			function (idx, c) {
+				return A2(
+					_debois$elm_mdl$Material_Button$view,
+					embeddedUpdate(idx),
+					A2(get, idx, c));
+			});
+	});
+
+var up1 = _debois$elm_parts$Parts$generalize(_debois$elm_mdl$Material_Button$update)
+  var _debois$elm_mdl$Material_Button$render =
+  	_debois$elm_parts$Parts$create(
+  	F2(
+  		function (x, y) {
+  			return x
+  		}))(_debois$elm_mdl$Material_Ripple$model);
 
 var _elm_lang$window$Window_ops = _elm_lang$window$Window_ops || {};
 _elm_lang$window$Window_ops['&>'] = F2(
