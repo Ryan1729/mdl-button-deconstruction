@@ -1095,14 +1095,6 @@ return {
 }();
 var _elm_lang$core$Platform_Cmd$none = {}
 var _elm_lang$core$Platform_Cmd_ops = _elm_lang$core$Platform_Cmd_ops || {};
-_elm_lang$core$Platform_Cmd_ops['!'] = F2(
-	function (model, commands) {
-		return {
-			ctor: '_Tuple2',
-			_0: model,
-			_1: {}
-		};
-	});
 
 
 //import Native.List //
@@ -1804,7 +1796,7 @@ var _debois$elm_dom$DOM$boundingClientRect = A4(
 var _debois$elm_parts$Parts$update$ = F2(
 	function (_p6, c) {
 		var _p7 = _p6;
-		return _p7._0(c);
+		return _p7(c);
 	});
 var _debois$elm_parts$Parts$embedUpdate = F2(
 	function (msg, c) {
@@ -1817,9 +1809,6 @@ var _debois$elm_parts$Parts$embedUpdate = F2(
       		}
       	)
 	});
-var _debois$elm_parts$Parts$Msg = function (a) {
-	return {ctor: 'Msg', _0: a};
-};
 
 //import Native.Json //
 
@@ -3306,7 +3295,12 @@ var _elm_lang$html$Html_App$beginnerProgram = function (_p1) {
 		{
 			init: function (_p3) {
 				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
+          F2(
+          	function (model, commands) {
+          		return {
+          			_0: model,
+          		};
+          	}),
 					_p2.model,
 					fromArray(
 						[]));
@@ -3314,7 +3308,12 @@ var _elm_lang$html$Html_App$beginnerProgram = function (_p1) {
 			update: F2(
 				function (msg, model) {
 					return A2(
-						_elm_lang$core$Platform_Cmd_ops['!'],
+            F2(
+            	function (model, commands) {
+            		return {
+            			_0: model,
+            		};
+            	}),
 						A2(_p2.update, msg, model),
 						fromArray(
 							[]));
@@ -3725,54 +3724,45 @@ var _debois$elm_mdl$Material$update = F2(
 		return A2(
       F2(
       	function ($default, maybe) {
-      		var _p0 = maybe;
-      		if (_p0.ctor === 'Just') {
-      			return _p0._0;
-      		} else {
-      			return $default;
-      		}
+      			return maybe._0;
       	}),
-			{ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none},
+			{},
 			A2(
 				_elm_lang$core$Maybe$map,
 				_debois$elm_mdl$Material_Helpers$map1st(
 					function (mdl) {
 						return update(
 							model,
-							{mdl: mdl});
+							mdl);
 					}),
-				A2(_debois$elm_parts$Parts$update$, msg, model.mdl)));
+				msg(model)))
 	});
 
 var _user$project$ChangeMe$materialUpdate = F2(
 	function (msg, materialModel) {
 		var _p0 = msg;
 		return function (_) {
-			return _.mdl;
+			return _;
 		}(
 			_elm_lang$core$Basics$fst(
 				A2(
 					_debois$elm_mdl$Material$update,
-					_p0._0,
-					{mdl: materialModel})));
+					_p0,
+					materialModel)));
 	});
-var _user$project$ChangeMe$Mdl = function (a) {
-	return {ctor: 'Mdl', _0: a};
-};
+
 var _user$project$ChangeMe$view = function (mdl) {
 	return A2(
      A2(
         _debois$elm_mdl$Material_Button$view,
         function (_p12) {
-        				return _user$project$ChangeMe$Mdl(
-        					 _debois$elm_parts$Parts$Msg(
-                    			function (c) {
+        				return function (c) {
                     				return A2(
                   							_debois$elm_parts$Parts$embedUpdate,
                     					_p12,
                     					c);
-                    			})
-                    	)
+                    			}
+
         		},
         mdl._0 || _debois$elm_mdl$Material_Ripple$model),
 		fromArray(
