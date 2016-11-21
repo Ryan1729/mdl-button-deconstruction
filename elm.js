@@ -1184,10 +1184,7 @@ function oneOf(decoders)
 
 // DECODING OBJECTS
 
-function decodeObject1(f, d1)
-{
-	return decodeObject(f, [d1]);
-}
+
 
 function decodeObject2(f, d1, d2)
 {
@@ -1204,10 +1201,6 @@ function decodeObject4(f, d1, d2, d3, d4)
 	return decodeObject(f, [d1, d2, d3, d4]);
 }
 
-function decodeObject5(f, d1, d2, d3, d4, d5)
-{
-	return decodeObject(f, [d1, d2, d3, d4, d5]);
-}
 
 // DECODING TUPLES
 
@@ -1231,10 +1224,6 @@ function decodeTuple4(f, d1, d2, d3, d4)
 	return decodeTuple(f, [d1, d2, d3, d4]);
 }
 
-function decodeTuple5(f, d1, d2, d3, d4, d5)
-{
-	return decodeTuple(f, [d1, d2, d3, d4, d5]);
-}
 
 // DECODE HELPERS
 
@@ -1615,17 +1604,14 @@ function encode(indentLevel, value)
 
 	decodeField= F2(decodeField)
 
-	decodeObject1= F2(decodeObject1)
 	decodeObject2= F3(decodeObject2)
 	decodeObject3= F4(decodeObject3)
 	decodeObject4= F5(decodeObject4)
-	decodeObject5= F6(decodeObject5)
 
 	decodeTuple1= F2(decodeTuple1)
 	decodeTuple2= F3(decodeTuple2)
 	decodeTuple3= F4(decodeTuple3)
 	decodeTuple4= F5(decodeTuple4)
-	decodeTuple5= F6(decodeTuple5)
 
 	andThen = F2(andThen)
 	customAndThen = F2(customAndThen)
@@ -1654,7 +1640,6 @@ var _elm_lang$core$Json_Decode$at = F2(
 			decoder,
 			fields);
 	});
-var _elm_lang$core$Json_Decode$map = decodeObject1;
 var _debois$elm_dom$DOM$scrollTop = A2(decodeField, 'scrollTop', _elm_lang$core$Json_Decode$float);
 var _debois$elm_dom$DOM$scrollLeft = A2(decodeField, 'scrollLeft', _elm_lang$core$Json_Decode$float);
 var _debois$elm_dom$DOM$offsetTop = A2(decodeField, 'offsetTop', _elm_lang$core$Json_Decode$float);
@@ -3390,17 +3375,15 @@ var _debois$elm_mdl$Material_Ripple$Down = function (a) {
 	return {ctor: 'Down', _0: a};
 };
 var _debois$elm_mdl$Material_Ripple$downOn$ = F2(
-	function (f, name) {
+	function (fa, name) {
 		return A2(
 			_elm_lang$html$Html_Events$on,
 			name,
-			A2(
-				_elm_lang$core$Json_Decode$map,
-				function (_p6) {
-					return f(
-						_debois$elm_mdl$Material_Ripple$Down(_p6));
-				},
-				_debois$elm_mdl$Material_Ripple$geometryDecoder));
+			decodeObject(function (_p6) {
+  					return fa(
+  						_debois$elm_mdl$Material_Ripple$Down(_p6));
+  				}, [_debois$elm_mdl$Material_Ripple$geometryDecoder])
+				)
 	});
 var _debois$elm_mdl$Material_Button$blurAndForward = function (event) {
 	return A2(
