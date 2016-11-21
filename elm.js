@@ -461,25 +461,6 @@ function foldr(f, b, xs)
 
 
 var _elm_lang$core$List$foldr = F3(foldr);
-var _elm_lang$core$List$foldl = F3(
-	function (func, acc, list) {
-		foldl:
-		while (true) {
-			var _p3 = list;
-			if (_p3.ctor === '[]') {
-				return acc;
-			} else {
-				var _v7 = func,
-					_v8 = A2(func, _p3._0, acc),
-					_v9 = _p3._1;
-				func = _v7;
-				acc = _v8;
-				list = _v9;
-				continue foldl;
-			}
-		}
-	});
-var _elm_lang$core$List_ops = _elm_lang$core$List_ops || {};
 var _elm_lang$core$List$map = F2(
 	function (f, xs) {
 		return A3(
@@ -524,14 +505,6 @@ var _elm_lang$core$List$append = F2(
 				xs);
 		}
 	});
-var _elm_lang$core$List$concat = function (lists) {
-	return A3(
-		_elm_lang$core$List$foldr,
-		_elm_lang$core$List$append,
-		fromArray(
-			[]),
-		lists);
-};
 
 var _elm_lang$core$Result$Err = function (a) {
 	return {ctor: 'Err', _0: a};
@@ -712,7 +685,7 @@ function initWithFlags(moduleName, realInit, flagDecoder)
 {
 	return function init(flags)
 	{
-		var result = A2(_elm_lang$core$Native_Json.run, flagDecoder, flags);
+		var result = A2(run, flagDecoder, flags);
 		if (result.ctor === 'Err')
 		{
 			throw new Error(
@@ -830,13 +803,7 @@ function succeed(value)
 	};
 }
 
-function fail(error)
-{
-	return {
-		ctor: '_Task_fail',
-		value: error
-	};
-}
+
 
 function nativeBinding(callback)
 {
@@ -1078,7 +1045,6 @@ function work()
 
 return {
 	succeed: succeed,
-	fail: fail,
 	nativeBinding: nativeBinding,
 	andThen: F2(andThen),
 	onError: F2(onError),
@@ -1116,8 +1082,6 @@ let join = F2(function(sep, strs)
 
 //import Maybe, Native.Array, Native.List, Native.Utils, Result //
 
-var _elm_lang$core$Native_Json = function() {
-
 
 // CORE DECODERS
 
@@ -1130,14 +1094,7 @@ function succeed(msg)
 	};
 }
 
-function fail(msg)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'fail',
-		msg: msg
-	};
-}
+
 
 function decodePrimitive(tag)
 {
@@ -1171,15 +1128,6 @@ function decodeField(field, decoder)
 		ctor: '<decoder>',
 		tag: 'field',
 		field: field,
-		decoder: decoder
-	};
-}
-
-function decodeKeyValuePairs(decoder)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'key-value',
 		decoder: decoder
 	};
 }
@@ -1659,75 +1607,41 @@ function encode(indentLevel, value)
 	return JSON.stringify(value, null, indentLevel);
 }
 
-function identity(value)
-{
-	return value;
-}
+	encode= F2(encode)
+	runOnString= F2(runOnString)
+	run= F2(run)
 
-function encodeObject(keyValuePairs)
-{
-	var obj = {};
-	while (keyValuePairs.ctor !== '[]')
-	{
-		var pair = keyValuePairs._0;
-		obj[pair._0] = pair._1;
-		keyValuePairs = keyValuePairs._1;
-	}
-	return obj;
-}
+	decodeContainer= F2(decodeContainer)
 
-return {
-	encode: F2(encode),
-	runOnString: F2(runOnString),
-	run: F2(run),
+	decodeField= F2(decodeField)
 
-	decodeNull: decodeNull,
-	decodePrimitive: decodePrimitive,
-	decodeContainer: F2(decodeContainer),
+	decodeObject1= F2(decodeObject1)
+	decodeObject2= F3(decodeObject2)
+	decodeObject3= F4(decodeObject3)
+	decodeObject4= F5(decodeObject4)
+	decodeObject5= F6(decodeObject5)
 
-	decodeField: F2(decodeField),
+	decodeTuple1= F2(decodeTuple1)
+	decodeTuple2= F3(decodeTuple2)
+	decodeTuple3= F4(decodeTuple3)
+	decodeTuple4= F5(decodeTuple4)
+	decodeTuple5= F6(decodeTuple5)
 
-	decodeObject1: F2(decodeObject1),
-	decodeObject2: F3(decodeObject2),
-	decodeObject3: F4(decodeObject3),
-	decodeObject4: F5(decodeObject4),
-	decodeObject5: F6(decodeObject5),
-	decodeObject: decodeObject,
-	decodeKeyValuePairs: decodeKeyValuePairs,
+	andThen = F2(andThen)
+	customAndThen = F2(customAndThen)
 
-	decodeTuple1: F2(decodeTuple1),
-	decodeTuple2: F3(decodeTuple2),
-	decodeTuple3: F4(decodeTuple3),
-	decodeTuple4: F5(decodeTuple4),
-	decodeTuple5: F6(decodeTuple5),
 
-	andThen: F2(andThen),
-	customAndThen: F2(customAndThen),
-	fail: fail,
-	succeed: succeed,
-	oneOf: oneOf,
 
-	identity: identity,
-	encodeNull: null,
-
-	encodeList: toArray,
-	encodeObject: encodeObject,
-
-	equality: equality
-};
-
-}();
-
-var _elm_lang$core$Json_Decode$andThen = _elm_lang$core$Native_Json.andThen;
+var _elm_lang$core$Json_Decode$andThen = andThen;
 var _elm_lang$core$Json_Decode$maybe = function (decoder) {
-	return A2(_elm_lang$core$Native_Json.decodeContainer, 'maybe', decoder);
+	return A2(decodeContainer, 'maybe', decoder);
 };
-var _elm_lang$core$Json_Decode$null = _elm_lang$core$Native_Json.decodeNull;
-var _elm_lang$core$Json_Decode$float = _elm_lang$core$Native_Json.decodePrimitive('float');
-var _elm_lang$core$Json_Decode$string = _elm_lang$core$Native_Json.decodePrimitive('string');
-var _elm_lang$core$Json_Decode$oneOf = _elm_lang$core$Native_Json.oneOf;
-var _elm_lang$core$Json_Decode$object4 = _elm_lang$core$Native_Json.decodeObject4;
-var _elm_lang$core$Json_Decode$object3 = _elm_lang$core$Native_Json.decodeObject3;
+var _elm_lang$core$Json_Decode$null = decodeNull;
+var _elm_lang$core$Json_Decode$float = decodePrimitive('float');
+var _elm_lang$core$Json_Decode$string = decodePrimitive('string');
+var _elm_lang$core$Json_Decode$oneOf = oneOf;
+var _elm_lang$core$Json_Decode$object4 = decodeObject4;
+var _elm_lang$core$Json_Decode$object3 = decodeObject3;
 var _elm_lang$core$Json_Decode_ops = _elm_lang$core$Json_Decode_ops || {};
 var _elm_lang$core$Json_Decode$at = F2(
 	function (fields, decoder) {
@@ -1735,28 +1649,28 @@ var _elm_lang$core$Json_Decode$at = F2(
 			_elm_lang$core$List$foldr,
 			F2(
 				function (x, y) {
-					return A2(_elm_lang$core$Native_Json.decodeField, x, y);
+					return A2(decodeField, x, y);
 				}),
 			decoder,
 			fields);
 	});
-var _elm_lang$core$Json_Decode$map = _elm_lang$core$Native_Json.decodeObject1;
-var _debois$elm_dom$DOM$scrollTop = A2(_elm_lang$core$Native_Json.decodeField, 'scrollTop', _elm_lang$core$Json_Decode$float);
-var _debois$elm_dom$DOM$scrollLeft = A2(_elm_lang$core$Native_Json.decodeField, 'scrollLeft', _elm_lang$core$Json_Decode$float);
-var _debois$elm_dom$DOM$offsetTop = A2(_elm_lang$core$Native_Json.decodeField, 'offsetTop', _elm_lang$core$Json_Decode$float);
-var _debois$elm_dom$DOM$offsetLeft = A2(_elm_lang$core$Native_Json.decodeField, 'offsetLeft', _elm_lang$core$Json_Decode$float);
-var _debois$elm_dom$DOM$offsetHeight = A2(_elm_lang$core$Native_Json.decodeField, 'offsetHeight', _elm_lang$core$Json_Decode$float);
-var _debois$elm_dom$DOM$offsetWidth = A2(_elm_lang$core$Native_Json.decodeField, 'offsetWidth', _elm_lang$core$Json_Decode$float);
+var _elm_lang$core$Json_Decode$map = decodeObject1;
+var _debois$elm_dom$DOM$scrollTop = A2(decodeField, 'scrollTop', _elm_lang$core$Json_Decode$float);
+var _debois$elm_dom$DOM$scrollLeft = A2(decodeField, 'scrollLeft', _elm_lang$core$Json_Decode$float);
+var _debois$elm_dom$DOM$offsetTop = A2(decodeField, 'offsetTop', _elm_lang$core$Json_Decode$float);
+var _debois$elm_dom$DOM$offsetLeft = A2(decodeField, 'offsetLeft', _elm_lang$core$Json_Decode$float);
+var _debois$elm_dom$DOM$offsetHeight = A2(decodeField, 'offsetHeight', _elm_lang$core$Json_Decode$float);
+var _debois$elm_dom$DOM$offsetWidth = A2(decodeField, 'offsetWidth', _elm_lang$core$Json_Decode$float);
 var _debois$elm_dom$DOM$offsetParent = F2(
 	function (x, decoder) {
 		return _elm_lang$core$Json_Decode$oneOf(
 			fromArray(
 				[
 					A2(
-					_elm_lang$core$Native_Json.decodeField,
+					decodeField,
 					'offsetParent',
 					_elm_lang$core$Json_Decode$null(x)),
-					A2(_elm_lang$core$Native_Json.decodeField, 'offsetParent', decoder)
+					A2(decodeField, 'offsetParent', decoder)
 				]));
 	});
 var _debois$elm_dom$DOM$position = F2(
@@ -1944,7 +1858,7 @@ function equalEvents(a, b)
 			return false;
 		}
 	}
-	return _elm_lang$core$Native_Json.equality(a.decoder, b.decoder);
+	return equality(a.decoder, b.decoder);
 }
 
 
@@ -2172,7 +2086,7 @@ function makeEventHandler(eventNode, info)
 	{
 		var info = eventHandler.info;
 
-		var value = A2(_elm_lang$core$Native_Json.run, info.decoder, event);
+		var value = A2(run, info.decoder, event);
 
 		if (value.ctor === 'Ok')
 		{
@@ -3264,74 +3178,7 @@ var _elm_lang$html$Html_App$beginnerProgram = function (_p1) {
 			view: _p2.view,
 		});
 };
-var _debois$elm_mdl$Material_Options$cs = function (c) {
-	 return {ctor: 'Class', _0: c};
-};
 
-var _debois$elm_mdl$Material_Options$collect1$ = F2(
-	function (options, acc) {
-		var _p1 = options;
-		switch (_p1.ctor) {
-			case 'Class':
-				return update(
-					acc,
-					{
-						classes: A2(F2(Cons), _p1._0, acc.classes)
-					});
-			case 'CSS':
-				return update(
-					acc,
-					{
-						css: A2(F2(Cons), _p1._0, acc.css)
-					});
-			case 'Attribute':
-				return update(
-					acc,
-					{
-						attrs: A2(F2(Cons), _p1._0, acc.attrs)
-					});
-			case 'Many':
-				return A3(_elm_lang$core$List$foldl, _debois$elm_mdl$Material_Options$collect1$, acc, _p1._0);
-			case 'Set':
-				return acc;
-			default:
-				return acc;
-		}
-	});
-var _debois$elm_mdl$Material_Options$collect1 = F2(
-	function (option, acc) {
-		var _p2 = option;
-		switch (_p2.ctor) {
-			case 'Class':
-				return update(
-					acc,
-					{
-						classes: A2(F2(Cons), _p2._0, acc.classes)
-					});
-			case 'CSS':
-				return update(
-					acc,
-					{
-						css: A2(F2(Cons), _p2._0, acc.css)
-					});
-			case 'Attribute':
-				return update(
-					acc,
-					{
-						attrs: A2(F2(Cons), _p2._0, acc.attrs)
-					});
-			case 'Many':
-				return A3(_elm_lang$core$List$foldl, _debois$elm_mdl$Material_Options$collect1, acc, _p2._0);
-			case 'Set':
-				return update(
-					acc,
-					{
-						config: _p2._0(acc.config)
-					});
-			default:
-				return acc;
-		}
-	});
 var button = (_elm_lang$html$Html$node('button'))
 
 var _debois$elm_mdl$Material_Ripple$styles = F2(
@@ -3427,14 +3274,14 @@ var _debois$elm_mdl$Material_Ripple$DOMState = F6(
 			fromArray(
 				['touches', '0', 'clientY']),
 			_elm_lang$core$Json_Decode$float))
-  let currentTarget = A2(_elm_lang$core$Native_Json.decodeField, 'currentTarget', _debois$elm_dom$DOM$boundingClientRect)
+  let currentTarget = A2(decodeField, 'currentTarget', _debois$elm_dom$DOM$boundingClientRect)
   let clientX = _elm_lang$core$Json_Decode$maybe(
-		A2(_elm_lang$core$Native_Json.decodeField, 'clientX', _elm_lang$core$Json_Decode$float))
+		A2(decodeField, 'clientX', _elm_lang$core$Json_Decode$float))
   let clientY = _elm_lang$core$Json_Decode$maybe(
-		A2(_elm_lang$core$Native_Json.decodeField, 'clientY', _elm_lang$core$Json_Decode$float))
-  let decodeType = A2(_elm_lang$core$Native_Json.decodeField, 'type', _elm_lang$core$Json_Decode$string)
+		A2(decodeField, 'clientY', _elm_lang$core$Json_Decode$float))
+  let decodeType = A2(decodeField, 'type', _elm_lang$core$Json_Decode$string)
 var _debois$elm_mdl$Material_Ripple$geometryDecoder =
-	_elm_lang$core$Native_Json.decodeObject(
+	decodeObject(
 	_debois$elm_mdl$Material_Ripple$DOMState, [currentTarget,clientX ,clientY ,touchesX ,touchesY, decodeType]);
 var _debois$elm_mdl$Material_Ripple$Inert = {ctor: 'Inert'};
 var _debois$elm_mdl$Material_Ripple$model = {animation: _debois$elm_mdl$Material_Ripple$Inert, metrics: _elm_lang$core$Maybe$Nothing, ignoringMouseDown: false};
@@ -3536,7 +3383,7 @@ var _debois$elm_mdl$Material_Ripple$upOn = function (name) {
   return A2(
     _elm_lang$html$Html_Events$on,
     name,
-    _elm_lang$core$Native_Json.succeed(
+    succeed(
       _debois$elm_mdl$Material_Ripple$Up));
 };
 var _debois$elm_mdl$Material_Ripple$Down = function (a) {
