@@ -3294,34 +3294,17 @@ var _elm_lang$html$Html_App$beginnerProgram = function (_p1) {
 	return _elm_lang$html$Html_App$programWithFlags(
 		{
 			init: function (_p3) {
-				return A2(
-          F2(
-          	function (model, commands) {
-          		return {
-          			_0: model,
+				return  {
+          			_0: _p2.model,
           		};
-          	}),
-					_p2.model,
-					fromArray(
-						[]));
 			},
 			update: F2(
 				function (msg, model) {
-					return A2(
-            F2(
-            	function (model, commands) {
-            		return {
-            			_0: model,
-            		};
-            	}),
-						A2(_p2.update, msg, model),
-						fromArray(
-							[]));
+					return {
+            			_0: A2(_p2.update, msg, model),
+            		}
 				}),
 			view: _p2.view,
-			subscriptions: function (_p4) {
-				return {};
-			}
 		});
 };
 var _elm_lang$html$Html_App$map = _elm_lang$virtual_dom$VirtualDom$map;
