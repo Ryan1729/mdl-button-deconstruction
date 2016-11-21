@@ -383,14 +383,6 @@ function toString(v)
 
 	append = F2(append)
 
-
-
-
-
-var _elm_lang$core$Basics$flip = F3(
-	function (f, b, a) {
-		return A2(f, a, b);
-	});
 var _elm_lang$core$Basics$snd = function (_p2) {
 	var _p3 = _p2;
 	return _p3._1;
@@ -1809,67 +1801,25 @@ var _debois$elm_dom$DOM$boundingClientRect = A4(
 	A2(_debois$elm_dom$DOM$position, 0, 0),
 	_debois$elm_dom$DOM$offsetWidth,
 	_debois$elm_dom$DOM$offsetHeight);
-var _debois$elm_parts$Parts$map1st = F2(
-	function (f, _p2) {
-		var _p3 = _p2;
-		return {
-			ctor: '_Tuple2',
-			_0: f(_p3._0),
-			_1: _p3._1
-		};
-	});
 var _debois$elm_parts$Parts$update$ = F2(
 	function (_p6, c) {
 		var _p7 = _p6;
 		return _p7._0(c);
 	});
-var _debois$elm_parts$Parts$embedUpdate = F5(
-	function (get, set, update, msg, c) {
-		return A2(
-			_elm_lang$core$Maybe$map,
-			_debois$elm_parts$Parts$map1st(
-				A2(_elm_lang$core$Basics$flip, set, c)),
-			A2(
-				update,
-				msg,
-				get(c)));
+var _debois$elm_parts$Parts$embedUpdate = F2(
+	function (msg, c) {
+    var model = c._0 || _debois$elm_mdl$Material_Ripple$model
+    let newModel = A2(_debois$elm_mdl$Material_Ripple$update, msg, model)
+
+    c._0 = newModel._0;
+    return _elm_lang$core$Maybe$Just( {
+      			_0: c,
+      		}
+      	)
 	});
 var _debois$elm_parts$Parts$Msg = function (a) {
 	return {ctor: 'Msg', _0: a};
 };
-var get$indexed =
-  function (c) {
-			return c._0 || _debois$elm_mdl$Material_Ripple$model;
-  };
-
-var _debois$elm_parts$Parts$pack = F2(
-	function (set0) {
-		return function (idx) {
-			return function (_p12) {
-				return _user$project$ChangeMe$Mdl(
-					 _debois$elm_parts$Parts$Msg(
-            			function (c) {
-            				return A2(
-                      A3(
-          							_debois$elm_parts$Parts$embedUpdate,
-          							get$indexed,
-                        F2(
-                        	function (value, dict) {
-                            dict._0 = value
-                        		return dict
-                        	}),
-                          F2(
-                          	function (m, c) {
-                          		return _elm_lang$core$Maybe$Just(
-                          				A2(_debois$elm_mdl$Material_Button$update, m, c));
-                          	})),
-            					_p12,
-            					c);
-            			})
-            	)
-			};
-		};
-	});
 
 //import Native.Json //
 
@@ -3706,10 +3656,6 @@ var _debois$elm_mdl$Material_Button$blurAndForward = function (event) {
 		'this.blur(); (function(self) { var e = document.createEvent(\'Event\'); e.initEvent(\'touchcancel\', true, true); self.lastChild.dispatchEvent(e); }(this));');
 };
 
-var _debois$elm_mdl$Material_Button$update = function (action) {
-	return _debois$elm_mdl$Material_Ripple$update(action);
-};
-
 var _debois$elm_mdl$Material_Button$view = F4(
 	function (lift, model, config, html) {
 		var summary = A2(_debois$elm_mdl$Material_Options$collect, {}, config);
@@ -3759,14 +3705,6 @@ var _debois$elm_mdl$Material_Button$view = F4(
 					])));
 	});
 
-var embeddedUpdate = A2(_debois$elm_parts$Parts$pack, idOf2);
-var _debois$elm_mdl$Material_Button$render = F2(
-			function (idx, c) {
-				return A2(
-					_debois$elm_mdl$Material_Button$view,
-					embeddedUpdate(idx),
-					get$indexed(c));
-			});
 var idOf2 = F2(
   function (x, y) {
     return x
@@ -3822,11 +3760,21 @@ var _user$project$ChangeMe$Mdl = function (a) {
 	return {ctor: 'Mdl', _0: a};
 };
 var _user$project$ChangeMe$view = function (mdl) {
-	return A4(
-		_debois$elm_mdl$Material_Button$render,
-		fromArray(
-			[0]),
-		mdl,
+	return A2(
+     A2(
+        _debois$elm_mdl$Material_Button$view,
+        function (_p12) {
+        				return _user$project$ChangeMe$Mdl(
+        					 _debois$elm_parts$Parts$Msg(
+                    			function (c) {
+                    				return A2(
+                  							_debois$elm_parts$Parts$embedUpdate,
+                    					_p12,
+                    					c);
+                    			})
+                    	)
+        		},
+        mdl._0 || _debois$elm_mdl$Material_Ripple$model),
 		fromArray(
 			[_debois$elm_mdl$Material_Button$raised]),
 		fromArray(
