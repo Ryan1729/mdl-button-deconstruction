@@ -1050,7 +1050,6 @@ return {
 	onError: F2(onError),
 	receive: receive,
 
-	spawn: spawn,
 	kill: kill,
 	sleep: sleep,
 
@@ -1063,25 +1062,10 @@ var _elm_lang$core$Platform_Cmd$none = {}
 var _elm_lang$core$Platform_Cmd_ops = _elm_lang$core$Platform_Cmd_ops || {};
 
 
-//import Native.List //
-
-
-
-//import Maybe, Native.List, Native.Utils, Result //
-
-
-
 let join = F2(function(sep, strs)
 {
   return toArray(strs).join(sep);
 })
-
-//import Native.Utils //
-
-
-
-//import Maybe, Native.Array, Native.List, Native.Utils, Result //
-
 
 // CORE DECODERS
 
@@ -3376,9 +3360,8 @@ var _debois$elm_mdl$Material_Ripple$Down = function (a) {
 };
 var _debois$elm_mdl$Material_Ripple$downOn$ = F2(
 	function (fa, name) {
-		return A2(
-			_elm_lang$html$Html_Events$on,
-			name,
+		return _elm_lang$html$Html_Events$on(
+			name)(
 			decodeObject(function (_p6) {
   					return fa(
   						_debois$elm_mdl$Material_Ripple$Down(_p6));
