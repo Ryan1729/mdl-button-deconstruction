@@ -1808,13 +1808,7 @@ var ATTR_NS_KEY = 'ATTR_NS';
 ////////////  VIRTUAL DOM NODES  ////////////
 
 
-function text(string)
-{
-	return {
-		type: 'text',
-		text: string
-	};
-}
+
 
 
 function node(tag)
@@ -1907,13 +1901,7 @@ function organizeFacts(factList)
 ////////////  PROPERTIES AND ATTRIBUTES  ////////////
 
 
-function style(value)
-{
-	return {
-		key: STYLE_KEY,
-		value: value
-	};
-}
+
 
 
 function property(key, value)
@@ -3134,16 +3122,12 @@ var _elm_lang$virtual_dom$VirtualDom$on = F2(
 	function (eventName, decoder) {
 		return A3(_elm_lang$virtual_dom$VirtualDom$onWithOptions, eventName, _elm_lang$virtual_dom$VirtualDom$defaultOptions, decoder);
 	});
-var _elm_lang$virtual_dom$VirtualDom$style = style;
 var _elm_lang$virtual_dom$VirtualDom$attribute = F2(attribute);
 var _elm_lang$virtual_dom$VirtualDom$property = F2(property);
-var _elm_lang$virtual_dom$VirtualDom$text = text;
 var _elm_lang$virtual_dom$VirtualDom$node = node;
 
-var _elm_lang$html$Html$text = _elm_lang$virtual_dom$VirtualDom$text;
 var _elm_lang$html$Html$node = _elm_lang$virtual_dom$VirtualDom$node;
 var _elm_lang$html$Html$span = _elm_lang$html$Html$node('span');
-var _elm_lang$html$Html$button = _elm_lang$html$Html$node('button');
 
 var _elm_lang$html$Html_Attributes$attribute = _elm_lang$virtual_dom$VirtualDom$attribute;
 var _elm_lang$html$Html_Attributes$property = _elm_lang$virtual_dom$VirtualDom$property;
@@ -3168,7 +3152,6 @@ var _elm_lang$html$Html_Attributes$classList = function (list) {
 				_elm_lang$core$Basics$fst,
 				A2(_elm_lang$core$List$filter, _elm_lang$core$Basics$snd, list))));
 };
-var _elm_lang$html$Html_Attributes$style = _elm_lang$virtual_dom$VirtualDom$style;
 
 var _elm_lang$core$Task$onError = _elm_lang$core$Native_Scheduler.onError;
 var _elm_lang$core$Task$andThen = _elm_lang$core$Native_Scheduler.andThen;
@@ -3349,29 +3332,8 @@ var _debois$elm_mdl$Material_Options$collect1 = F2(
 				return acc;
 		}
 	});
+var button = (_elm_lang$html$Html$node('button'))
 
-var _debois$elm_mdl$Material_Options$apply = F2(
-	function (ctor, options) {
-    var listeners = fromArray(
-      [
-
-        A2(_debois$elm_mdl$Material_Ripple$downOn$, viewLift, 'mousedown'),
-
-        A2(_debois$elm_mdl$Material_Ripple$downOn$, viewLift, 'touchstart'),
-
-            _debois$elm_mdl$Material_Button$blurAndForward('mouseup'),
-
-              _debois$elm_mdl$Material_Button$blurAndForward('mouseleave'),
-
-                _debois$elm_mdl$Material_Button$blurAndForward('touchend')
-        ])
-
-    return ctor(
-			A2(
-				_elm_lang$core$List$append,
-        listeners,
-        {"ctor":"::","_0":{"key":"STYLE","value":{"ctor":"[]"}},"_1":{"ctor":"::","_0":{"key":"className","value":"mdl-js-ripple-effect mdl-js-button mdl-button mdl-button--raised"},"_1":{"ctor":"[]"}}}));
-	});
 var _debois$elm_mdl$Material_Ripple$styles = F2(
 	function (m, frame) {
 		var r = m.rect;
@@ -3483,19 +3445,23 @@ var _debois$elm_mdl$Material_Ripple$Frame = function (a) {
 };
 var _debois$elm_mdl$Material_Ripple$view$ = F2(
 	function (attrs, model) {
-		var styling = function () {
-			var _p3 = {ctor: '_Tuple2', _0: model.metrics, _1: model.animation};
-			if ((_p3.ctor === '_Tuple2') && (_p3._0.ctor === 'Just')) {
-				if (_p3._1.ctor === 'Frame') {
-					return A2(_debois$elm_mdl$Material_Ripple$styles, _p3._0._0, _p3._1._0);
+		var stylingA = function () {
+			if ((model.metrics.ctor === 'Just')) {
+				if (model.animation.ctor === 'Frame') {
+					return A2(_debois$elm_mdl$Material_Ripple$styles, model.metrics._0, model.animation._0);
 				} else {
-					return A2(_debois$elm_mdl$Material_Ripple$styles, _p3._0._0, 1);
+					return A2(_debois$elm_mdl$Material_Ripple$styles, model.metrics._0, 1);
 				}
 			} else {
 				return fromArray(
 					[]);
 			}
 		}();
+
+    var styling = {
+  		key: STYLE_KEY,
+  		value: stylingA
+  	}
 		return A2(
 			_elm_lang$html$Html$span,
 			attrs,
@@ -3522,12 +3488,13 @@ var _debois$elm_mdl$Material_Ripple$view$ = F2(
 									_1: !eq(model.animation, _debois$elm_mdl$Material_Ripple$Inert)
 								}
 								])),
-							_elm_lang$html$Html_Attributes$style(styling)
+							styling
 						]),
 					fromArray(
 						[]))
 				]));
 	});
+
 var _debois$elm_mdl$Material_Ripple$Tick = {ctor: 'Tick'};
 var _debois$elm_mdl$Material_Ripple$update = F2(
 	function (action, model) {
@@ -3616,24 +3583,33 @@ var viewLift = function (_p12) {
     }
 var _debois$elm_mdl$Material_Button$view = (
 	function (model) {
-		return A3(
-			_debois$elm_mdl$Material_Options$apply,
-			_elm_lang$html$Html$button,
-			fromArray(
-				[
-					_debois$elm_mdl$Material_Options$cs('mdl-button'),
-					_debois$elm_mdl$Material_Options$cs('mdl-js-button'),
-					_debois$elm_mdl$Material_Options$cs('mdl-js-ripple-effect')
-				]),
-			_elm_lang$core$List$concat(
-				fromArray(
-					[
+    let listeners = fromArray(
+      [
+
+        A2(_debois$elm_mdl$Material_Ripple$downOn$, viewLift, 'mousedown'),
+
+        A2(_debois$elm_mdl$Material_Ripple$downOn$, viewLift, 'touchstart'),
+
+            _debois$elm_mdl$Material_Button$blurAndForward('mouseup'),
+
+              _debois$elm_mdl$Material_Button$blurAndForward('mouseleave'),
+
+                _debois$elm_mdl$Material_Button$blurAndForward('touchend')
+        ])
+
+		return (
+      button(
+  			(
+  				_elm_lang$core$List$append({"ctor":"::","_0":{"key":"STYLE","value":{"ctor":"[]"}},"_1":{"ctor":"::","_0":{"key":"className","value":"mdl-js-ripple-effect mdl-js-button mdl-button mdl-button--raised"},"_1":{"ctor":"[]"}}})(
+        listeners
+      ))))(
             fromArray(
         			[
-        				_elm_lang$html$Html$text('a test Button with a long label')
-        			]),
-						fromArray(
-						[
+               {
+                		type: 'text',
+                		text: 'a test Button with a long label'
+                	}
+        			,
 							(function map(node)
               {
               	return {
@@ -3653,22 +3629,7 @@ var _debois$elm_mdl$Material_Button$view = (
 									]),
 								model))
 						])
-					])));
-	});
-
-var idOf2 = F2(
-  function (x, y) {
-    return x
-  })
-var _elm_lang$window$Window_ops = _elm_lang$window$Window_ops || {};
-_elm_lang$window$Window_ops['&>'] = F2(
-	function (t1, t2) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			t1,
-			function (_p0) {
-				return t2;
-			});
+					);
 	});
 
 var _debois$elm_mdl$Material$update = F2(
