@@ -1793,22 +1793,6 @@ var _debois$elm_dom$DOM$boundingClientRect = A4(
 	A2(_debois$elm_dom$DOM$position, 0, 0),
 	_debois$elm_dom$DOM$offsetWidth,
 	_debois$elm_dom$DOM$offsetHeight);
-var _debois$elm_parts$Parts$update$ = F2(
-	function (_p6, c) {
-		var _p7 = _p6;
-		return _p7(c);
-	});
-var _debois$elm_parts$Parts$embedUpdate = F2(
-	function (msg, c) {
-    var model = c._0 || _debois$elm_mdl$Material_Ripple$model
-    let newModel = A2(_debois$elm_mdl$Material_Ripple$update, msg, model)
-
-    c._0 = newModel._0;
-    return _elm_lang$core$Maybe$Just( {
-      			_0: c,
-      		}
-      	)
-	});
 
 //import Native.Json //
 
@@ -1867,15 +1851,7 @@ function nodeHelp(tag, factList, kidList)
 	};
 }
 
-function map(tagger, node)
-{
-	return {
-		type: 'tagger',
-		tagger: tagger,
-		node: node,
-		descendantsCount: 1 + (node.descendantsCount || 0)
-	};
-}
+
 
 
 
@@ -3161,7 +3137,6 @@ var _elm_lang$virtual_dom$VirtualDom$on = F2(
 var _elm_lang$virtual_dom$VirtualDom$style = style;
 var _elm_lang$virtual_dom$VirtualDom$attribute = F2(attribute);
 var _elm_lang$virtual_dom$VirtualDom$property = F2(property);
-var _elm_lang$virtual_dom$VirtualDom$map = F2(map);
 var _elm_lang$virtual_dom$VirtualDom$text = text;
 var _elm_lang$virtual_dom$VirtualDom$node = node;
 
@@ -3288,10 +3263,9 @@ var _debois$elm_mdl$Material_Helpers$pure = _debois$elm_mdl$Material_Helpers$eff
 
 var _elm_lang$html$Html_Events$on = _elm_lang$virtual_dom$VirtualDom$on;
 
-var _elm_lang$html$Html_App$programWithFlags = _elm_lang$virtual_dom$VirtualDom$programWithFlags;
 var _elm_lang$html$Html_App$beginnerProgram = function (_p1) {
 	var _p2 = _p1;
-	return _elm_lang$html$Html_App$programWithFlags(
+	return _elm_lang$virtual_dom$VirtualDom$programWithFlags(
 		{
 			init: function (_p3) {
 				return  {
@@ -3307,24 +3281,10 @@ var _elm_lang$html$Html_App$beginnerProgram = function (_p1) {
 			view: _p2.view,
 		});
 };
-var _elm_lang$html$Html_App$map = _elm_lang$virtual_dom$VirtualDom$map;
 var _debois$elm_mdl$Material_Options$cs = function (c) {
 	 return {ctor: 'Class', _0: c};
 };
-var _debois$elm_mdl$Material_Options$addAttributes = F2(
-	function (summary, attrs) {
-		return A2(
-			_elm_lang$core$List$append,
-			attrs,
-			A2(
-				F2(Cons),
-				_elm_lang$html$Html_Attributes$style(summary.css),
-				A2(
-					F2(Cons),
-					_elm_lang$html$Html_Attributes$class(
-						A2(join, ' ', summary.classes)),
-					summary.attrs)));
-	});
+
 var _debois$elm_mdl$Material_Options$collect1$ = F2(
 	function (options, acc) {
 		var _p1 = options;
@@ -3389,31 +3349,29 @@ var _debois$elm_mdl$Material_Options$collect1 = F2(
 				return acc;
 		}
 	});
-var _debois$elm_mdl$Material_Options$recollect = _elm_lang$core$List$foldl(_debois$elm_mdl$Material_Options$collect1);
-var _debois$elm_mdl$Material_Options$apply = F4(
-	function (summary, ctor, options, attrs) {
-		return ctor(
+
+var _debois$elm_mdl$Material_Options$apply = F2(
+	function (ctor, options) {
+    var listeners = fromArray(
+      [
+
+        A2(_debois$elm_mdl$Material_Ripple$downOn$, viewLift, 'mousedown'),
+
+        A2(_debois$elm_mdl$Material_Ripple$downOn$, viewLift, 'touchstart'),
+
+            _debois$elm_mdl$Material_Button$blurAndForward('mouseup'),
+
+              _debois$elm_mdl$Material_Button$blurAndForward('mouseleave'),
+
+                _debois$elm_mdl$Material_Button$blurAndForward('touchend')
+        ])
+
+    return ctor(
 			A2(
-				_debois$elm_mdl$Material_Options$addAttributes,
-				A2(_debois$elm_mdl$Material_Options$recollect, summary, options),
-				attrs));
+				_elm_lang$core$List$append,
+        listeners,
+        {"ctor":"::","_0":{"key":"STYLE","value":{"ctor":"[]"}},"_1":{"ctor":"::","_0":{"key":"className","value":"mdl-js-ripple-effect mdl-js-button mdl-button mdl-button--raised"},"_1":{"ctor":"[]"}}}));
 	});
-var _debois$elm_mdl$Material_Options$Summary = F4(
-	function (a, b, c, d) {
-		return {classes: a, css: b, attrs: c, config: d};
-	});
-var _debois$elm_mdl$Material_Options$collect = function (_p3) {
-	return _debois$elm_mdl$Material_Options$recollect(
-		A4(
-			_debois$elm_mdl$Material_Options$Summary,
-			fromArray(
-				[]),
-			fromArray(
-				[]),
-			fromArray(
-				[]),
-			_p3));
-};
 var _debois$elm_mdl$Material_Ripple$styles = F2(
 	function (m, frame) {
 		var r = m.rect;
@@ -3630,7 +3588,6 @@ var _debois$elm_mdl$Material_Ripple$downOn$ = F2(
 				},
 				_debois$elm_mdl$Material_Ripple$geometryDecoder));
 	});
-var _debois$elm_mdl$Material_Button$raised = _debois$elm_mdl$Material_Options$cs('mdl-button--raised');
 var _debois$elm_mdl$Material_Button$blurAndForward = function (event) {
 	return A2(
 		_elm_lang$html$Html_Attributes$attribute,
@@ -3638,25 +3595,29 @@ var _debois$elm_mdl$Material_Button$blurAndForward = function (event) {
 		'this.blur(); (function(self) { var e = document.createEvent(\'Event\'); e.initEvent(\'touchcancel\', true, true); self.lastChild.dispatchEvent(e); }(this));');
 };
 
-var _debois$elm_mdl$Material_Button$view = F4(
-	function (lift, model, config, html) {
-		var summary = A2(_debois$elm_mdl$Material_Options$collect, {}, config);
-		var listeners = fromArray(
-			[
+var viewLift = function (_p12) {
+        return function (c) {
+                    return A2(
+                      F2(
+                        function (msg, c) {
+                          var model = c._0 || _debois$elm_mdl$Material_Ripple$model
+                          let newModel = A2(_debois$elm_mdl$Material_Ripple$update, msg, model)
 
-				A2(_debois$elm_mdl$Material_Ripple$downOn$, lift, 'mousedown'),
+                          c._0 = newModel._0;
+                          return _elm_lang$core$Maybe$Just( {
+                                  _0: c,
+                                }
+                              )
+                        }),
+                      _p12,
+                      c);
+                  }
 
-				A2(_debois$elm_mdl$Material_Ripple$downOn$, lift, 'touchstart'),
-
-  					_debois$elm_mdl$Material_Button$blurAndForward('mouseup'),
-
-    					_debois$elm_mdl$Material_Button$blurAndForward('mouseleave'),
-
-      					_debois$elm_mdl$Material_Button$blurAndForward('touchend')
-				]);
-		return A5(
+    }
+var _debois$elm_mdl$Material_Button$view = (
+	function (model) {
+		return A3(
 			_debois$elm_mdl$Material_Options$apply,
-			summary,
 			_elm_lang$html$Html$button,
 			fromArray(
 				[
@@ -3664,16 +3625,24 @@ var _debois$elm_mdl$Material_Button$view = F4(
 					_debois$elm_mdl$Material_Options$cs('mdl-js-button'),
 					_debois$elm_mdl$Material_Options$cs('mdl-js-ripple-effect')
 				]),
-			listeners,
 			_elm_lang$core$List$concat(
 				fromArray(
 					[
-						html,
+            fromArray(
+        			[
+        				_elm_lang$html$Html$text('a test Button with a long label')
+        			]),
 						fromArray(
 						[
-							A2(
-							_elm_lang$html$Html_App$map,
-							lift,
+							(function map(node)
+              {
+              	return {
+              		type: 'tagger',
+              		tagger: viewLift,
+              		node: node,
+              		descendantsCount: 1 + (node.descendantsCount || 0)
+              	};
+              })(
 							A2(
 								_debois$elm_mdl$Material_Ripple$view$,
 								fromArray(
@@ -3735,25 +3704,9 @@ var _user$project$ChangeMe$materialUpdate = F2(
 	});
 
 var _user$project$ChangeMe$view = function (mdl) {
-	return A2(
-     A2(
-        _debois$elm_mdl$Material_Button$view,
-        function (_p12) {
-        				return function (c) {
-                    				return A2(
-                  							_debois$elm_parts$Parts$embedUpdate,
-                    					_p12,
-                    					c);
-                    			}
-
-        		},
-        mdl._0 || _debois$elm_mdl$Material_Ripple$model),
-		fromArray(
-			[_debois$elm_mdl$Material_Button$raised]),
-		fromArray(
-			[
-				_elm_lang$html$Html$text('a test Button with a long label')
-			]));
+	return (
+        _debois$elm_mdl$Material_Button$view(
+        mdl._0 || _debois$elm_mdl$Material_Ripple$model));
 };
 var _user$project$ChangeMe$main = {
 	main: _elm_lang$html$Html_App$beginnerProgram(
