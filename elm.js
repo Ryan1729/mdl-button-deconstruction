@@ -69,12 +69,6 @@ function A4(fun, a, b, c, d)
     ? fun.func(a, b, c, d)
     : fun(a)(b)(c)(d);
 }
-function A5(fun, a, b, c, d, e)
-{
-  return fun.arity === 5
-    ? fun.func(a, b, c, d, e)
-    : fun(a)(b)(c)(d)(e);
-}
 
 function compare()
 {
@@ -1058,31 +1052,12 @@ function succeed(msg)
 	};
 }
 
-
-
-function decodePrimitive(tag)
-{
-	return {
-		ctor: '<decoder>',
-		tag: tag
-	};
-}
-
 function decodeContainer(tag, decoder)
 {
 	return {
 		ctor: '<decoder>',
 		tag: tag,
 		decoder: decoder
-	};
-}
-
-function decodeNull(value)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'null',
-		value: value
 	};
 }
 
@@ -1116,15 +1091,7 @@ function decodeTuple(f, decoders)
 	};
 }
 
-function andThen(decoder, callback)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'andThen',
-		decoder: decoder,
-		callback: callback
-	};
-}
+
 
 function customAndThen(decoder, callback)
 {
@@ -1136,14 +1103,7 @@ function customAndThen(decoder, callback)
 	};
 }
 
-function oneOf(decoders)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'oneOf',
-		decoders: decoders
-	};
-}
+
 
 
 // DECODING OBJECTS
@@ -1560,83 +1520,11 @@ function listEquality(aDecoders, bDecoders)
 	decodeTuple3= F4(decodeTuple3)
 	decodeTuple4= F5(decodeTuple4)
 
-	andThen = F2(andThen)
 	customAndThen = F2(customAndThen)
 
 
-
-var _elm_lang$core$Json_Decode$andThen = andThen;
-var _elm_lang$core$Json_Decode$maybe = function (decoder) {
-	return A2(decodeContainer, 'maybe', decoder);
-};
-var _elm_lang$core$Json_Decode$null = decodeNull;
-var _elm_lang$core$Json_Decode$float = decodePrimitive('float');
-var _elm_lang$core$Json_Decode$string = decodePrimitive('string');
-var _elm_lang$core$Json_Decode$oneOf = oneOf;
-var _elm_lang$core$Json_Decode$object4 = decodeObject4;
 var _elm_lang$core$Json_Decode$object3 = decodeObject3;
 var _elm_lang$core$Json_Decode_ops = _elm_lang$core$Json_Decode_ops || {};
-var _elm_lang$core$Json_Decode$at = F2(
-	function (fields, decoder) {
-		return A3(
-			_elm_lang$core$List$foldr,
-			decodeField,
-			decoder,
-			fields);
-	});
-var _debois$elm_dom$DOM$scrollTop = A2(decodeField, 'scrollTop', _elm_lang$core$Json_Decode$float);
-var _debois$elm_dom$DOM$scrollLeft = A2(decodeField, 'scrollLeft', _elm_lang$core$Json_Decode$float);
-var _debois$elm_dom$DOM$offsetTop = A2(decodeField, 'offsetTop', _elm_lang$core$Json_Decode$float);
-var _debois$elm_dom$DOM$offsetLeft = A2(decodeField, 'offsetLeft', _elm_lang$core$Json_Decode$float);
-var _debois$elm_dom$DOM$offsetHeight = A2(decodeField, 'offsetHeight', _elm_lang$core$Json_Decode$float);
-var _debois$elm_dom$DOM$offsetWidth = A2(decodeField, 'offsetWidth', _elm_lang$core$Json_Decode$float);
-var _debois$elm_dom$DOM$offsetParent = F2(
-	function (x, decoder) {
-		return _elm_lang$core$Json_Decode$oneOf(
-			fromArray(
-				[
-					A2(
-					decodeField,
-					'offsetParent',
-					_elm_lang$core$Json_Decode$null(x)),
-					A2(decodeField, 'offsetParent', decoder)
-				]));
-	});
-var _debois$elm_dom$DOM$position = F2(
-	function (x, y) {
-		return (
-			_elm_lang$core$Json_Decode$andThen(
-			A5(
-				_elm_lang$core$Json_Decode$object4,
-				F4(
-					function (scrollLeft, scrollTop, offsetLeft, offsetTop) {
-						return {ctor: '_Tuple2', _0: (x + offsetLeft) - scrollLeft, _1: (y + offsetTop) - scrollTop};
-					}),
-				_debois$elm_dom$DOM$scrollLeft,
-				_debois$elm_dom$DOM$scrollTop,
-				_debois$elm_dom$DOM$offsetLeft,
-				_debois$elm_dom$DOM$offsetTop))(
-			function (_p1) {
-				var _p2 = _p1;
-				var _p4 = _p2._1;
-				var _p3 = _p2._0;
-				return A2(
-					_debois$elm_dom$DOM$offsetParent,
-					{ctor: '_Tuple2', _0: _p3, _1: _p4},
-					A2(_debois$elm_dom$DOM$position, _p3, _p4));
-			}));
-	});
-var _debois$elm_dom$DOM$boundingClientRect = A4(
-	_elm_lang$core$Json_Decode$object3,
-	F3(
-		function (_p5, width, height) {
-			var _p6 = _p5;
-			return {top: _p6._1, left: _p6._0, width: width, height: height};
-		}),
-	A2(_debois$elm_dom$DOM$position, 0, 0),
-	_debois$elm_dom$DOM$offsetWidth,
-	_debois$elm_dom$DOM$offsetHeight);
-
 //import Native.Json //
 
 
@@ -3197,21 +3085,95 @@ var _debois$elm_mdl$Material_Ripple$DOMState = F6(
 	function (a, b, c, d, e, f) {
 		return {rect: a, clientX: b, clientY: c, touchX: d, touchY: e, type$: f};
 	});
-// let touchesX = {"ctor":"<decoder>","tag":"maybe","decoder":{"ctor":"<decoder>","tag":"field","field":"touches","decoder":{"ctor":"<decoder>","tag":"field","field":"0","decoder":{"ctor":"<decoder>","tag":"field","field":"clientX","decoder":{"ctor":"<decoder>","tag":"float"}}}}}
 let touchesX = function (e) {
   if(e.touches == null) {
     return _elm_lang$core$Maybe$Nothing
   }
   return _elm_lang$core$Maybe$Just(e.touches[0].clientX)
 }
-let touchesY = {"ctor":"<decoder>","tag":"maybe","decoder":{"ctor":"<decoder>","tag":"field","field":"touches","decoder":{"ctor":"<decoder>","tag":"field","field":"0","decoder":{"ctor":"<decoder>","tag":"field","field":"clientY","decoder":{"ctor":"<decoder>","tag":"float"}}}}}
+let touchesY = function (e) {
+  if(e.touches == null) {
+    return _elm_lang$core$Maybe$Nothing
+  }
+  return _elm_lang$core$Maybe$Just(e.touches[0].clientY)
+}
 // JSON.stringify(currentTarget, function(k,v) {return typeof v === "function" ? v.toString() : v})
+let field = function (key) {
+    return function (it) {
+      return it[key]
+    }
+}
+
+var _debois$elm_dom$DOM$offsetHeight = field('offsetHeight')
+var _debois$elm_dom$DOM$offsetWidth = field('offsetWidth')
+let decodeAndThen = F2(function (decoder, callback)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'andThen',
+		decoder: decoder,
+		callback: callback
+	};
+})
+
+function decodeNull(value)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'null',
+		value: value
+	};
+}
+function oneOf(decoders)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'oneOf',
+		decoders: decoders
+	};
+}
+var _debois$elm_dom$DOM$position = F2(
+	function (x, y) {
+    var positionDecoder = function (e) {
+          return {ctor: '_Tuple2',
+           _0: (x + e.offsetLeft) - e.scrollLeft,
+            _1: (y + e.offsetTop) - e.scrollTop};
+        }
+
+    var current = decodeAndThen(positionDecoder)
+
+		return (current(
+			function (_p1) {
+				return oneOf(
+          			fromArray(
+          				[
+          					A2(decodeField,'offsetParent',decodeNull(_p1)),
+          					A2(decodeField, 'offsetParent', A2(_debois$elm_dom$DOM$position, _p1._0, _p1._1))
+          				]));
+
+			}));
+	});
+var _debois$elm_dom$DOM$boundingClientRect = A4(
+	_elm_lang$core$Json_Decode$object3,
+	F3(
+		function (_p5, width, height) {
+			var _p6 = _p5;
+			return {top: _p6._1, left: _p6._0, width: width, height: height};
+		}),
+	A2(_debois$elm_dom$DOM$position, 0, 0),
+	_debois$elm_dom$DOM$offsetWidth,
+	_debois$elm_dom$DOM$offsetHeight);
+
 let currentTarget = A2(decodeField, 'currentTarget', _debois$elm_dom$DOM$boundingClientRect)
-let clientX = _elm_lang$core$Json_Decode$maybe(
-	A2(decodeField, 'clientX', _elm_lang$core$Json_Decode$float))
-let clientY = _elm_lang$core$Json_Decode$maybe(
-	A2(decodeField, 'clientY', _elm_lang$core$Json_Decode$float))
-let decodeType = A2(decodeField, 'type', _elm_lang$core$Json_Decode$string)
+let clientX = function (e) {
+  return _elm_lang$core$Maybe$Just(e.clientX)
+}
+let clientY = function (e) {
+  return _elm_lang$core$Maybe$Just(e.clientY)
+}
+let decodeType = function (e) {
+  return e.type
+}
 var _debois$elm_mdl$Material_Ripple$geometryDecoder =
 	decodeObject(
 	_debois$elm_mdl$Material_Ripple$DOMState, [currentTarget,clientX ,clientY ,touchesX ,touchesY, decodeType]);

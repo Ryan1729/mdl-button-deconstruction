@@ -5,6 +5,7 @@
   "asi": true,
   "funcscope": true,
   "esnext": true,
+  "eqnull": true,
   /*"maxerr": 255,*/
   "maxerr": 100,
   "shadow": true
