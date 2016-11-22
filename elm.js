@@ -1293,7 +1293,7 @@ function run(decoder, value)
 function runHelp(decoder, value)
 {
   if (typeof decoder === "function") {
-    return _elm_lang$core$Result$Ok(decoder(value))
+    return ok(decoder(value))
   }
 
 
@@ -3197,14 +3197,13 @@ var _debois$elm_mdl$Material_Ripple$DOMState = F6(
 	function (a, b, c, d, e, f) {
 		return {rect: a, clientX: b, clientY: c, touchX: d, touchY: e, type$: f};
 	});
-let touchesX = {"ctor":"<decoder>","tag":"maybe","decoder":{"ctor":"<decoder>","tag":"field","field":"touches","decoder":{"ctor":"<decoder>","tag":"field","field":"0","decoder":{"ctor":"<decoder>","tag":"field","field":"clientX","decoder":{"ctor":"<decoder>","tag":"float"}}}}}
-// let touchesX = function (e) {
-//   return {tag: "ok"}
-//   // if(e.touches == null) {
-//   //   return _elm_lang$core$Maybe$Nothing
-//   // }
-//   // return _elm_lang$core$Maybe$Just(e.touches[0].clientX)
-// }
+// let touchesX = {"ctor":"<decoder>","tag":"maybe","decoder":{"ctor":"<decoder>","tag":"field","field":"touches","decoder":{"ctor":"<decoder>","tag":"field","field":"0","decoder":{"ctor":"<decoder>","tag":"field","field":"clientX","decoder":{"ctor":"<decoder>","tag":"float"}}}}}
+let touchesX = function (e) {
+  if(e.touches == null) {
+    return _elm_lang$core$Maybe$Nothing
+  }
+  return _elm_lang$core$Maybe$Just(e.touches[0].clientX)
+}
 let touchesY = {"ctor":"<decoder>","tag":"maybe","decoder":{"ctor":"<decoder>","tag":"field","field":"touches","decoder":{"ctor":"<decoder>","tag":"field","field":"0","decoder":{"ctor":"<decoder>","tag":"field","field":"clientY","decoder":{"ctor":"<decoder>","tag":"float"}}}}}
 // JSON.stringify(currentTarget, function(k,v) {return typeof v === "function" ? v.toString() : v})
 let currentTarget = A2(decodeField, 'currentTarget', _debois$elm_dom$DOM$boundingClientRect)
