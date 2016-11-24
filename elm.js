@@ -3106,30 +3106,10 @@ var _debois$elm_mdl$Material_Button$view = (
   });
 
 
-
-var _debois$elm_mdl$Material$update = F2(
-  function (msg, model) {
-    return A2(
-        _elm_lang$core$Maybe$map,
-          function (mdl) {
-            return update(
-              model,
-              mdl._0);
-          },
-        msg(model))
-  });
-
 var _user$project$ChangeMe$materialUpdate = F2(
-  function (msg, materialModel) {
-    var _p0 = msg;
-    return function (_) {
-      return _;
-    }(
-      _elm_lang$core$Basics$fst(
-        A2(
-          _debois$elm_mdl$Material$update,
-          _p0,
-          materialModel)));
+  function (msg, model) {
+    msg(model)
+    return _elm_lang$core$Maybe$Nothing
   });
 
 var _user$project$ChangeMe$view = function (mdl) {
