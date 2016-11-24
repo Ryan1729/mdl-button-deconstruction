@@ -351,20 +351,10 @@ var _elm_lang$core$Basics$round = round;
 
 //import Native.Utils //
 
-var _elm_lang$core$Maybe$Nothing = {ctor: 'Nothing'};
+
 var _elm_lang$core$Maybe$Just = function (a) {
   return {ctor: 'Just', _0: a};
 };
-var _elm_lang$core$Maybe$map = F2(
-  function (f, maybe) {
-    var _p5 = maybe;
-    if (_p5.ctor === 'Just') {
-      return _elm_lang$core$Maybe$Just(
-        f(_p5._0));
-    } else {
-      return _elm_lang$core$Maybe$Nothing;
-    }
-  });
 
 var Nil = { ctor: '[]' };
 
@@ -1160,12 +1150,6 @@ function runHelp(decoder, value)
         list = Cons(result.value, list);
       }
       return ok(list);
-
-    case 'maybe':
-      var result = runHelp(decoder.decoder, value);
-      return (result.tag === 'ok')
-        ? ok(_elm_lang$core$Maybe$Just(result.value))
-        : ok(_elm_lang$core$Maybe$Nothing);
 
     case 'field':
       var field = decoder.field;
@@ -2855,34 +2839,29 @@ var _debois$elm_mdl$Material_Ripple$styles = F2(
         {ctor: '_Tuple2', _0: 'transform', _1: transformString}
       ]);
   });
+
 var _debois$elm_mdl$Material_Ripple$computeMetrics = function (g) {
   var rect = g.rect;
-  var set = F2(
-    function (x, y) {
+
+  var set = function (x, y) {
       return _elm_lang$core$Maybe$Just(
-        {ctor: '_Tuple2', _0: x - rect.left, _1: y - rect.top});
-    });
-  return A2(
-    _elm_lang$core$Maybe$map,
-    function (_p0) {
-      return {rect: rect, x:  _p0._0, y: _p0._1};
-    },
-    function () {
-      if ((g.clientX == null) || (g.clientY == null)) {
-        if ((g.touchX == null) || (g.touchY == null)) {
-          return _elm_lang$core$Maybe$Nothing;
-        } else {
-          return A2(set, g.touchX, g.touchY);
-        }
-      } else {
-        if ((g.clientX === 0.0) && (g.clientY === 0.0)) {
-          return _elm_lang$core$Maybe$Just(
-            {ctor: '_Tuple2', _0: rect.width / 2.0, _1: rect.height / 2.0});
-        } else {
-          return A2(set, g.clientX, g.clientY);
-        }
-      }
-    }());
+        {rect: rect, x: x - rect.left, y: y - rect.top});
+    };
+
+  if ((g.clientX == null) || (g.clientY == null)) {
+    if ((g.touchX == null) || (g.touchY == null)) {
+      return {ctor: 'Nothing'};
+    } else {
+      return set(g.touchX, g.touchY);
+    }
+  } else {
+    if ((g.clientX === 0.0) && (g.clientY === 0.0)) {
+      return _elm_lang$core$Maybe$Just(
+        {rect: rect, x: rect.width / 2.0, y: rect.height / 2.0});
+    } else {
+      return set(g.clientX, g.clientY);
+    }
+  }
 };
 let touchesX = function (e) {
   if(e.touches == null) {
@@ -2898,7 +2877,7 @@ let touchesY = function (e) {
 }
 
 var _debois$elm_mdl$Material_Ripple$Inert = {ctor: 'Inert'};
-var _debois$elm_mdl$Material_Ripple$model = {animation: _debois$elm_mdl$Material_Ripple$Inert, metrics: _elm_lang$core$Maybe$Nothing, ignoringMouseDown: false};
+var _debois$elm_mdl$Material_Ripple$model = {animation: _debois$elm_mdl$Material_Ripple$Inert, metrics: {ctor: "Nothing"}, ignoringMouseDown: false};
 
 
 var _debois$elm_mdl$Material_Ripple$Frame = function (a) {
@@ -3006,10 +2985,6 @@ var _debois$elm_mdl$Material_Ripple$upOn = function (name) {
       msg: {ctor: 'Up'}
     });
 };
-var _debois$elm_mdl$Material_Ripple$Down = function (a) {
-  return ;
-};
-
 var geometryDecoder =
 function (e) {
   return {
@@ -3105,11 +3080,11 @@ var _debois$elm_mdl$Material_Button$view = (
           );
   });
 
-
+var accidentalGlobalModel = {ctor: 'Nothing'};
 var _user$project$ChangeMe$materialUpdate = F2(
   function (msg, model) {
-    msg(model)
-    return _elm_lang$core$Maybe$Nothing
+    var r = msg(model)
+    return accidentalGlobalModel
   });
 
 var _user$project$ChangeMe$view = function (mdl) {
