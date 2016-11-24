@@ -2779,24 +2779,7 @@ var _debois$elm_mdl$Material_Helpers$effect = F2(
   });
 
 
-var _elm_lang$html$Html_App$beginnerProgram = function (_p1) {
-  var _p2 = _p1;
-  return _elm_lang$virtual_dom$VirtualDom$programWithFlags(
-    {
-      init: function (_p3) {
-        return  {
-                _0: _p2.model,
-              };
-      },
-      update: F2(
-        function (msg, model) {
-          return {
-                  _0: A2(_p2.update, msg, model),
-                }
-        }),
-      view: _p2.view,
-    });
-};
+
 
 
 
@@ -2877,7 +2860,6 @@ let touchesY = function (e) {
 }
 
 var _debois$elm_mdl$Material_Ripple$Inert = {ctor: 'Inert'};
-var _debois$elm_mdl$Material_Ripple$model = {animation: _debois$elm_mdl$Material_Ripple$Inert, metrics: {ctor: "Nothing"}, ignoringMouseDown: false};
 
 
 var _debois$elm_mdl$Material_Ripple$Frame = function (a) {
@@ -2925,7 +2907,7 @@ var _debois$elm_mdl$Material_Ripple$view$ = F2(
                   {
                   ctor: '_Tuple2',
                   _0: 'is-visible',
-                  _1: !eq(model.animation, _debois$elm_mdl$Material_Ripple$Inert)
+                  _1: !eq(model.animation, {ctor: 'Inert'})
                 }
                 ])),
               styling
@@ -2969,7 +2951,7 @@ var _debois$elm_mdl$Material_Ripple$update = F2(
         return (
           update(
             model,
-            {animation: _debois$elm_mdl$Material_Ripple$Inert}));
+            {animation: {ctor: 'Inert'}}));
       default:
         return (model)
 
@@ -3011,22 +2993,12 @@ var _debois$elm_mdl$Material_Button$blurAndForward = function (event) {
     'this.blur(); (function(self) { var e = document.createEvent(\'Event\'); e.initEvent(\'touchcancel\', true, true); self.lastChild.dispatchEvent(e); }(this));');
 };
 
-var viewLift = function (_p12) {
+var viewLift = function (msg) {
         return function (c) {
-                    return A2(
-                      F2(
-                        function (msg, c) {
-                          var model = c._0 || _debois$elm_mdl$Material_Ripple$model
-
-                          c._0 = A2(_debois$elm_mdl$Material_Ripple$update, msg, model);
-                          return _elm_lang$core$Maybe$Just( {
-                                  _0: c,
-                                }
-                              )
-                        }),
-                      _p12,
-                      c);
-                  }
+                var model = c._0 || {animation: {ctor: 'Inert'}, metrics: {ctor: "Nothing"}, ignoringMouseDown: false}
+                c._0 = _debois$elm_mdl$Material_Ripple$update(msg)(model);
+                return  c
+        }
 
     }
 var _debois$elm_mdl$Material_Button$view = (
@@ -3090,7 +3062,25 @@ var _user$project$ChangeMe$materialUpdate = F2(
 var _user$project$ChangeMe$view = function (mdl) {
   return (
         _debois$elm_mdl$Material_Button$view(
-        mdl._0 || _debois$elm_mdl$Material_Ripple$model));
+        mdl._0 || {animation: {ctor: 'Inert'}, metrics: {ctor: "Nothing"}, ignoringMouseDown: false}));
+};
+var _elm_lang$html$Html_App$beginnerProgram = function (_p1) {
+  var _p2 = _p1;
+  return _elm_lang$virtual_dom$VirtualDom$programWithFlags(
+    {
+      init: function (_p3) {
+        return  {
+                _0: _p2.model,
+              };
+      },
+      update: F2(
+        function (msg, model) {
+          return {
+                  _0: A2(_p2.update, msg, model),
+                }
+        }),
+      view: _p2.view,
+    });
 };
 var _user$project$ChangeMe$main = {
   main: _elm_lang$html$Html_App$beginnerProgram(
