@@ -1397,91 +1397,6 @@ var ATTR_NS_KEY = 'ATTR_NS';
 
 
 
-function node(tag)
-{
-	return F2(function(factList, kidList) {
-		return nodeHelp(tag, factList, kidList);
-	});
-}
-
-
-function nodeHelp(tag, factList, kidList)
-{
-	var organized = organizeFacts(factList);
-	var facts = organized.facts;
-
-	var children = [];
-	var descendantsCount = 0;
-	while (kidList.ctor !== '[]')
-	{
-		var kid = kidList._0;
-		descendantsCount += (kid.descendantsCount || 0);
-		children.push(kid);
-		kidList = kidList._1;
-	}
-	descendantsCount += children.length;
-
-	return {
-		type: 'node',
-		tag: tag,
-		facts: facts,
-		children: children,
-		// namespace: namespace,
-		descendantsCount: descendantsCount
-	};
-}
-
-
-
-
-
-// FACTS
-
-
-function organizeFacts(factList)
-{
-	var namespace, facts = {};
-
-	while (factList.ctor !== '[]')
-	{
-		var entry = factList._0;
-		var key = entry.key;
-
-		if (key === ATTR_KEY || key === ATTR_NS_KEY || key === EVENT_KEY)
-		{
-			var subFacts = facts[key] || {};
-			subFacts[entry.realKey] = entry.value;
-			facts[key] = subFacts;
-		}
-		else if (key === STYLE_KEY)
-		{
-			var styles = facts[key] || {};
-			var styleList = entry.value;
-			while (styleList.ctor !== '[]')
-			{
-				var style = styleList._0;
-				styles[style._0] = style._1;
-				styleList = styleList._1;
-			}
-			facts[key] = styles;
-		}
-		else if (key === 'namespace')
-		{
-			namespace = entry.value;
-		}
-		else
-		{
-			facts[key] = entry.value;
-		}
-		factList = factList._1;
-	}
-
-	return {
-		facts: facts,
-		namespace: namespace
-	};
-}
-
 
 
 ////////////  PROPERTIES AND ATTRIBUTES  ////////////
@@ -2710,6 +2625,84 @@ var _elm_lang$virtual_dom$VirtualDom$on = F2(
     	};
 	});
 
+  function organizeFacts(factList)
+  {
+  	var namespace, facts = {};
+
+  	while (factList.ctor !== '[]')
+  	{
+  		var entry = factList._0;
+  		var key = entry.key;
+
+  		if (key === ATTR_KEY || key === ATTR_NS_KEY || key === EVENT_KEY)
+  		{
+  			var subFacts = facts[key] || {};
+  			subFacts[entry.realKey] = entry.value;
+  			facts[key] = subFacts;
+  		}
+  		else if (key === STYLE_KEY)
+  		{
+  			var styles = facts[key] || {};
+  			var styleList = entry.value;
+  			while (styleList.ctor !== '[]')
+  			{
+  				var style = styleList._0;
+  				styles[style._0] = style._1;
+  				styleList = styleList._1;
+  			}
+  			facts[key] = styles;
+  		}
+  		else if (key === 'namespace')
+  		{
+  			namespace = entry.value;
+  		}
+  		else
+  		{
+  			facts[key] = entry.value;
+  		}
+  		factList = factList._1;
+  	}
+
+  	return {
+  		facts: facts,
+  		namespace: namespace
+  	};
+  }
+
+  function node(tag)
+  {
+  	return F2(function(factList, kidList) {
+  		return nodeHelp(tag, factList, kidList);
+  	});
+  }
+
+
+  function nodeHelp(tag, factList, kidList)
+  {
+  	var organized = organizeFacts(factList);
+  	var facts = organized.facts;
+
+  	var children = [];
+  	var descendantsCount = 0;
+  	while (kidList.ctor !== '[]')
+  	{
+  		var kid = kidList._0;
+  		descendantsCount += (kid.descendantsCount || 0);
+  		children.push(kid);
+  		kidList = kidList._1;
+  	}
+  	descendantsCount += children.length;
+
+  	return {
+  		type: 'node',
+  		tag: tag,
+  		facts: facts,
+  		children: children,
+  		// namespace: namespace,
+  		descendantsCount: descendantsCount
+  	};
+  }
+
 var button = node('button')
 var _elm_lang$html$Html$span = node('span');
 
@@ -2826,7 +2819,6 @@ var _debois$elm_mdl$Material_Helpers$effect = F2(
 	function (e, x) {
 		return {ctor: '_Tuple2', _0: x, _1: e};
 	});
-var _debois$elm_mdl$Material_Helpers$pure = _debois$elm_mdl$Material_Helpers$effect(_elm_lang$core$Platform_Cmd$none);
 
 
 var _elm_lang$html$Html_App$beginnerProgram = function (_p1) {
@@ -3015,7 +3007,7 @@ var _debois$elm_mdl$Material_Ripple$update = F2(
 		switch (_p4.ctor) {
 			case 'Down':
 				var _p5 = _p4._0;
-				return (eq(_p5.type$, 'mousedown') && model.ignoringMouseDown) ? _debois$elm_mdl$Material_Helpers$pure(
+				return (eq(_p5.type$, 'mousedown') && model.ignoringMouseDown) ? (
 					update(
 						model,
 						{ignoringMouseDown: false})) : A2(
@@ -3027,21 +3019,15 @@ var _debois$elm_mdl$Material_Ripple$update = F2(
 							animation: _debois$elm_mdl$Material_Ripple$Frame(0),
 							metrics: _debois$elm_mdl$Material_Ripple$computeMetrics(_p5),
 							ignoringMouseDown: eq(_p5.type$, 'touchstart') ? true : model.ignoringMouseDown
-						}));
+						}))._0;
 			case 'Up':
-				return _debois$elm_mdl$Material_Helpers$pure(
+				return (
 					update(
 						model,
 						{animation: _debois$elm_mdl$Material_Ripple$Inert}));
 			default:
-				return eq(
-					model.animation,
-					_debois$elm_mdl$Material_Ripple$Frame(0)) ? _debois$elm_mdl$Material_Helpers$pure(
-					update(
-						model,
-						{
-							animation: _debois$elm_mdl$Material_Ripple$Frame(1)
-						})) : _debois$elm_mdl$Material_Helpers$pure(model);
+        return (model)
+
 		}
 	});
 var _debois$elm_mdl$Material_Ripple$upOn = function (name) {
@@ -3085,9 +3071,8 @@ var viewLift = function (_p12) {
                       F2(
                         function (msg, c) {
                           var model = c._0 || _debois$elm_mdl$Material_Ripple$model
-                          let newModel = A2(_debois$elm_mdl$Material_Ripple$update, msg, model)
 
-                          c._0 = newModel._0;
+                          c._0 = A2(_debois$elm_mdl$Material_Ripple$update, msg, model);
                           return _elm_lang$core$Maybe$Just( {
                                   _0: c,
                                 }
