@@ -20,27 +20,6 @@ function F3(fun)
   return wrapper;
 }
 
-function F4(fun)
-{
-  function wrapper(a) { return function(b) { return function(c) {
-    return function(d) { return fun(a, b, c, d); }; }; };
-  }
-  wrapper.arity = 4;
-  wrapper.func = fun;
-  return wrapper;
-}
-
-function F6(fun)
-{
-  function wrapper(a) { return function(b) { return function(c) {
-    return function(d) { return function(e) { return function(f) {
-    return fun(a, b, c, d, e, f); }; }; }; }; };
-  }
-  wrapper.arity = 6;
-  wrapper.func = fun;
-  return wrapper;
-}
-
 function A2(fun, a, b)
 {
   return fun.arity === 2
@@ -58,7 +37,6 @@ function compare()
 {
 	return { ctor: 'EQ' };
 }
-let sqrt = Math.sqrt;
 compare= F2(compare);
 let round= Math.round;
 
@@ -379,7 +357,6 @@ var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
 var _elm_lang$core$Basics$toString = toString;
 var _elm_lang$core$Basics$round = round;
 
-var _elm_lang$core$Basics$sqrt = sqrt;
 
 //import Native.Utils //
 
@@ -1036,25 +1013,6 @@ function succeed(msg)
 	};
 }
 
-function decodeContainer(tag, decoder)
-{
-	return {
-		ctor: '<decoder>',
-		tag: tag,
-		decoder: decoder
-	};
-}
-
-function decodeField(field, decoder)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'field',
-		field: field,
-		decoder: decoder
-	};
-}
-
 function decodeObject(f, decoders)
 {
 	return {
@@ -1065,56 +1023,6 @@ function decodeObject(f, decoders)
 	};
 }
 
-function decodeTuple(f, decoders)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'tuple',
-		func: f,
-		decoders: decoders
-	};
-}
-
-
-
-function customAndThen(decoder, callback)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'customAndThen',
-		decoder: decoder,
-		callback: callback
-	};
-}
-
-
-
-
-// DECODING OBJECTS
-
-
-
-function decodeObject2(f, d1, d2)
-{
-	return decodeObject(f, [d1, d2]);
-}
-
-// DECODING TUPLES
-
-function decodeTuple1(f, d1)
-{
-	return decodeTuple(f, [d1]);
-}
-
-function decodeTuple2(f, d1, d2)
-{
-	return decodeTuple(f, [d1, d2]);
-}
-
-function decodeTuple3(f, d1, d2, d3)
-{
-	return decodeTuple(f, [d1, d2, d3]);
-}
 
 // DECODE HELPERS
 
@@ -1481,17 +1389,10 @@ function listEquality(aDecoders, bDecoders)
 
 	run= F2(run)
 
-	decodeContainer= F2(decodeContainer)
 
-	decodeField= F2(decodeField)
 
-	decodeObject2= F3(decodeObject2)
 
-	decodeTuple1= F2(decodeTuple1)
-	decodeTuple2= F3(decodeTuple2)
-	decodeTuple3= F4(decodeTuple3)
 
-	customAndThen = F2(customAndThen)
 
 
 var _elm_lang$core$Json_Decode_ops = _elm_lang$core$Json_Decode_ops || {};
@@ -2998,7 +2899,7 @@ var _debois$elm_mdl$Material_Ripple$styles = F2(
 						toPx(m.y),
 						')'))));
 		var rippleSize = toPx(
-			(_elm_lang$core$Basics$sqrt((r.width * r.width) + (r.height * r.height)) * 2.0) + 2.0);
+			(Math.sqrt((r.width * r.width) + (r.height * r.height)) * 2.0) + 2.0);
 		var scale = eq(frame, 0) ? 'scale(0.0001, 0.0001)' : '';
 		var transformString = A2(
 			append,
@@ -3051,10 +2952,6 @@ var _debois$elm_mdl$Material_Ripple$computeMetrics = function (g) {
 			return _elm_lang$core$Maybe$Nothing;
 		}());
 };
-var _debois$elm_mdl$Material_Ripple$DOMState = F6(
-	function (a, b, c, d, e, f) {
-		return {rect: a, clientX: b, clientY: c, touchX: d, touchY: e, type$: f};
-	});
 let touchesX = function (e) {
   if(e.touches == null) {
     return _elm_lang$core$Maybe$Nothing
@@ -3067,74 +2964,18 @@ let touchesY = function (e) {
   }
   return _elm_lang$core$Maybe$Just(e.touches[0].clientY)
 }
-
-let decodeAndThen = F2(function (decoder, callback)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'andThen',
-		decoder: decoder,
-		callback: callback
-	};
-})
-
-function decodeNull(value)
-{
-    return function () {
-      return {
-        tag: 'null',
-        value: value
-      }
-    }
-
-
-}
-function oneOf(decoders)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'oneOf',
-		decoders: decoders
-	};
-}
-var _debois$elm_dom$DOM$position = F2(
-	function (x, y) {
-    var positionDecoder = function (e) {
-          return {ctor: '_Tuple2',
-           _0: (x + e.offsetLeft) - e.scrollLeft,
-            _1: (y + e.offsetTop) - e.scrollTop};
-        }
-
-    var current = decodeAndThen(positionDecoder)
-
-		return (current(
-			function (_p1) {
-				return oneOf(
-          			fromArray(
-          				[
-          					A2(decodeField,'offsetParent',decodeNull(_p1)),
-          					// decodeNull(_p1.offsetParent),
-          					A2(decodeField, 'offsetParent', A2(_debois$elm_dom$DOM$position, _p1._0, _p1._1))
-          				]));
-
-			}));
-	});
-
-let currentTarget = function (e) {
-  return e.currentTarget.getBoundingClientRect();
-};
-let clientX = function (e) {
-  return _elm_lang$core$Maybe$Just(e.clientX)
-}
-let clientY = function (e) {
-  return _elm_lang$core$Maybe$Just(e.clientY)
-}
-let decodeType = function (e) {
-  return e.type
-}
 var _debois$elm_mdl$Material_Ripple$geometryDecoder =
-	decodeObject(
-	_debois$elm_mdl$Material_Ripple$DOMState, [currentTarget,clientX ,clientY ,touchesX ,touchesY, decodeType]);
+function (e) {
+  return {
+    rect: e.currentTarget.getBoundingClientRect(),
+    clientX: _elm_lang$core$Maybe$Just(e.clientX),
+    clientY: _elm_lang$core$Maybe$Just(e.clientY),
+    touchX: touchesX(e),
+    touchY: touchesY(e),
+    type$: e.type};
+}
+	// decodeObject(
+	// _debois$elm_mdl$Material_Ripple$DOMState, [currentTarget,clientX ,clientY ,touchesX ,touchesY, decodeType]);
 var _debois$elm_mdl$Material_Ripple$Inert = {ctor: 'Inert'};
 var _debois$elm_mdl$Material_Ripple$model = {animation: _debois$elm_mdl$Material_Ripple$Inert, metrics: _elm_lang$core$Maybe$Nothing, ignoringMouseDown: false};
 
