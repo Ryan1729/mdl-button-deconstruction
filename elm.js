@@ -177,23 +177,6 @@ function append(xs, ys)
   {
     return xs + ys;
   }
-
-  // append Lists
-  if (xs.ctor === '[]')
-  {
-    return ys;
-  }
-  var root = Cons(xs._0, Nil);
-  var curr = root;
-  xs = xs._1;
-  while (xs.ctor !== '[]')
-  {
-    curr._1 = Cons(xs._0, Nil);
-    xs = xs._1;
-    curr = curr._1;
-  }
-  curr._1 = ys;
-  return root;
 }
 
 
@@ -424,22 +407,6 @@ var _elm_lang$core$List$filter = F2(
       fromArray(
         []),
       xs);
-  });
-var _elm_lang$core$List$append = F2(
-  function (xs, ys) {
-    var _p12 = ys;
-    if (_p12.ctor === '[]') {
-      return xs;
-    } else {
-      return A3(
-        _elm_lang$core$List$foldr,
-        F2(
-          function (x, y) {
-            return A2(F2(Cons), x, y);
-          }),
-        ys,
-        xs);
-    }
   });
 
 var _elm_lang$core$Result$Err = function (a) {
@@ -2554,7 +2521,6 @@ var _elm_lang$virtual_dom$VirtualDom$on = F2(
       tag: tag,
       facts: facts,
       children: children,
-      // namespace: namespace,
       descendantsCount: descendantsCount
     };
   }
@@ -2575,16 +2541,7 @@ var _elm_lang$html$Html_Attributes$class = function (name) {
   return A2(_elm_lang$html$Html_Attributes$stringProperty, 'className', name);
 };
 
-var _elm_lang$html$Html_Attributes$classList = function (list) {
-  return _elm_lang$html$Html_Attributes$class(
-    A2(
-      join,
-      ' ',
-      A2(
-        _elm_lang$core$List$map,
-        _elm_lang$core$Basics$fst,
-        A2(_elm_lang$core$List$filter, _elm_lang$core$Basics$snd, list))));
-};
+
 
 var _elm_lang$core$Task$onError = _elm_lang$core$Native_Scheduler.onError;
 var _elm_lang$core$Task$andThen = _elm_lang$core$Native_Scheduler.andThen;
@@ -2670,39 +2627,23 @@ var _debois$elm_mdl$Material_Helpers$effect = F2(
 
 
 
-
-
+  var toPx = function (k) {
+    return A2(
+      append,
+      _elm_lang$core$Basics$toString(
+        _elm_lang$core$Basics$round(k)),
+      'px');
+  };
 
 var _debois$elm_mdl$Material_Ripple$styles = F2(
   function (m, frame) {
     var r = m.rect;
-    var toPx = function (k) {
-      return A2(
-        append,
-        _elm_lang$core$Basics$toString(
-          _elm_lang$core$Basics$round(k)),
-        'px');
-    };
-    var offset = A2(
-      append,
-      'translate(',
-      A2(
-        append,
-        toPx(m.x),
-        A2(
-          append,
-          ', ',
-          A2(
-            append,
-            toPx(m.y),
-            ')'))));
+
+    var offset = 'translate(' + toPx(m.x) + ', ' + toPx(m.y) + ')';
     var rippleSize = toPx(
       (Math.sqrt((r.width * r.width) + (r.height * r.height)) * 2.0) + 2.0);
-    var scale = eq(frame, 0) ? 'scale(0.0001, 0.0001)' : '';
-    var transformString = A2(
-      append,
-      'translate(-50%, -50%) ',
-      A2(append, offset, scale));
+    var scale = frame === 0 ? 'scale(0.0001, 0.0001)' : '';
+    var transformString = 'translate(-50%, -50%) ' + offset + scale;
     return fromArray(
       [
         {ctor: '_Tuple2', _0: 'width', _1: rippleSize},
@@ -2751,6 +2692,16 @@ let touchesY = function (e) {
 
 var _debois$elm_mdl$Material_Ripple$Frame = function (a) {
   return {ctor: 'Frame', _0: a};
+};
+var _elm_lang$html$Html_Attributes$classList = function (list) {
+  return _elm_lang$html$Html_Attributes$class(
+    A2(
+      join,
+      ' ',
+      A2(
+        _elm_lang$core$List$map,
+        _elm_lang$core$Basics$fst,
+        A2(_elm_lang$core$List$filter, _elm_lang$core$Basics$snd, list))));
 };
 var _debois$elm_mdl$Material_Ripple$view$ = function (model) {
     var stylingA = function () {
