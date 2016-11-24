@@ -124,16 +124,6 @@ function eqHelp(x, y, depth, stack)
   return true;
 }
 
-// Code in Generate/JavaScript.hs, Basics.js, and List.js depends on
-// the particular integer values assigned to LT, EQ, and GT.
-
-
-// COMMON VALUES
-
-var Tuple0 = {
-  ctor: '_Tuple0'
-};
-
 function Tuple2(x, y)
 {
   return {
@@ -321,10 +311,6 @@ var _elm_lang$core$Basics$fst = function (_p4) {
   var _p5 = _p4;
   return _p5._0;
 };
-var _elm_lang$core$Basics$always = F2(
-  function (a) {
-    return a;
-  });
 
 var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
 
@@ -564,29 +550,6 @@ function spawnLoop(init, onMessage)
 }
 
 
-// BAGS
-
-function leaf(home)
-{
-  return function(value)
-  {
-    return {
-      type: 'leaf',
-      home: home,
-      value: value
-    };
-  };
-}
-
-function batch(list)
-{
-  return {
-    type: 'node',
-    branches: list
-  };
-}
-
-
 function succeed(value)
 {
   return {
@@ -659,54 +622,11 @@ function rawSpawn(task)
   return process;
 }
 
-function spawn(task)
-{
-  return nativeBinding(function(callback) {
-    var process = rawSpawn(task);
-    callback(succeed(process));
-  });
-}
-
 function rawSend(process, msg)
 {
   process.mailbox.push(msg);
   enqueue(process);
 }
-
-function send(process, msg)
-{
-  return nativeBinding(function(callback) {
-    rawSend(process, msg);
-    callback(succeed(Tuple0));
-  });
-}
-
-function kill(process)
-{
-  return nativeBinding(function(callback) {
-    var root = process.root;
-    if (root.ctor === '_Task_nativeBinding' && root.cancel)
-    {
-      root.cancel();
-    }
-
-    process.root = null;
-
-    callback(succeed(Tuple0));
-  });
-}
-
-function sleep(time)
-{
-  return nativeBinding(function(callback) {
-    var id = setTimeout(function() {
-      callback(succeed(Tuple0));
-    }, time);
-
-    return function() { clearTimeout(id); };
-  });
-}
-
 
 // STEP PROCESSES
 
@@ -2521,47 +2441,7 @@ var _elm_lang$html$Html_Attributes$class = function (name) {
 
 
 
-var _elm_lang$core$Task$succeed = succeed;
-var _elm_lang$core$Task$map = F2(
-  function (func, taskA) {
-    return A2(
-      andThen,
-      taskA,
-      function (a) {
-        return _elm_lang$core$Task$succeed(
-          func(a));
-      });
-  });
-var _elm_lang$core$Task$command = leaf('Task');
-var _elm_lang$core$Task$T = function (a) {
-  return {ctor: 'T', _0: a};
-};
-var _elm_lang$core$Task$perform = F3(
-  function (onFail, onSuccess, task) {
-    return _elm_lang$core$Task$command(
-      _elm_lang$core$Task$T(
 
-          onError(
-          A2(_elm_lang$core$Task$map, onSuccess, task),
-          function (x) {
-            return _elm_lang$core$Task$succeed(
-              onFail(x));
-          })));
-  });
-
-
-
-var _debois$elm_mdl$Material_Helpers$delay = F2(
-  function (t, x) {
-    return A3(
-      _elm_lang$core$Task$perform,
-      _elm_lang$core$Basics$always(x),
-      _elm_lang$core$Basics$always(x),
-      sleep(t));
-  });
-var _debois$elm_mdl$Material_Helpers$cssTransitionStep = function (x) {
-  return A2(_debois$elm_mdl$Material_Helpers$delay, 50, x);
-};
 
 var _debois$elm_mdl$Material_Helpers$effect = F2(
   function (e, x) {
@@ -2724,19 +2604,14 @@ var _debois$elm_mdl$Material_Ripple$update = F2(
             model,
             {ignoringMouseDown: false})) : A2(
           _debois$elm_mdl$Material_Helpers$effect,
-          _debois$elm_mdl$Material_Helpers$cssTransitionStep(_debois$elm_mdl$Material_Ripple$Tick),
-          update(
-            model,
-            {
+          _debois$elm_mdl$Material_Ripple$Tick,
+          update(model,{
               animation: _debois$elm_mdl$Material_Ripple$Frame(0),
               metrics: _debois$elm_mdl$Material_Ripple$computeMetrics(_p5),
               ignoringMouseDown: eq(_p5.type$, 'touchstart') ? true : model.ignoringMouseDown
             }))._0;
       case 'Up':
-        return (
-          update(
-            model,
-            {animation: {ctor: 'Inert'}}));
+        return (update(model,{animation: {ctor: 'Inert'}}));
       default:
         return (model)
 
@@ -2746,11 +2621,7 @@ var _debois$elm_mdl$Material_Ripple$upOn = function (name) {
   return A2(
     _elm_lang$virtual_dom$VirtualDom$on,
     name,
-    {
-      ctor: '<decoder>',
-      tag: 'succeed',
-      msg: {ctor: 'Up'}
-    });
+    function(){return {ctor: 'Up'}});
 };
 var geometryDecoder =
 function (e) {
