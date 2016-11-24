@@ -596,6 +596,16 @@ function succeed(value)
   };
 }
 
+function onError(task, callback)
+{
+  return {
+    ctor: '_Task_onError',
+    task: task,
+    callback: callback
+  };
+}
+
+onError = F2(onError)
 //import Native.Utils //
 
 var _elm_lang$core$Native_Scheduler = function() {
@@ -620,14 +630,7 @@ function andThen(task, callback)
   };
 }
 
-function onError(task, callback)
-{
-  return {
-    ctor: '_Task_onError',
-    task: task,
-    callback: callback
-  };
-}
+
 
 function receive(callback)
 {
@@ -844,7 +847,6 @@ return {
   succeed: succeed,
   nativeBinding: nativeBinding,
   andThen: F2(andThen),
-  onError: F2(onError),
   receive: receive,
 
   kill: kill,
@@ -2596,8 +2598,8 @@ var _elm_lang$core$Task$perform = F3(
   function (onFail, onSuccess, task) {
     return _elm_lang$core$Task$command(
       _elm_lang$core$Task$T(
-        A2(
-          _elm_lang$core$Task$onError,
+
+          onError(
           A2(_elm_lang$core$Task$map, onSuccess, task),
           function (x) {
             return _elm_lang$core$Task$succeed(
