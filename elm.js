@@ -1253,9 +1253,16 @@ function run(decoder, value)
 function runHelp(decoder, value)
 {
   if (typeof decoder === "function") {
-    return ok(decoder(value))
-  }
+    let result = decoder(value)
 
+    if (result.tag === 'null') {
+      return (value === null && result.value != null)
+        ? ok(result.value)
+        : badPrimitive('null', value)
+    } else {
+      return ok(result)
+    }
+  }
 
 	switch (decoder.tag)
 	{
@@ -3118,11 +3125,14 @@ let decodeAndThen = F2(function (decoder, callback)
 
 function decodeNull(value)
 {
-	return {
-		ctor: '<decoder>',
-		tag: 'null',
-		value: value
-	};
+    return function () {
+      return {
+        tag: 'null',
+        value: value
+      }
+    }
+
+
 }
 function oneOf(decoders)
 {
@@ -3148,6 +3158,7 @@ var _debois$elm_dom$DOM$position = F2(
           			fromArray(
           				[
           					A2(decodeField,'offsetParent',decodeNull(_p1)),
+          					// decodeNull(_p1.offsetParent),
           					A2(decodeField, 'offsetParent', A2(_debois$elm_dom$DOM$position, _p1._0, _p1._1))
           				]));
 
@@ -3164,7 +3175,9 @@ var _debois$elm_dom$DOM$boundingClientRect = A4(
 	_debois$elm_dom$DOM$offsetWidth,
 	_debois$elm_dom$DOM$offsetHeight);
 
-let currentTarget = A2(decodeField, 'currentTarget', _debois$elm_dom$DOM$boundingClientRect)
+let currentTarget = function (e) {
+  return e.currentTarget.getBoundingClientRect();
+};//A2(decodeField, 'currentTarget', _debois$elm_dom$DOM$boundingClientRect)
 let clientX = function (e) {
   return _elm_lang$core$Maybe$Just(e.clientX)
 }
