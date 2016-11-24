@@ -2788,12 +2788,7 @@ var _debois$elm_mdl$Material_Helpers$delay = F2(
 var _debois$elm_mdl$Material_Helpers$cssTransitionStep = function (x) {
   return A2(_debois$elm_mdl$Material_Helpers$delay, 50, x);
 };
-var _debois$elm_mdl$Material_Helpers$map1st = F2(
-  function (f, _p3) {
-    var _p4 = _p3;
-    return f(_p4._0)
 
-  });
 var _debois$elm_mdl$Material_Helpers$effect = F2(
   function (e, x) {
     return {ctor: '_Tuple2', _0: x, _1: e};
@@ -3110,16 +3105,17 @@ var _debois$elm_mdl$Material_Button$view = (
           );
   });
 
+
+
 var _debois$elm_mdl$Material$update = F2(
   function (msg, model) {
     return A2(
         _elm_lang$core$Maybe$map,
-        _debois$elm_mdl$Material_Helpers$map1st(
           function (mdl) {
             return update(
               model,
-              mdl);
-          }),
+              mdl._0);
+          },
         msg(model))
   });
 
