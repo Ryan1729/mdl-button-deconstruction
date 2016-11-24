@@ -2873,42 +2873,33 @@ var _debois$elm_mdl$Material_Ripple$computeMetrics = function (g) {
       return {rect: rect, x:  _p0._0, y: _p0._1};
 		},
 		function () {
-			var _p2 = {ctor: '_Tuple4', _0: g.clientX, _1: g.clientY, _2: g.touchX, _3: g.touchY};
-			_v1_3:
-			do {
-				if (_p2.ctor === '_Tuple4') {
-					if ((_p2._0.ctor === 'Just') && (_p2._1.ctor === 'Just')) {
-						if ((_p2._0._0 === 0.0) && (_p2._1._0 === 0.0)) {
-							return _elm_lang$core$Maybe$Just(
-								{ctor: '_Tuple2', _0: rect.width / 2.0, _1: rect.height / 2.0});
-						} else {
-							return A2(set, _p2._0._0, _p2._1._0);
-						}
-					} else {
-						if ((_p2._2.ctor === 'Just') && (_p2._3.ctor === 'Just')) {
-							return A2(set, _p2._2._0, _p2._3._0);
-						} else {
-							break _v1_3;
-						}
-					}
+			if ((g.clientX == null) || (g.clientY == null)) {
+				if ((g.touchX == null) || (g.touchY == null)) {
+          return _elm_lang$core$Maybe$Nothing;
 				} else {
-					break _v1_3;
+          return A2(set, g.touchX, g.touchY);
+        }
+      } else {
+        if ((g.clientX === 0.0) && (g.clientY === 0.0)) {
+					return _elm_lang$core$Maybe$Just(
+						{ctor: '_Tuple2', _0: rect.width / 2.0, _1: rect.height / 2.0});
+				} else {
+					return A2(set, g.clientX, g.clientY);
 				}
-			} while(false);
-			return _elm_lang$core$Maybe$Nothing;
+			}
 		}());
 };
 let touchesX = function (e) {
   if(e.touches == null) {
-    return _elm_lang$core$Maybe$Nothing
+    return undefined
   }
-  return _elm_lang$core$Maybe$Just(e.touches[0].clientX)
+  return e.touches[0].clientX
 }
 let touchesY = function (e) {
   if(e.touches == null) {
-    return _elm_lang$core$Maybe$Nothing
+    return undefined
   }
-  return _elm_lang$core$Maybe$Just(e.touches[0].clientY)
+  return e.touches[0].clientY
 }
 
 var _debois$elm_mdl$Material_Ripple$Inert = {ctor: 'Inert'};
@@ -3028,8 +3019,8 @@ var geometryDecoder =
 function (e) {
   return {
     rect: e.currentTarget.getBoundingClientRect(),
-    clientX: _elm_lang$core$Maybe$Just(e.clientX),
-    clientY: _elm_lang$core$Maybe$Just(e.clientY),
+    clientX: e.clientX,
+    clientY: e.clientY,
     touchX: touchesX(e),
     touchY: touchesY(e),
     type$: e.type};
