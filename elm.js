@@ -549,7 +549,6 @@ function makeEmbedHelp(moduleName, program, rootDomNode, flags)
 
 function spawnLoop(init, onMessage)
 {
-  var andThen = _elm_lang$core$Native_Scheduler.andThen;
 
   function loop(state)
   {
@@ -606,7 +605,17 @@ function onError(task, callback)
 }
 
 onError = F2(onError)
-//import Native.Utils //
+
+function andThen(task, callback)
+{
+  return {
+    ctor: '_Task_andThen',
+    task: task,
+    callback: callback
+  };
+}
+
+andThen = F2(andThen)
 
 var _elm_lang$core$Native_Scheduler = function() {
 
@@ -621,14 +630,7 @@ function nativeBinding(callback)
   };
 }
 
-function andThen(task, callback)
-{
-  return {
-    ctor: '_Task_andThen',
-    task: task,
-    callback: callback
-  };
-}
+
 
 
 
@@ -846,7 +848,7 @@ function work()
 return {
   succeed: succeed,
   nativeBinding: nativeBinding,
-  andThen: F2(andThen),
+
   receive: receive,
 
   kill: kill,
@@ -2545,51 +2547,17 @@ var _elm_lang$html$Html_Attributes$class = function (name) {
 
 
 
-var _elm_lang$core$Task$onError = _elm_lang$core$Native_Scheduler.onError;
-var _elm_lang$core$Task$andThen = _elm_lang$core$Native_Scheduler.andThen;
 var _elm_lang$core$Task$succeed = succeed;
 var _elm_lang$core$Task$map = F2(
   function (func, taskA) {
     return A2(
-      _elm_lang$core$Task$andThen,
+      andThen,
       taskA,
       function (a) {
         return _elm_lang$core$Task$succeed(
           func(a));
       });
   });
-var _elm_lang$core$Task$map2 = F3(
-  function (func, taskA, taskB) {
-    return A2(
-      _elm_lang$core$Task$andThen,
-      taskA,
-      function (a) {
-        return A2(
-          _elm_lang$core$Task$andThen,
-          taskB,
-          function (b) {
-            return _elm_lang$core$Task$succeed(
-              A2(func, a, b));
-          });
-      });
-  });
-var _elm_lang$core$Task$sequence = function (tasks) {
-  var _p2 = tasks;
-  if (_p2.ctor === '[]') {
-    return _elm_lang$core$Task$succeed(
-      fromArray(
-        []));
-  } else {
-    return A3(
-      _elm_lang$core$Task$map2,
-      F2(
-        function (x, y) {
-          return A2(F2(Cons), x, y);
-        }),
-      _p2._0,
-      _elm_lang$core$Task$sequence(_p2._1));
-  }
-};
 var _elm_lang$core$Task$command = leaf('Task');
 var _elm_lang$core$Task$T = function (a) {
   return {ctor: 'T', _0: a};
