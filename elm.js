@@ -516,7 +516,7 @@ function makeEmbedHelp(moduleName, program, rootDomNode, flags)
   var renderer;
 
   // init and update state in main process
-  var initApp = _elm_lang$core$Native_Scheduler.nativeBinding(function(callback) {
+  var initApp = nativeBinding(function(callback) {
     var results = init(flags);
     var model = results._0;
     renderer = makeRenderer(rootDomNode, enqueue, view(model));
@@ -525,7 +525,7 @@ function makeEmbedHelp(moduleName, program, rootDomNode, flags)
 
   function onMessage(msg, model)
   {
-    return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback) {
+    return nativeBinding(function(callback) {
       var results = A2(update, msg, model);
       model = results._0;
       renderer.update(view(model));
@@ -537,7 +537,7 @@ function makeEmbedHelp(moduleName, program, rootDomNode, flags)
 
   function enqueue(msg)
   {
-    _elm_lang$core$Native_Scheduler.rawSend(mainProcess, msg);
+    rawSend(mainProcess, msg);
   }
 
   return {};
@@ -552,7 +552,7 @@ function spawnLoop(init, onMessage)
 
   function loop(state)
   {
-    var handleMsg = _elm_lang$core$Native_Scheduler.receive(function(msg) {
+    var handleMsg = receive(function(msg) {
       return onMessage(msg, state);
     });
     return A2(andThen, handleMsg, loop);
@@ -560,7 +560,7 @@ function spawnLoop(init, onMessage)
 
   var task = A2(andThen, init, loop);
 
-  return _elm_lang$core$Native_Scheduler.rawSpawn(task);
+  return rawSpawn(task);
 }
 
 
@@ -617,7 +617,6 @@ function andThen(task, callback)
 
 andThen = F2(andThen)
 
-var _elm_lang$core$Native_Scheduler = function() {
 
 var MAX_STEPS = 10000;
 
@@ -844,35 +843,10 @@ function work()
   setTimeout(work, 0);
 }
 
-
-return {
-  succeed: succeed,
-  nativeBinding: nativeBinding,
-
-  receive: receive,
-
-  kill: kill,
-  sleep: sleep,
-
-  rawSpawn: rawSpawn,
-  rawSend: rawSend
-};
-
-}();
-
-
 let join = F2(function(sep, strs)
 {
   return toArray(strs).join(sep);
 })
-
-// CORE DECODERS
-
-
-
-
-
-// DECODE HELPERS
 
 function ok(value)
 {
@@ -2576,7 +2550,6 @@ var _elm_lang$core$Task$perform = F3(
   });
 
 
-var _elm_lang$core$Process$sleep = _elm_lang$core$Native_Scheduler.sleep;
 
 var _debois$elm_mdl$Material_Helpers$delay = F2(
   function (t, x) {
@@ -2584,7 +2557,7 @@ var _debois$elm_mdl$Material_Helpers$delay = F2(
       _elm_lang$core$Task$perform,
       _elm_lang$core$Basics$always(x),
       _elm_lang$core$Basics$always(x),
-      _elm_lang$core$Process$sleep(t));
+      sleep(t));
   });
 var _debois$elm_mdl$Material_Helpers$cssTransitionStep = function (x) {
   return A2(_debois$elm_mdl$Material_Helpers$delay, 50, x);
