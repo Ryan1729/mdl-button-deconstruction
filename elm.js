@@ -30,16 +30,6 @@ function F4(fun)
   return wrapper;
 }
 
-function F5(fun)
-{
-  function wrapper(a) { return function(b) { return function(c) {
-    return function(d) { return function(e) { return fun(a, b, c, d, e); }; }; }; };
-  }
-  wrapper.arity = 5;
-  wrapper.func = fun;
-  return wrapper;
-}
-
 function F6(fun)
 {
   function wrapper(a) { return function(b) { return function(c) {
@@ -62,12 +52,6 @@ function A3(fun, a, b, c)
   return fun.arity === 3
     ? fun.func(a, b, c)
     : fun(a)(b)(c);
-}
-function A4(fun, a, b, c, d)
-{
-  return fun.arity === 4
-    ? fun.func(a, b, c, d)
-    : fun(a)(b)(c)(d);
 }
 
 function compare()
@@ -1115,17 +1099,6 @@ function decodeObject2(f, d1, d2)
 	return decodeObject(f, [d1, d2]);
 }
 
-function decodeObject3(f, d1, d2, d3)
-{
-	return decodeObject(f, [d1, d2, d3]);
-}
-
-function decodeObject4(f, d1, d2, d3, d4)
-{
-	return decodeObject(f, [d1, d2, d3, d4]);
-}
-
-
 // DECODING TUPLES
 
 function decodeTuple1(f, d1)
@@ -1142,12 +1115,6 @@ function decodeTuple3(f, d1, d2, d3)
 {
 	return decodeTuple(f, [d1, d2, d3]);
 }
-
-function decodeTuple4(f, d1, d2, d3, d4)
-{
-	return decodeTuple(f, [d1, d2, d3, d4]);
-}
-
 
 // DECODE HELPERS
 
@@ -1519,18 +1486,14 @@ function listEquality(aDecoders, bDecoders)
 	decodeField= F2(decodeField)
 
 	decodeObject2= F3(decodeObject2)
-	decodeObject3= F4(decodeObject3)
-	decodeObject4= F5(decodeObject4)
 
 	decodeTuple1= F2(decodeTuple1)
 	decodeTuple2= F3(decodeTuple2)
 	decodeTuple3= F4(decodeTuple3)
-	decodeTuple4= F5(decodeTuple4)
 
 	customAndThen = F2(customAndThen)
 
 
-var _elm_lang$core$Json_Decode$object3 = decodeObject3;
 var _elm_lang$core$Json_Decode_ops = _elm_lang$core$Json_Decode_ops || {};
 //import Native.Json //
 
@@ -3104,15 +3067,7 @@ let touchesY = function (e) {
   }
   return _elm_lang$core$Maybe$Just(e.touches[0].clientY)
 }
-// JSON.stringify(currentTarget, function(k,v) {return typeof v === "function" ? v.toString() : v})
-let field = function (key) {
-    return function (it) {
-      return it[key]
-    }
-}
 
-var _debois$elm_dom$DOM$offsetHeight = field('offsetHeight')
-var _debois$elm_dom$DOM$offsetWidth = field('offsetWidth')
 let decodeAndThen = F2(function (decoder, callback)
 {
 	return {
@@ -3164,20 +3119,10 @@ var _debois$elm_dom$DOM$position = F2(
 
 			}));
 	});
-var _debois$elm_dom$DOM$boundingClientRect = A4(
-	_elm_lang$core$Json_Decode$object3,
-	F3(
-		function (_p5, width, height) {
-			var _p6 = _p5;
-			return {top: _p6._1, left: _p6._0, width: width, height: height};
-		}),
-	A2(_debois$elm_dom$DOM$position, 0, 0),
-	_debois$elm_dom$DOM$offsetWidth,
-	_debois$elm_dom$DOM$offsetHeight);
 
 let currentTarget = function (e) {
   return e.currentTarget.getBoundingClientRect();
-};//A2(decodeField, 'currentTarget', _debois$elm_dom$DOM$boundingClientRect)
+};
 let clientX = function (e) {
   return _elm_lang$core$Maybe$Just(e.clientX)
 }
