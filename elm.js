@@ -449,48 +449,6 @@ var _elm_lang$core$Result$Ok = function (a) {
   return {ctor: 'Ok', _0: a};
 };
 
-//import //
-
-function addPublicModule(object, name, main)
-{
-  var init = makeEmbed(name, main)
-
-  object.worker = function worker(flags)
-  {
-    return init(undefined, flags, false);
-  }
-
-  object.embed = function embed(domNode, flags)
-  {
-    return init(domNode, flags, true);
-  }
-
-  object.fullscreen = function fullscreen(flags)
-  {
-    return init(document.body, flags, true);
-  };
-}
-
-function makeEmbed(moduleName, main)
-{
-  return function embed(rootDomNode, flags, withRenderer)
-  {
-    try
-    {
-      var program = mainToProgram(moduleName, main);
-      if (!withRenderer)
-      {
-        program.renderer = dummyRenderer;
-      }
-      return makeEmbedHelp(moduleName, program, rootDomNode, flags);
-    }
-    catch (e)
-    {
-      rootDomNode.innerHTML = errorHtml(e.message);
-      throw e;
-    }
-  };
-}
 
 // PROGRAMS
 
@@ -498,20 +456,10 @@ function addPublicModule(object, name, main)
 {
   var init = main ? makeEmbed(name, main) : mainIsUndefined(name);
 
-  object.worker = function worker(flags)
-  {
-    return init(undefined, flags, false);
+  object.embed = function embed(domNode, flags) {
+    return init(domNode, flags);
   }
 
-  object.embed = function embed(domNode, flags)
-  {
-    return init(domNode, flags, true);
-  }
-
-  object.fullscreen = function fullscreen(flags)
-  {
-    return init(document.body, flags, true);
-  };
 }
 
 
@@ -541,15 +489,11 @@ function errorHtml(message)
 
 function makeEmbed(moduleName, main)
 {
-  return function embed(rootDomNode, flags, withRenderer)
+  return function embed(rootDomNode, flags)
   {
     try
     {
-      var program = mainToProgram(moduleName, main);
-      if (!withRenderer)
-      {
-        program.renderer = dummyRenderer;
-      }
+      var program = mainToProgram(moduleName, main)
       return makeEmbedHelp(moduleName, program, rootDomNode, flags);
     }
     catch (e)
@@ -560,42 +504,19 @@ function makeEmbed(moduleName, main)
   };
 }
 
-function dummyRenderer()
-{
-  return { update: function() {} };
-}
-
-
 // MAIN TO PROGRAM
 
-function mainToProgram(moduleName, wrappedMain)
+function mainToProgram(moduleName, main)
 {
-  var main = wrappedMain.main;
-
-  if (typeof main.init === 'undefined')
-  {
-    var emptyBag = batch(Nil);
-    var noChange = Tuple2(
-      Tuple0,
-      emptyBag
-    );
-
-    return _elm_lang$virtual_dom$VirtualDom$programWithFlags({
-      init: function() { return noChange; },
-      view: function() { return main; },
-      update: F2(function() { return noChange; }),
-      subscriptions: function () { return emptyBag; }
-    });
-  }
-
   var init = initWithoutFlags(moduleName, main.init);
 
-  return _elm_lang$virtual_dom$VirtualDom$programWithFlags({
+  return {
     init: init,
     view: main.view,
     update: main.update,
     subscriptions: main.subscriptions,
-  });
+    renderer: renderer
+  };
 }
 
 function initWithoutFlags(moduleName, realInit)
@@ -1354,21 +1275,6 @@ var STYLE_KEY = 'STYLE';
 var EVENT_KEY = 'EVENT';
 var ATTR_KEY = 'ATTR';
 var ATTR_NS_KEY = 'ATTR_NS';
-
-
-
-////////////  VIRTUAL DOM NODES  ////////////
-
-
-
-
-
-
-
-////////////  PROPERTIES AND ATTRIBUTES  ////////////
-
-
-
 
 
 function property(key, value)
@@ -2561,24 +2467,8 @@ function applyPatchReorderEndInsertsHelp(endInserts, patch)
   return frag;
 }
 
-
-
 ////////////  PROGRAMS  ////////////
 
-
-function programWithFlags(details)
-{
-  return {
-    init: details.init,
-    update: details.update,
-    subscriptions: details.subscriptions,
-    view: details.view,
-    renderer: renderer
-  };
-}
-
-
-var _elm_lang$virtual_dom$VirtualDom$programWithFlags = programWithFlags;
 var _elm_lang$virtual_dom$VirtualDom$on = F2(
   function (eventName, decoder) {
       return {
@@ -2859,14 +2749,10 @@ let touchesY = function (e) {
   return e.touches[0].clientY
 }
 
-var _debois$elm_mdl$Material_Ripple$Inert = {ctor: 'Inert'};
-
-
 var _debois$elm_mdl$Material_Ripple$Frame = function (a) {
   return {ctor: 'Frame', _0: a};
 };
-var _debois$elm_mdl$Material_Ripple$view$ = F2(
-  function (attrs, model) {
+var _debois$elm_mdl$Material_Ripple$view$ = function (model) {
     var stylingA = function () {
       if ((model.metrics.ctor === 'Just')) {
         if (model.animation.ctor === 'Frame') {
@@ -2886,7 +2772,12 @@ var _debois$elm_mdl$Material_Ripple$view$ = F2(
     }
     return A2(
       _elm_lang$html$Html$span,
-      attrs,
+      fromArray(
+        [
+          _elm_lang$html$Html_Attributes$class('mdl-button__ripple-container'),
+          _debois$elm_mdl$Material_Ripple$upOn('blur'),
+          _debois$elm_mdl$Material_Ripple$upOn('touchcancel')
+        ]),
       fromArray(
         [
           A2(
@@ -2915,7 +2806,7 @@ var _debois$elm_mdl$Material_Ripple$view$ = F2(
           fromArray(
             []))
         ]));
-  });
+  };
 
 var _debois$elm_mdl$Material_Ripple$Tick = {ctor: 'Tick'};
 function update(oldRecord, updatedFields)
@@ -3001,53 +2892,39 @@ var viewLift = function (msg) {
         }
 
     }
+let buttonAttrs = fromArray(
+  [
+
+    _debois$elm_mdl$Material_Ripple$downOn$('mousedown'),
+
+    _debois$elm_mdl$Material_Ripple$downOn$('touchstart'),
+
+    _debois$elm_mdl$Material_Button$blurAndForward('mouseup'),
+
+    _debois$elm_mdl$Material_Button$blurAndForward('mouseleave'),
+
+    _debois$elm_mdl$Material_Button$blurAndForward('touchend'),
+
+    {"key":"className","value":"mdl-js-ripple-effect mdl-js-button mdl-button mdl-button--raised"}
+    ])
+
 var _debois$elm_mdl$Material_Button$view = (
   function (model) {
-    let listeners = fromArray(
-      [
+    var node = _debois$elm_mdl$Material_Ripple$view$(model)
 
-        _debois$elm_mdl$Material_Ripple$downOn$('mousedown'),
-
-        _debois$elm_mdl$Material_Ripple$downOn$('touchstart'),
-
-        _debois$elm_mdl$Material_Button$blurAndForward('mouseup'),
-
-        _debois$elm_mdl$Material_Button$blurAndForward('mouseleave'),
-
-        _debois$elm_mdl$Material_Button$blurAndForward('touchend')
-        ])
-
-    return (
-      button(
-        (
-          _elm_lang$core$List$append({"ctor":"::","_0":{"key":"STYLE","value":{"ctor":"[]"}},"_1":{"ctor":"::","_0":{"key":"className","value":"mdl-js-ripple-effect mdl-js-button mdl-button mdl-button--raised"},"_1":{"ctor":"[]"}}})(
-        listeners
-      ))))(
+    return button(buttonAttrs)(
             fromArray(
               [
                {
                     type: 'text',
                     text: 'a test Button with a long label'
-                  }
-              ,
-              (function map(node)
+                },
               {
-                return {
                   type: 'tagger',
                   tagger: viewLift,
                   node: node,
                   descendantsCount: 1 + (node.descendantsCount || 0)
-                };
-              })(
-              A2(
-                _debois$elm_mdl$Material_Ripple$view$,
-                fromArray(
-                  [
-                    _elm_lang$html$Html_Attributes$class('mdl-button__ripple-container'),
-                    _debois$elm_mdl$Material_Ripple$upOn('blur'),
-                    _debois$elm_mdl$Material_Ripple$upOn('touchcancel')
-                  ]),
-                model))
+              }
             ])
           );
   });
@@ -3064,27 +2941,21 @@ var _user$project$ChangeMe$view = function (mdl) {
         _debois$elm_mdl$Material_Button$view(
         mdl._0 || {animation: {ctor: 'Inert'}, metrics: {ctor: "Nothing"}, ignoringMouseDown: false}));
 };
-var _elm_lang$html$Html_App$beginnerProgram = function (_p1) {
-  var _p2 = _p1;
-  return _elm_lang$virtual_dom$VirtualDom$programWithFlags(
-    {
-      init: function (_p3) {
-        return  {
-                _0: _p2.model,
-              };
-      },
-      update: F2(
-        function (msg, model) {
-          return {
-                  _0: A2(_p2.update, msg, model),
-                }
-        }),
-      view: _p2.view,
-    });
-};
+
 var _user$project$ChangeMe$main = {
-  main: _elm_lang$html$Html_App$beginnerProgram(
-    {model: {}, update: _user$project$ChangeMe$materialUpdate, view: _user$project$ChangeMe$view})
+    init:  function (_p3) {
+      return  {
+              _0: {},
+            };
+    },
+    update: F2(
+      function (msg, model) {
+        return {
+                _0: A2(_user$project$ChangeMe$materialUpdate, msg, model),
+              }
+      }),
+    view: _user$project$ChangeMe$view,
+    renderer: renderer
 };
 
 var Elm = {};
@@ -3093,7 +2964,5 @@ addPublicModule(Elm.ChangeMe, 'ChangeMe', typeof _user$project$ChangeMe$main ===
 
 this.Elm = Elm;
 return;
-
-
 
 }).call(this);
