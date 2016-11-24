@@ -1004,24 +1004,8 @@ let join = F2(function(sep, strs)
 
 // CORE DECODERS
 
-function succeed(msg)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'succeed',
-		msg: msg
-	};
-}
 
-function decodeObject(f, decoders)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'map-many',
-		func: f,
-		decoders: decoders
-	};
-}
+
 
 
 // DECODE HELPERS
@@ -1524,17 +1508,7 @@ function attribute(key, value)
 	};
 }
 
-function on(name, options, decoder)
-{
-	return {
-		key: EVENT_KEY,
-		realKey: name,
-		value: {
-			options: options,
-			decoder: decoder
-		}
-	};
-}
+
 
 
 function equalEvents(a, b)
@@ -2724,21 +2698,23 @@ function programWithFlags(details)
 
 
 var _elm_lang$virtual_dom$VirtualDom$programWithFlags = programWithFlags;
-var _elm_lang$virtual_dom$VirtualDom$defaultOptions = {stopPropagation: false, preventDefault: false};
-var _elm_lang$virtual_dom$VirtualDom$onWithOptions = F3(on);
 var _elm_lang$virtual_dom$VirtualDom$on = F2(
 	function (eventName, decoder) {
-		return A3(_elm_lang$virtual_dom$VirtualDom$onWithOptions, eventName, _elm_lang$virtual_dom$VirtualDom$defaultOptions, decoder);
+    	return {
+    		key: EVENT_KEY,
+    		realKey: eventName,
+    		value: {
+    			options: {stopPropagation: false, preventDefault: false},
+    			decoder: decoder
+    		}
+    	};
 	});
-var _elm_lang$virtual_dom$VirtualDom$attribute = F2(attribute);
-var _elm_lang$virtual_dom$VirtualDom$property = F2(property);
-var _elm_lang$virtual_dom$VirtualDom$node = node;
 
-var _elm_lang$html$Html$node = _elm_lang$virtual_dom$VirtualDom$node;
-var _elm_lang$html$Html$span = _elm_lang$html$Html$node('span');
+var button = node('button')
+var _elm_lang$html$Html$span = node('span');
 
-var _elm_lang$html$Html_Attributes$attribute = _elm_lang$virtual_dom$VirtualDom$attribute;
-var _elm_lang$html$Html_Attributes$property = _elm_lang$virtual_dom$VirtualDom$property;
+var _elm_lang$html$Html_Attributes$attribute = F2(attribute);
+var _elm_lang$html$Html_Attributes$property = F2(property);
 var _elm_lang$html$Html_Attributes$stringProperty = F2(
 	function (name, string) {
 		return A2(
@@ -2852,7 +2828,6 @@ var _debois$elm_mdl$Material_Helpers$effect = F2(
 	});
 var _debois$elm_mdl$Material_Helpers$pure = _debois$elm_mdl$Material_Helpers$effect(_elm_lang$core$Platform_Cmd$none);
 
-var _elm_lang$html$Html_Events$on = _elm_lang$virtual_dom$VirtualDom$on;
 
 var _elm_lang$html$Html_App$beginnerProgram = function (_p1) {
 	var _p2 = _p1;
@@ -2873,7 +2848,7 @@ var _elm_lang$html$Html_App$beginnerProgram = function (_p1) {
 		});
 };
 
-var button = (_elm_lang$html$Html$node('button'))
+
 
 var _debois$elm_mdl$Material_Ripple$styles = F2(
 	function (m, frame) {
@@ -2974,8 +2949,6 @@ function (e) {
     touchY: touchesY(e),
     type$: e.type};
 }
-	// decodeObject(
-	// _debois$elm_mdl$Material_Ripple$DOMState, [currentTarget,clientX ,clientY ,touchesX ,touchesY, decodeType]);
 var _debois$elm_mdl$Material_Ripple$Inert = {ctor: 'Inert'};
 var _debois$elm_mdl$Material_Ripple$model = {animation: _debois$elm_mdl$Material_Ripple$Inert, metrics: _elm_lang$core$Maybe$Nothing, ignoringMouseDown: false};
 
@@ -3071,27 +3044,34 @@ var _debois$elm_mdl$Material_Ripple$update = F2(
 						})) : _debois$elm_mdl$Material_Helpers$pure(model);
 		}
 	});
-var _debois$elm_mdl$Material_Ripple$Up = {ctor: 'Up'};
 var _debois$elm_mdl$Material_Ripple$upOn = function (name) {
   return A2(
-    _elm_lang$html$Html_Events$on,
+    _elm_lang$virtual_dom$VirtualDom$on,
     name,
-    succeed(
-      _debois$elm_mdl$Material_Ripple$Up));
+    {
+  		ctor: '<decoder>',
+  		tag: 'succeed',
+  		msg: {ctor: 'Up'}
+  	});
 };
 var _debois$elm_mdl$Material_Ripple$Down = function (a) {
 	return {ctor: 'Down', _0: a};
 };
-var _debois$elm_mdl$Material_Ripple$downOn$ = F2(
-	function (fa, name) {
-		return _elm_lang$html$Html_Events$on(
+
+
+var _debois$elm_mdl$Material_Ripple$downOn$ = function (name) {
+		return _elm_lang$virtual_dom$VirtualDom$on(
 			name)(
-			decodeObject(function (_p6) {
-  					return fa(
-  						_debois$elm_mdl$Material_Ripple$Down(_p6));
-  				}, [_debois$elm_mdl$Material_Ripple$geometryDecoder])
+        function (value) {
+          var result = runHelp(_debois$elm_mdl$Material_Ripple$geometryDecoder, value);
+          if (result.tag !== 'ok')
+          {
+              return result;
+          }
+          return viewLift(_debois$elm_mdl$Material_Ripple$Down(result.value));
+        }
 				)
-	});
+	};
 var _debois$elm_mdl$Material_Button$blurAndForward = function (event) {
 	return A2(
 		_elm_lang$html$Html_Attributes$attribute,
@@ -3123,15 +3103,15 @@ var _debois$elm_mdl$Material_Button$view = (
     let listeners = fromArray(
       [
 
-        A2(_debois$elm_mdl$Material_Ripple$downOn$, viewLift, 'mousedown'),
+        _debois$elm_mdl$Material_Ripple$downOn$('mousedown'),
 
-        A2(_debois$elm_mdl$Material_Ripple$downOn$, viewLift, 'touchstart'),
+        _debois$elm_mdl$Material_Ripple$downOn$('touchstart'),
 
-            _debois$elm_mdl$Material_Button$blurAndForward('mouseup'),
+        _debois$elm_mdl$Material_Button$blurAndForward('mouseup'),
 
-              _debois$elm_mdl$Material_Button$blurAndForward('mouseleave'),
+        _debois$elm_mdl$Material_Button$blurAndForward('mouseleave'),
 
-                _debois$elm_mdl$Material_Button$blurAndForward('touchend')
+        _debois$elm_mdl$Material_Button$blurAndForward('touchend')
         ])
 
 		return (
