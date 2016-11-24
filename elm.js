@@ -154,16 +154,7 @@ function guid()
 
 // RECORDS
 
-function update(oldRecord, updatedFields)
-{
-	var newRecord = {};
-	for (var key in oldRecord)
-	{
-		var value = (key in updatedFields) ? updatedFields[key] : oldRecord[key];
-		newRecord[key] = value;
-	}
-	return newRecord;
-}
+
 
 
 //// LIST STUFF ////
@@ -651,7 +642,7 @@ function makeEmbedHelp(moduleName, program, rootDomNode, flags)
 		var results = init(flags);
 		var model = results._0;
 		renderer = makeRenderer(rootDomNode, enqueue, view(model));
-		callback(_elm_lang$core$Native_Scheduler.succeed(model));
+		callback(succeed(model));
 	});
 
 	function onMessage(msg, model)
@@ -660,7 +651,7 @@ function makeEmbedHelp(moduleName, program, rootDomNode, flags)
 			var results = A2(update, msg, model);
 			model = results._0;
 			renderer.update(view(model));
-			callback(_elm_lang$core$Native_Scheduler.succeed(model));
+			callback(succeed(model));
 		});
 	}
 
@@ -719,17 +710,6 @@ function batch(list)
 }
 
 
-
-
-//import Native.Utils //
-
-var _elm_lang$core$Native_Scheduler = function() {
-
-var MAX_STEPS = 10000;
-
-
-// TASKS
-
 function succeed(value)
 {
 	return {
@@ -738,7 +718,11 @@ function succeed(value)
 	};
 }
 
+//import Native.Utils //
 
+var _elm_lang$core$Native_Scheduler = function() {
+
+var MAX_STEPS = 10000;
 
 function nativeBinding(callback)
 {
@@ -993,8 +977,6 @@ return {
 };
 
 }();
-var _elm_lang$core$Platform_Cmd$none = {}
-var _elm_lang$core$Platform_Cmd_ops = _elm_lang$core$Platform_Cmd_ops || {};
 
 
 let join = F2(function(sep, strs)
@@ -2732,7 +2714,7 @@ var _elm_lang$html$Html_Attributes$classList = function (list) {
 
 var _elm_lang$core$Task$onError = _elm_lang$core$Native_Scheduler.onError;
 var _elm_lang$core$Task$andThen = _elm_lang$core$Native_Scheduler.andThen;
-var _elm_lang$core$Task$succeed = _elm_lang$core$Native_Scheduler.succeed;
+var _elm_lang$core$Task$succeed = succeed;
 var _elm_lang$core$Task$map = F2(
 	function (func, taskA) {
 		return A2(
@@ -2809,11 +2791,8 @@ var _debois$elm_mdl$Material_Helpers$cssTransitionStep = function (x) {
 var _debois$elm_mdl$Material_Helpers$map1st = F2(
 	function (f, _p3) {
 		var _p4 = _p3;
-		return {
-			ctor: '_Tuple2',
-			_0: f(_p4._0),
-			_1: _p4._1
-		};
+		return f(_p4._0)
+
 	});
 var _debois$elm_mdl$Material_Helpers$effect = F2(
 	function (e, x) {
@@ -2931,16 +2910,7 @@ let touchesY = function (e) {
   }
   return _elm_lang$core$Maybe$Just(e.touches[0].clientY)
 }
-var _debois$elm_mdl$Material_Ripple$geometryDecoder =
-function (e) {
-  return {
-    rect: e.currentTarget.getBoundingClientRect(),
-    clientX: _elm_lang$core$Maybe$Just(e.clientX),
-    clientY: _elm_lang$core$Maybe$Just(e.clientY),
-    touchX: touchesX(e),
-    touchY: touchesY(e),
-    type$: e.type};
-}
+
 var _debois$elm_mdl$Material_Ripple$Inert = {ctor: 'Inert'};
 var _debois$elm_mdl$Material_Ripple$model = {animation: _debois$elm_mdl$Material_Ripple$Inert, metrics: _elm_lang$core$Maybe$Nothing, ignoringMouseDown: false};
 
@@ -3001,6 +2971,16 @@ var _debois$elm_mdl$Material_Ripple$view$ = F2(
 	});
 
 var _debois$elm_mdl$Material_Ripple$Tick = {ctor: 'Tick'};
+function update(oldRecord, updatedFields)
+{
+	var newRecord = {};
+	for (var key in oldRecord)
+	{
+		var value = (key in updatedFields) ? updatedFields[key] : oldRecord[key];
+		newRecord[key] = value;
+	}
+	return newRecord;
+}
 var _debois$elm_mdl$Material_Ripple$update = F2(
 	function (action, model) {
 		var _p4 = action;
@@ -3041,20 +3021,25 @@ var _debois$elm_mdl$Material_Ripple$upOn = function (name) {
   	});
 };
 var _debois$elm_mdl$Material_Ripple$Down = function (a) {
-	return {ctor: 'Down', _0: a};
+	return ;
 };
 
+var geometryDecoder =
+function (e) {
+  return {
+    rect: e.currentTarget.getBoundingClientRect(),
+    clientX: _elm_lang$core$Maybe$Just(e.clientX),
+    clientY: _elm_lang$core$Maybe$Just(e.clientY),
+    touchX: touchesX(e),
+    touchY: touchesY(e),
+    type$: e.type};
+}
 
 var _debois$elm_mdl$Material_Ripple$downOn$ = function (name) {
 		return _elm_lang$virtual_dom$VirtualDom$on(
 			name)(
         function (value) {
-          var result = runHelp(_debois$elm_mdl$Material_Ripple$geometryDecoder, value);
-          if (result.tag !== 'ok')
-          {
-              return result;
-          }
-          return viewLift(_debois$elm_mdl$Material_Ripple$Down(result.value));
+          return viewLift({ctor: 'Down', _0: geometryDecoder(value)});
         }
 				)
 	};
@@ -3139,7 +3124,7 @@ var _debois$elm_mdl$Material$update = F2(
 		return A2(
       F2(
       	function ($default, maybe) {
-      			return maybe._0;
+      			return maybe;
       	}),
 			{},
 			A2(
