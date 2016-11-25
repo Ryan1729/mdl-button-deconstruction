@@ -1950,19 +1950,17 @@ var _elm_lang$virtual_dom$VirtualDom$on = F2(
   }
 
 
-  function nodeHelp(tag, factList, kidList)
+  function nodeHelp(tag, factList, children)
   {
     var organized = organizeFacts(factList);
     var facts = organized.facts;
 
-    var children = [];
     var descendantsCount = 0;
-    while (kidList.ctor !== '[]')
-    {
-      var kid = kidList._0;
+    var i;
+    var kid;
+    for (i = 0; i < children.length; i += 1) {
+      kid = children[i]
       descendantsCount += (kid.descendantsCount || 0);
-      children.push(kid);
-      kidList = kidList._1;
     }
     descendantsCount += children.length;
 
@@ -1976,7 +1974,7 @@ var _elm_lang$virtual_dom$VirtualDom$on = F2(
   }
 
 var button = node('button')
-var _elm_lang$html$Html$span = node('span');
+var span = node('span');
 
 var _elm_lang$html$Html_Attributes$attribute = F2(attribute);
 var _elm_lang$html$Html_Attributes$property = F2(property);
@@ -2068,61 +2066,7 @@ var _elm_lang$html$Html_Attributes$classList = function (list) {
         _elm_lang$core$Basics$fst,
         A2(_elm_lang$core$List$filter, _elm_lang$core$Basics$snd, list))));
 };
-var _debois$elm_mdl$Material_Ripple$view$ = function (model) {
-    var stylingA = function () {
-      if ((model.metrics.ctor === 'Just')) {
-        if (model.animation.ctor === 'Frame') {
-          return A2(_debois$elm_mdl$Material_Ripple$styles, model.metrics._0, model.animation._0);
-        } else {
-          return A2(_debois$elm_mdl$Material_Ripple$styles, model.metrics._0, 1);
-        }
-      } else {
-        return fromArray(
-          []);
-      }
-    }();
 
-    var styling = {
-      key: STYLE_KEY,
-      value: stylingA
-    }
-    return A2(
-      _elm_lang$html$Html$span,
-      fromArray(
-        [
-          _elm_lang$html$Html_Attributes$class('mdl-button__ripple-container'),
-          _debois$elm_mdl$Material_Ripple$upOn('blur'),
-          _debois$elm_mdl$Material_Ripple$upOn('touchcancel')
-        ]),
-      fromArray(
-        [
-          A2(
-          _elm_lang$html$Html$span,
-          fromArray(
-            [
-              _elm_lang$html$Html_Attributes$classList(
-              fromArray(
-                [
-                  {ctor: '_Tuple2', _0: 'mdl-ripple', _1: true},
-                  {
-                  ctor: '_Tuple2',
-                  _0: 'is-animating',
-                  _1: !eq(
-                    model.animation,
-                    _debois$elm_mdl$Material_Ripple$Frame(0))
-                },
-                  {
-                  ctor: '_Tuple2',
-                  _0: 'is-visible',
-                  _1: !eq(model.animation, {ctor: 'Inert'})
-                }
-                ])),
-              styling
-            ]),
-          fromArray(
-            []))
-        ]));
-  };
 
 var _debois$elm_mdl$Material_Ripple$Tick = {ctor: 'Tick'};
 function update(oldRecord, updatedFields)
@@ -2217,10 +2161,60 @@ let buttonAttrs = fromArray(
 
 var _debois$elm_mdl$Material_Button$view = (
   function (model) {
-    var node = _debois$elm_mdl$Material_Ripple$view$(model)
+    var stylingA = function () {
+      if ((model.metrics.ctor === 'Just')) {
+        if (model.animation.ctor === 'Frame') {
+          return A2(_debois$elm_mdl$Material_Ripple$styles, model.metrics._0, model.animation._0);
+        } else {
+          return A2(_debois$elm_mdl$Material_Ripple$styles, model.metrics._0, 1);
+        }
+      } else {
+        return fromArray(
+          []);
+      }
+    }();
+
+  var styling = {
+    key: STYLE_KEY,
+    value: stylingA
+  }
+
+    var node = A2(
+     span,
+     fromArray(
+       [
+         _elm_lang$html$Html_Attributes$class('mdl-button__ripple-container'),
+         _debois$elm_mdl$Material_Ripple$upOn('blur'),
+         _debois$elm_mdl$Material_Ripple$upOn('touchcancel')
+       ]),
+       [
+         A2(
+         span,
+         fromArray(
+           [
+             _elm_lang$html$Html_Attributes$classList(
+             fromArray(
+               [
+                 {ctor: '_Tuple2', _0: 'mdl-ripple', _1: true},
+                 {
+                 ctor: '_Tuple2',
+                 _0: 'is-animating',
+                 _1: !eq(
+                   model.animation,
+                   _debois$elm_mdl$Material_Ripple$Frame(0))
+               },
+                 {
+                 ctor: '_Tuple2',
+                 _0: 'is-visible',
+                 _1: !eq(model.animation, {ctor: 'Inert'})
+               }
+               ])),
+             styling
+           ]),
+           [])
+       ]);
 
     return button(buttonAttrs)(
-            fromArray(
               [
                {
                     type: 'text',
@@ -2232,7 +2226,7 @@ var _debois$elm_mdl$Material_Button$view = (
                   node: node,
                   descendantsCount: 1 + (node.descendantsCount || 0)
               }
-            ])
+            ]
           );
   });
 
