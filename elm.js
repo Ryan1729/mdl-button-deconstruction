@@ -10,27 +10,11 @@ function F2(fun)
   return wrapper;
 }
 
-function F3(fun)
-{
-  function wrapper(a) {
-    return function(b) { return function(c) { return fun(a, b, c); }; };
-  }
-  wrapper.arity = 3;
-  wrapper.func = fun;
-  return wrapper;
-}
-
 function A2(fun, a, b)
 {
   return fun.arity === 2
     ? fun.func(a, b)
     : fun(a)(b);
-}
-function A3(fun, a, b, c)
-{
-  return fun.arity === 3
-    ? fun.func(a, b, c)
-    : fun(a)(b)(c);
 }
 
 function compare()
@@ -200,51 +184,7 @@ function toArray(xs)
   return out;
 }
 
-function foldr(f, b, xs)
-{
-  var arr = toArray(xs);
-  var acc = b;
-  for (var i = arr.length; i--; )
-  {
-    acc = A2(f, arr[i], acc);
-  }
-  return acc;
-}
 
-
-var _elm_lang$core$List$foldr = F3(foldr);
-var _elm_lang$core$List$map = F2(
-  function (f, xs) {
-    return A3(
-      _elm_lang$core$List$foldr,
-      F2(
-        function (x, acc) {
-          return A2(
-            F2(Cons),
-            f(x),
-            acc);
-        }),
-      fromArray(
-        []),
-      xs);
-  });
-var _elm_lang$core$List$filter = F2(
-  function (pred, xs) {
-    var conditionalCons = F2(
-      function (x, xs$) {
-        return pred(x) ? A2(F2(Cons), x, xs$) : xs$;
-      });
-    return A3(
-      _elm_lang$core$List$foldr,
-      conditionalCons,
-      fromArray(
-        []),
-      xs);
-  });
-
-var _elm_lang$core$Result$Err = function (a) {
-  return {ctor: 'Err', _0: a};
-};
 var _elm_lang$core$Result$Ok = function (a) {
   return {ctor: 'Ok', _0: a};
 };
@@ -609,40 +549,8 @@ function work()
   }
   setTimeout(work, 0);
 }
-
-let join = F2(function(sep, strs)
-{
-  return toArray(strs).join(sep);
-})
-
-function ok(value)
-{
-  return { tag: 'ok', value: value };
-}
-
-function badPrimitive(type, value)
-{
-  return { tag: 'primitive', type: type, value: value };
-}
-
-function jsToString(value)
-{
-  return value === undefined
-    ? 'undefined'
-    : JSON.stringify(value);
-}
-
-
 // DECODE
 
-
-function run(decoder, value)
-{
-  var result = runHelp(decoder, value);
-  return (result.tag === 'ok')
-    ? _elm_lang$core$Result$Ok(result.value)
-    : _elm_lang$core$Result$Err(jsToString(result));
-}
 
 function runHelp(decoder, value)
 {
@@ -650,10 +558,10 @@ function runHelp(decoder, value)
 
     if (result.tag === 'null') {
       return (value === null && result.value != null)
-        ? ok(result.value)
-        : badPrimitive('null', value)
+        ? _elm_lang$core$Result$Ok(result.value)
+        : {}
     } else {
-      return ok(result)
+      return _elm_lang$core$Result$Ok(result)
     }
 
 }
@@ -675,27 +583,14 @@ function equality(a, b)
 
 }
 
-  run= F2(run)
 
 var STYLE_KEY = 'STYLE';
 var EVENT_KEY = 'EVENT';
 var ATTR_KEY = 'ATTR';
 
-function attribute(key, value)
-{
-  return {
-    key: ATTR_KEY,
-    realKey: key,
-    value: value
-  };
-}
-
-
-
 
 
 ////////////  RENDERER  ////////////
-
 
 function renderer(parent, tagger, initialVirtualNode)
 {
@@ -762,12 +657,6 @@ function render(vNode, eventNode)
 {
   switch (vNode.type)
   {
-    case 'thunk':
-      if (!vNode.node)
-      {
-        vNode.node = vNode.thunk();
-      }
-      return render(vNode.node, eventNode);
 
     case 'tagger':
       var subNode = vNode.node;
@@ -897,10 +786,13 @@ function makeEventHandler(eventNode, info)
 
     var value;
 
-    if (typeof info.decoder === "function") {
-      value = _elm_lang$core$Result$Ok(info.decoder(event))
+    if (typeof info === "function") {
+      value = _elm_lang$core$Result$Ok(info(event))
     } else {
-      value = A2(run, info.decoder, event);
+      var result = runHelp(info, value);
+      value = (result.tag === 'Ok')
+        ? result
+        : {};
     }
 
     if (value.ctor === 'Ok')
@@ -910,18 +802,7 @@ function makeEventHandler(eventNode, info)
       var currentEventNode = eventNode;
       while (currentEventNode)
       {
-        var tagger = currentEventNode.tagger;
-        if (typeof tagger === 'function')
-        {
-          message = tagger(message);
-        }
-        else
-        {
-          for (var i = tagger.length; i--; )
-          {
-            message = tagger[i](message);
-          }
-        }
+        message = currentEventNode.tagger(message);
         currentEventNode = currentEventNode.parent;
       }
     }
@@ -995,29 +876,6 @@ function diffHelp(a, b, patches, index)
   // Now we know that both nodes are the same type.
   switch (bType)
   {
-    case 'thunk':
-      var aArgs = a.args;
-      var bArgs = b.args;
-      var i = aArgs.length;
-      var same = a.func === b.func && i === bArgs.length;
-      while (same && i--)
-      {
-        same = aArgs[i] === bArgs[i];
-      }
-      if (same)
-      {
-        b.node = a.node;
-        return;
-      }
-      b.node = b.thunk();
-      var subPatches = [];
-      diffHelp(a.node, b.node, subPatches, 0);
-      if (subPatches.length > 0)
-      {
-        patches.push(makePatch('p-thunk', index, subPatches));
-      }
-      return;
-
     case 'tagger':
       // gather nested taggers
       var aTaggers = a.tagger;
@@ -1208,262 +1066,6 @@ function diffChildren(aParent, bParent, patches, rootIndex)
   }
 }
 
-
-
-////////////  KEYED DIFF  ////////////
-
-
-function diffKeyedChildren(aParent, bParent, patches, rootIndex)
-{
-  var localPatches = [];
-
-  var changes = {}; // Dict String Entry
-  var inserts = []; // Array { index : Int, entry : Entry }
-  // type Entry = { tag : String, vnode : VNode, index : Int, data : _ }
-
-  var aChildren = aParent.children;
-  var bChildren = bParent.children;
-  var aLen = aChildren.length;
-  var bLen = bChildren.length;
-  var aIndex = 0;
-  var bIndex = 0;
-
-  var index = rootIndex;
-
-  while (aIndex < aLen && bIndex < bLen)
-  {
-    var a = aChildren[aIndex];
-    var b = bChildren[bIndex];
-
-    var aKey = a._0;
-    var bKey = b._0;
-    var aNode = a._1;
-    var bNode = b._1;
-
-    // check if keys match
-
-    if (aKey === bKey)
-    {
-      index++;
-      diffHelp(aNode, bNode, localPatches, index);
-      index += aNode.descendantsCount || 0;
-
-      aIndex++;
-      bIndex++;
-      continue;
-    }
-
-    // look ahead 1 to detect insertions and removals.
-
-    var aLookAhead = aIndex + 1 < aLen;
-    var bLookAhead = bIndex + 1 < bLen;
-
-    if (aLookAhead)
-    {
-      var aNext = aChildren[aIndex + 1];
-      var aNextKey = aNext._0;
-      var aNextNode = aNext._1;
-      var oldMatch = bKey === aNextKey;
-    }
-
-    if (bLookAhead)
-    {
-      var bNext = bChildren[bIndex + 1];
-      var bNextKey = bNext._0;
-      var bNextNode = bNext._1;
-      var newMatch = aKey === bNextKey;
-    }
-
-
-    // swap a and b
-    if (aLookAhead && bLookAhead && newMatch && oldMatch)
-    {
-      index++;
-      diffHelp(aNode, bNextNode, localPatches, index);
-      insertNode(changes, localPatches, aKey, bNode, bIndex, inserts);
-      index += aNode.descendantsCount || 0;
-
-      index++;
-      removeNode(changes, localPatches, aKey, aNextNode, index);
-      index += aNextNode.descendantsCount || 0;
-
-      aIndex += 2;
-      bIndex += 2;
-      continue;
-    }
-
-    // insert b
-    if (bLookAhead && newMatch)
-    {
-      index++;
-      insertNode(changes, localPatches, bKey, bNode, bIndex, inserts);
-      diffHelp(aNode, bNextNode, localPatches, index);
-      index += aNode.descendantsCount || 0;
-
-      aIndex += 1;
-      bIndex += 2;
-      continue;
-    }
-
-    // remove a
-    if (aLookAhead && oldMatch)
-    {
-      index++;
-      removeNode(changes, localPatches, aKey, aNode, index);
-      index += aNode.descendantsCount || 0;
-
-      index++;
-      diffHelp(aNextNode, bNode, localPatches, index);
-      index += aNextNode.descendantsCount || 0;
-
-      aIndex += 2;
-      bIndex += 1;
-      continue;
-    }
-
-    // remove a, insert b
-    if (aLookAhead && bLookAhead && aNextKey === bNextKey)
-    {
-      index++;
-      removeNode(changes, localPatches, aKey, aNode, index);
-      insertNode(changes, localPatches, bKey, bNode, bIndex, inserts);
-      index += aNode.descendantsCount || 0;
-
-      index++;
-      diffHelp(aNextNode, bNextNode, localPatches, index);
-      index += aNextNode.descendantsCount || 0;
-
-      aIndex += 2;
-      bIndex += 2;
-      continue;
-    }
-
-    break;
-  }
-
-  // eat up any remaining nodes with removeNode and insertNode
-
-  while (aIndex < aLen)
-  {
-    index++;
-    var a = aChildren[aIndex];
-    var aNode = a._1;
-    removeNode(changes, localPatches, a._0, aNode, index);
-    index += aNode.descendantsCount || 0;
-    aIndex++;
-  }
-
-  var endInserts;
-  while (bIndex < bLen)
-  {
-    endInserts = endInserts || [];
-    var b = bChildren[bIndex];
-    insertNode(changes, localPatches, b._0, b._1, undefined, endInserts);
-    bIndex++;
-  }
-
-  if (localPatches.length > 0 || inserts.length > 0 || typeof endInserts !== 'undefined')
-  {
-    patches.push(makePatch('p-reorder', rootIndex, {
-      patches: localPatches,
-      inserts: inserts,
-      endInserts: endInserts
-    }));
-  }
-}
-
-
-
-////////////  CHANGES FROM KEYED DIFF  ////////////
-
-
-var POSTFIX = '_elmW6BL';
-
-
-function insertNode(changes, localPatches, key, vnode, bIndex, inserts)
-{
-  var entry = changes[key];
-
-  // never seen this key before
-  if (typeof entry === 'undefined')
-  {
-    entry = {
-      tag: 'insert',
-      vnode: vnode,
-      index: bIndex,
-      data: undefined
-    };
-
-    inserts.push({ index: bIndex, entry: entry });
-    changes[key] = entry;
-
-    return;
-  }
-
-  // this key was removed earlier, a match!
-  if (entry.tag === 'remove')
-  {
-    inserts.push({ index: bIndex, entry: entry });
-
-    entry.tag = 'move';
-    var subPatches = [];
-    diffHelp(entry.vnode, vnode, subPatches, entry.index);
-    entry.index = bIndex;
-    entry.data.data = {
-      patches: subPatches,
-      entry: entry
-    };
-
-    return;
-  }
-
-  // this key has already been inserted or moved, a duplicate!
-  insertNode(changes, localPatches, key + POSTFIX, vnode, bIndex, inserts);
-}
-
-
-function removeNode(changes, localPatches, key, vnode, index)
-{
-  var entry = changes[key];
-
-  // never seen this key before
-  if (typeof entry === 'undefined')
-  {
-    var patch = makePatch('p-remove', index, undefined);
-    localPatches.push(patch);
-
-    changes[key] = {
-      tag: 'remove',
-      vnode: vnode,
-      index: index,
-      data: patch
-    };
-
-    return;
-  }
-
-  // this key was inserted earlier, a match!
-  if (entry.tag === 'insert')
-  {
-    entry.tag = 'move';
-    var subPatches = [];
-    diffHelp(vnode, entry.vnode, subPatches, index);
-
-    var patch = makePatch('p-remove', index, {
-      patches: subPatches,
-      entry: entry
-    });
-    localPatches.push(patch);
-
-    return;
-  }
-
-  // this key has already been removed or moved, a duplicate!
-  removeNode(changes, localPatches, key + POSTFIX, vnode, index);
-}
-
-
-
 ////////////  ADD DOM NODES  ////////////
 //
 // Each DOM node has an "index" assigned in order of traversal. It is important
@@ -1488,22 +1090,7 @@ function addDomNodesHelp(domNode, vNode, patches, i, low, high, eventNode)
   {
     var patchType = patch.type;
 
-    if (patchType === 'p-thunk')
-    {
-      addDomNodes(domNode, vNode.node, patch.data, eventNode);
-    }
-    else if (patchType === 'p-reorder')
-    {
-      patch.domNode = domNode;
-      patch.eventNode = eventNode;
-
-      var subPatches = patch.data.patches;
-      if (subPatches.length > 0)
-      {
-        addDomNodesHelp(domNode, vNode, subPatches, 0, low, high, eventNode);
-      }
-    }
-    else if (patchType === 'p-remove')
+    if (patchType === 'p-remove')
     {
       patch.domNode = domNode;
       patch.eventNode = eventNode;
@@ -1567,7 +1154,6 @@ function addDomNodesHelp(domNode, vNode, patches, i, low, high, eventNode)
 
 
     case 'text':
-    case 'thunk':
       throw new Error('should never traverse `text` or `thunk` nodes like this');
   }
 }
@@ -1618,9 +1204,6 @@ function applyPatch(domNode, patch)
       domNode.replaceData(0, domNode.length, patch.data);
       return domNode;
 
-    case 'p-thunk':
-      return applyPatchesHelp(domNode, patch.data);
-
     case 'p-tagger':
       domNode.elm_event_node_ref.tagger = patch.data;
       return domNode;
@@ -1656,9 +1239,6 @@ function applyPatch(domNode, patch)
       entry.data = applyPatchesHelp(domNode, data.patches);
       return domNode;
 
-    case 'p-reorder':
-      return applyPatchReorder(domNode, patch);
-
     default:
       throw new Error('Ran into an unknown patch!');
   }
@@ -1682,59 +1262,6 @@ function applyPatchRedraw(domNode, vNode, eventNode)
   return newNode;
 }
 
-
-function applyPatchReorder(domNode, patch)
-{
-  var data = patch.data;
-
-  // remove end inserts
-  var frag = applyPatchReorderEndInsertsHelp(data.endInserts, patch);
-
-  // removals
-  domNode = applyPatchesHelp(domNode, data.patches);
-
-  // inserts
-  var inserts = data.inserts;
-  for (var i = 0; i < inserts.length; i++)
-  {
-    var insert = inserts[i];
-    var entry = insert.entry;
-    var node = entry.tag === 'move'
-      ? entry.data
-      : render(entry.vnode, patch.eventNode);
-    domNode.insertBefore(node, domNode.childNodes[insert.index]);
-  }
-
-  // add end inserts
-  if (typeof frag !== 'undefined')
-  {
-    domNode.appendChild(frag);
-  }
-
-  return domNode;
-}
-
-
-function applyPatchReorderEndInsertsHelp(endInserts, patch)
-{
-  if (typeof endInserts === 'undefined')
-  {
-    return;
-  }
-
-  var frag = document.createDocumentFragment();
-  for (var i = 0; i < endInserts.length; i++)
-  {
-    var insert = endInserts[i];
-    var entry = insert.entry;
-    frag.appendChild(entry.tag === 'move'
-      ? entry.data
-      : render(entry.vnode, patch.eventNode)
-    );
-  }
-  return frag;
-}
-
 ////////////  PROGRAMS  ////////////
 
 var _elm_lang$virtual_dom$VirtualDom$on = F2(
@@ -1742,9 +1269,7 @@ var _elm_lang$virtual_dom$VirtualDom$on = F2(
       return {
         key: EVENT_KEY,
         realKey: eventName,
-        value: {
-          decoder: decoder
-        }
+        value: decoder
       };
   });
 
@@ -1753,7 +1278,6 @@ var _elm_lang$virtual_dom$VirtualDom$on = F2(
     var facts = {};
 
     var i;
-    var kid;
     for (i = 0; i < factList.length; i += 1) {
       var entry = factList[i];
       var key = entry.key;
@@ -1817,13 +1341,6 @@ var _elm_lang$virtual_dom$VirtualDom$on = F2(
 var button = node('button')
 var span = node('span');
 
-var _elm_lang$html$Html_Attributes$attribute = F2(attribute);
-var _elm_lang$html$Html_Attributes$class = function (name) {
-  return {
-    key: 'className',
-    value: name
-  }
-};
   var toPx = function (k) {
     return _elm_lang$core$Basics$round(k) + 'px';
   };
@@ -1886,10 +1403,10 @@ var _debois$elm_mdl$Material_Ripple$Frame = function (a) {
   return {ctor: 'Frame', _0: a};
 };
 var _elm_lang$html$Html_Attributes$classList = function (list) {
-  return _elm_lang$html$Html_Attributes$class('mdl-ripple ' +
-    A2(join, ' ',
-      A2(_elm_lang$core$List$map,_elm_lang$core$Basics$fst,
-        A2(_elm_lang$core$List$filter, _elm_lang$core$Basics$snd, list))));
+  return {
+    key: 'className',
+    value: 'mdl-ripple ' + toArray(list).filter(_elm_lang$core$Basics$snd).map(_elm_lang$core$Basics$fst)
+  };
 };
 
 
@@ -1905,10 +1422,9 @@ function update(oldRecord, updatedFields)
 }
 var _debois$elm_mdl$Material_Ripple$update = F2(
   function (action, model) {
-    var _p4 = action;
-    switch (_p4.ctor) {
+    switch (action.ctor) {
       case 'Down':
-        var _p5 = _p4._0;
+        var _p5 = action._0;
         return (eq(_p5.type$, 'mousedown') && model.ignoringMouseDown) ? (
           update(model,{ignoringMouseDown: false})) : update(model,{
               animation: _debois$elm_mdl$Material_Ripple$Frame(0),
@@ -1948,10 +1464,11 @@ var _debois$elm_mdl$Material_Ripple$downOn$ = function (name) {
         )
   };
 var _debois$elm_mdl$Material_Button$blurAndForward = function (event) {
-  return A2(
-    _elm_lang$html$Html_Attributes$attribute,
-    'on' + event,
-    'this.blur(); (function(self) { var e = document.createEvent(\'Event\'); e.initEvent(\'touchcancel\', true, true); self.lastChild.dispatchEvent(e); }(this));');
+  return {
+    key: ATTR_KEY,
+    realKey: 'on' + event,
+    value: 'this.blur(); (function(self) { var e = document.createEvent(\'Event\'); e.initEvent(\'touchcancel\', true, true); self.lastChild.dispatchEvent(e); }(this));'
+  }
 };
 
 var viewLift = function (msg) {
@@ -1999,7 +1516,9 @@ var _debois$elm_mdl$Material_Button$view = (
     var node = A2(
      span,
        [
-         _elm_lang$html$Html_Attributes$class('mdl-button__ripple-container'),
+         {
+           value: 'mdl-button__ripple-container'
+         },
          _debois$elm_mdl$Material_Ripple$upOn('blur'),
          _debois$elm_mdl$Material_Ripple$upOn('touchcancel')
        ],
@@ -2015,7 +1534,6 @@ var _debois$elm_mdl$Material_Button$view = (
                   _1: !eq(model.animation, _debois$elm_mdl$Material_Ripple$Frame(0))
                  },
                  {
-
                    _0: 'is-visible',
                    _1: !eq(model.animation, {ctor: 'Inert'})
                  }
