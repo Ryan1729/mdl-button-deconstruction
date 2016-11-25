@@ -677,31 +677,9 @@ function equality(a, b)
 
   run= F2(run)
 
-
-
-
-
-
-
-var _elm_lang$core$Json_Decode_ops = _elm_lang$core$Json_Decode_ops || {};
-//import Native.Json //
-
-
-
 var STYLE_KEY = 'STYLE';
 var EVENT_KEY = 'EVENT';
 var ATTR_KEY = 'ATTR';
-var ATTR_NS_KEY = 'ATTR_NS';
-
-
-function property(key, value)
-{
-  return {
-    key: key,
-    value: value
-  };
-}
-
 
 function attribute(key, value)
 {
@@ -713,19 +691,6 @@ function attribute(key, value)
 }
 
 
-
-
-function equalEvents(a, b)
-{
-  if ((!a.options) === b.options)
-  {
-    if (a.stopPropagation !== b.stopPropagation || a.preventDefault !== b.preventDefault)
-    {
-      return false;
-    }
-  }
-  return equality(a.decoder, b.decoder);
-}
 
 
 
@@ -843,24 +808,6 @@ function render(vNode, eventNode)
 
       return domNode;
 
-    case 'keyed-node':
-      var domNode = document.createElement(vNode.tag);
-
-      applyFacts(domNode, eventNode, vNode.facts);
-
-      var children = vNode.children;
-
-      for (var i = 0; i < children.length; i++)
-      {
-        domNode.appendChild(render(children[i]._1, eventNode));
-      }
-
-      return domNode;
-
-    case 'custom':
-      var domNode = vNode.impl.render(vNode.model);
-      applyFacts(domNode, eventNode, vNode.facts);
-      return domNode;
   }
 }
 
@@ -887,10 +834,6 @@ function applyFacts(domNode, eventNode, facts)
 
       case ATTR_KEY:
         applyAttrs(domNode, value);
-        break;
-
-      case ATTR_NS_KEY:
-        applyAttrsNS(domNode, value);
         break;
 
       case 'value':
@@ -962,16 +905,6 @@ function makeEventHandler(eventNode, info)
 
     if (value.ctor === 'Ok')
     {
-      var options = info.options;
-      if (options.stopPropagation)
-      {
-        event.stopPropagation();
-      }
-      if (options.preventDefault)
-      {
-        event.preventDefault();
-      }
-
       var message = value._0;
 
       var currentEventNode = eventNode;
@@ -1015,24 +948,6 @@ function applyAttrs(domNode, attrs)
   }
 }
 
-function applyAttrsNS(domNode, nsAttrs)
-{
-  for (var key in nsAttrs)
-  {
-    var pair = nsAttrs[key];
-    var namespace = pair.namespace;
-    var value = pair.value;
-
-    if (typeof value === 'undefined')
-    {
-      domNode.removeAttributeNS(namespace, key);
-    }
-    else
-    {
-      domNode.setAttributeNS(namespace, key, value);
-    }
-  }
-}
 
 
 
@@ -1163,7 +1078,7 @@ function diffHelp(a, b, patches, index)
     case 'node':
       // Bail if obvious indicators have changed. Implies more serious
       // structural changes such that it's not worth it to diff.
-      if (a.tag !== b.tag || a.namespace !== b.namespace)
+      if (a.tag !== b.tag)
       {
         patches.push(makePatch('p-redraw', index, b));
         return;
@@ -1177,47 +1092,6 @@ function diffHelp(a, b, patches, index)
       }
 
       diffChildren(a, b, patches, index);
-      return;
-
-    case 'keyed-node':
-      // Bail if obvious indicators have changed. Implies more serious
-      // structural changes such that it's not worth it to diff.
-      if (a.tag !== b.tag || a.namespace !== b.namespace)
-      {
-        patches.push(makePatch('p-redraw', index, b));
-        return;
-      }
-
-      var factsDiff = diffFacts(a.facts, b.facts);
-
-      if (typeof factsDiff !== 'undefined')
-      {
-        patches.push(makePatch('p-facts', index, factsDiff));
-      }
-
-      diffKeyedChildren(a, b, patches, index);
-      return;
-
-    case 'custom':
-      if (a.impl !== b.impl)
-      {
-        patches.push(makePatch('p-redraw', index, b));
-        return;
-      }
-
-      var factsDiff = diffFacts(a.facts, b.facts);
-      if (typeof factsDiff !== 'undefined')
-      {
-        patches.push(makePatch('p-facts', index, factsDiff));
-      }
-
-      var patch = b.impl.diff(a,b);
-      if (patch)
-      {
-        patches.push(makePatch('p-custom', index, patch));
-        return;
-      }
-
       return;
   }
 }
@@ -1244,7 +1118,7 @@ function diffFacts(a, b, category)
   // look for changes and removals
   for (var aKey in a)
   {
-    if (aKey === STYLE_KEY || aKey === EVENT_KEY || aKey === ATTR_KEY || aKey === ATTR_NS_KEY)
+    if (aKey === STYLE_KEY || aKey === EVENT_KEY || aKey === ATTR_KEY)
     {
       var subDiff = diffFacts(a[aKey], b[aKey] || {}, aKey);
       if (subDiff)
@@ -1269,7 +1143,7 @@ function diffFacts(a, b, category)
         (category === EVENT_KEY || category === ATTR_KEY)
           ? undefined
           :
-        { namespace: a[aKey].namespace, value: undefined };
+        { value: undefined };
 
       continue;
     }
@@ -1279,7 +1153,7 @@ function diffFacts(a, b, category)
 
     // reference equal, so don't worry about it
     if (aValue === bValue && aKey !== 'value'
-      || category === EVENT_KEY && equalEvents(aValue, bValue))
+      || category === EVENT_KEY && equality(aValue, bValue))
     {
       continue;
     }
@@ -1691,25 +1565,6 @@ function addDomNodesHelp(domNode, vNode, patches, i, low, high, eventNode)
       }
       return i;
 
-    case 'keyed-node':
-      var vChildren = vNode.children;
-      var childNodes = domNode.childNodes;
-      for (var j = 0; j < vChildren.length; j++)
-      {
-        low++;
-        var vChild = vChildren[j]._1;
-        var nextLow = low + (vChild.descendantsCount || 0);
-        if (low <= index && index <= nextLow)
-        {
-          i = addDomNodesHelp(childNodes[j], vChild, patches, i, low, nextLow, eventNode);
-          if (!(patch = patches[i]) || (index = patch.index) > high)
-          {
-            return i;
-          }
-        }
-        low = nextLow;
-      }
-      return i;
 
     case 'text':
     case 'thunk':
@@ -1804,10 +1659,6 @@ function applyPatch(domNode, patch)
     case 'p-reorder':
       return applyPatchReorder(domNode, patch);
 
-    case 'p-custom':
-      var impl = patch.data;
-      return impl.applyPatch(domNode, impl.data);
-
     default:
       throw new Error('Ran into an unknown patch!');
   }
@@ -1892,7 +1743,6 @@ var _elm_lang$virtual_dom$VirtualDom$on = F2(
         key: EVENT_KEY,
         realKey: eventName,
         value: {
-          options: {stopPropagation: false, preventDefault: false},
           decoder: decoder
         }
       };
@@ -1900,7 +1750,7 @@ var _elm_lang$virtual_dom$VirtualDom$on = F2(
 
   function organizeFacts(factList)
   {
-    var namespace, facts = {};
+    var facts = {};
 
     var i;
     var kid;
@@ -1908,7 +1758,7 @@ var _elm_lang$virtual_dom$VirtualDom$on = F2(
       var entry = factList[i];
       var key = entry.key;
 
-      if (key === ATTR_KEY || key === ATTR_NS_KEY || key === EVENT_KEY)
+      if (key === ATTR_KEY || key === EVENT_KEY)
       {
         var subFacts = facts[key] || {};
         subFacts[entry.realKey] = entry.value;
@@ -1925,20 +1775,13 @@ var _elm_lang$virtual_dom$VirtualDom$on = F2(
         }
         facts[key] = styles;
       }
-      else if (key === 'namespace')
-      {
-        namespace = entry.value;
-      }
       else
       {
         facts[key] = entry.value;
       }
     }
 
-    return {
-      facts: facts,
-      namespace: namespace
-    };
+    return facts
   }
 
   function node(tag)
@@ -1951,8 +1794,7 @@ var _elm_lang$virtual_dom$VirtualDom$on = F2(
 
   function nodeHelp(tag, factList, children)
   {
-    var organized = organizeFacts(factList);
-    var facts = organized.facts;
+    var facts = organizeFacts(factList);
 
     var descendantsCount = 0;
     var i;
@@ -1976,23 +1818,12 @@ var button = node('button')
 var span = node('span');
 
 var _elm_lang$html$Html_Attributes$attribute = F2(attribute);
-var _elm_lang$html$Html_Attributes$property = F2(property);
-var _elm_lang$html$Html_Attributes$stringProperty = F2(
-  function (name, string) {
-    return A2(
-      _elm_lang$html$Html_Attributes$property,
-      name,
-      string);
-  });
 var _elm_lang$html$Html_Attributes$class = function (name) {
-  return A2(_elm_lang$html$Html_Attributes$stringProperty, 'className', name);
+  return {
+    key: 'className',
+    value: name
+  }
 };
-
-var _debois$elm_mdl$Material_Helpers$effect = F2(
-  function (e, x) {
-    return {ctor: '_Tuple2', _0: x, _1: e};
-  });
-
   var toPx = function (k) {
     return _elm_lang$core$Basics$round(k) + 'px';
   };
@@ -2007,11 +1838,11 @@ var _debois$elm_mdl$Material_Ripple$styles = F2(
     var scale = frame === 0 ? 'scale(0.0001, 0.0001)' : '';
     var transformString = 'translate(-50%, -50%) ' + offset + scale;
     return [
-        {ctor: '_Tuple2', _0: 'width', _1: rippleSize},
-        {ctor: '_Tuple2', _0: 'height', _1: rippleSize},
-        {ctor: '_Tuple2', _0: '-webkit-transform', _1: transformString},
-        {ctor: '_Tuple2', _0: '-ms-transform', _1: transformString},
-        {ctor: '_Tuple2', _0: 'transform', _1: transformString}
+        { _0: 'width', _1: rippleSize},
+        { _0: 'height', _1: rippleSize},
+        { _0: '-webkit-transform', _1: transformString},
+        { _0: '-ms-transform', _1: transformString},
+        { _0: 'transform', _1: transformString}
       ];
   });
 
@@ -2055,18 +1886,13 @@ var _debois$elm_mdl$Material_Ripple$Frame = function (a) {
   return {ctor: 'Frame', _0: a};
 };
 var _elm_lang$html$Html_Attributes$classList = function (list) {
-  return _elm_lang$html$Html_Attributes$class(
-    A2(
-      join,
-      ' ',
-      A2(
-        _elm_lang$core$List$map,
-        _elm_lang$core$Basics$fst,
+  return _elm_lang$html$Html_Attributes$class('mdl-ripple ' +
+    A2(join, ' ',
+      A2(_elm_lang$core$List$map,_elm_lang$core$Basics$fst,
         A2(_elm_lang$core$List$filter, _elm_lang$core$Basics$snd, list))));
 };
 
 
-var _debois$elm_mdl$Material_Ripple$Tick = {ctor: 'Tick'};
 function update(oldRecord, updatedFields)
 {
   var newRecord = {};
@@ -2084,16 +1910,11 @@ var _debois$elm_mdl$Material_Ripple$update = F2(
       case 'Down':
         var _p5 = _p4._0;
         return (eq(_p5.type$, 'mousedown') && model.ignoringMouseDown) ? (
-          update(
-            model,
-            {ignoringMouseDown: false})) : A2(
-          _debois$elm_mdl$Material_Helpers$effect,
-          _debois$elm_mdl$Material_Ripple$Tick,
-          update(model,{
+          update(model,{ignoringMouseDown: false})) : update(model,{
               animation: _debois$elm_mdl$Material_Ripple$Frame(0),
               metrics: _debois$elm_mdl$Material_Ripple$computeMetrics(_p5),
               ignoringMouseDown: eq(_p5.type$, 'touchstart') ? true : model.ignoringMouseDown
-            }))._0;
+            });
       case 'Up':
         return (update(model,{animation: {ctor: 'Inert'}}));
       default:
@@ -2189,19 +2010,15 @@ var _debois$elm_mdl$Material_Button$view = (
              _elm_lang$html$Html_Attributes$classList(
              fromArray(
                [
-                 {ctor: '_Tuple2', _0: 'mdl-ripple', _1: true},
                  {
-                 ctor: '_Tuple2',
-                 _0: 'is-animating',
-                 _1: !eq(
-                   model.animation,
-                   _debois$elm_mdl$Material_Ripple$Frame(0))
-               },
+                  _0: 'is-animating',
+                  _1: !eq(model.animation, _debois$elm_mdl$Material_Ripple$Frame(0))
+                 },
                  {
-                 ctor: '_Tuple2',
-                 _0: 'is-visible',
-                 _1: !eq(model.animation, {ctor: 'Inert'})
-               }
+
+                   _0: 'is-visible',
+                   _1: !eq(model.animation, {ctor: 'Inert'})
+                 }
                ])),
              styling
            ],
