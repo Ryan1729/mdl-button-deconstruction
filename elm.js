@@ -1902,9 +1902,10 @@ var _elm_lang$virtual_dom$VirtualDom$on = F2(
   {
     var namespace, facts = {};
 
-    while (factList.ctor !== '[]')
-    {
-      var entry = factList._0;
+    var i;
+    var kid;
+    for (i = 0; i < factList.length; i += 1) {
+      var entry = factList[i];
       var key = entry.key;
 
       if (key === ATTR_KEY || key === ATTR_NS_KEY || key === EVENT_KEY)
@@ -1917,11 +1918,10 @@ var _elm_lang$virtual_dom$VirtualDom$on = F2(
       {
         var styles = facts[key] || {};
         var styleList = entry.value;
-        while (styleList.ctor !== '[]')
-        {
-          var style = styleList._0;
+        var j;
+        for (j = 0; j < styleList.length; j += 1) {
+          var style = styleList[j];
           styles[style._0] = style._1;
-          styleList = styleList._1;
         }
         facts[key] = styles;
       }
@@ -1933,7 +1933,6 @@ var _elm_lang$virtual_dom$VirtualDom$on = F2(
       {
         facts[key] = entry.value;
       }
-      factList = factList._1;
     }
 
     return {
@@ -2007,14 +2006,13 @@ var _debois$elm_mdl$Material_Ripple$styles = F2(
       (Math.sqrt((r.width * r.width) + (r.height * r.height)) * 2.0) + 2.0);
     var scale = frame === 0 ? 'scale(0.0001, 0.0001)' : '';
     var transformString = 'translate(-50%, -50%) ' + offset + scale;
-    return fromArray(
-      [
+    return [
         {ctor: '_Tuple2', _0: 'width', _1: rippleSize},
         {ctor: '_Tuple2', _0: 'height', _1: rippleSize},
         {ctor: '_Tuple2', _0: '-webkit-transform', _1: transformString},
         {ctor: '_Tuple2', _0: '-ms-transform', _1: transformString},
         {ctor: '_Tuple2', _0: 'transform', _1: transformString}
-      ]);
+      ];
   });
 
 var _debois$elm_mdl$Material_Ripple$computeMetrics = function (g) {
@@ -2143,8 +2141,7 @@ var viewLift = function (msg) {
         }
 
     }
-let buttonAttrs = fromArray(
-  [
+let buttonAttrs = [
 
     _debois$elm_mdl$Material_Ripple$downOn$('mousedown'),
 
@@ -2157,7 +2154,7 @@ let buttonAttrs = fromArray(
     _debois$elm_mdl$Material_Button$blurAndForward('touchend'),
 
     {"key":"className","value":"mdl-js-ripple-effect mdl-js-button mdl-button mdl-button--raised"}
-    ])
+    ]
 
 var _debois$elm_mdl$Material_Button$view = (
   function (model) {
@@ -2169,8 +2166,7 @@ var _debois$elm_mdl$Material_Button$view = (
           return A2(_debois$elm_mdl$Material_Ripple$styles, model.metrics._0, 1);
         }
       } else {
-        return fromArray(
-          []);
+        return [];
       }
     }();
 
@@ -2181,16 +2177,14 @@ var _debois$elm_mdl$Material_Button$view = (
 
     var node = A2(
      span,
-     fromArray(
        [
          _elm_lang$html$Html_Attributes$class('mdl-button__ripple-container'),
          _debois$elm_mdl$Material_Ripple$upOn('blur'),
          _debois$elm_mdl$Material_Ripple$upOn('touchcancel')
-       ]),
+       ],
        [
          A2(
          span,
-         fromArray(
            [
              _elm_lang$html$Html_Attributes$classList(
              fromArray(
@@ -2210,7 +2204,7 @@ var _debois$elm_mdl$Material_Button$view = (
                }
                ])),
              styling
-           ]),
+           ],
            [])
        ]);
 
