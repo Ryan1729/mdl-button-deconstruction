@@ -17,17 +17,6 @@ function A2(fun, a, b)
     : fun(a)(b);
 }
 
-function compare()
-{
-  return { ctor: 'EQ' };
-}
-compare= F2(compare);
-let round= Math.round;
-
-
-
-// COMPARISONS
-
 function eq(x, y)
 {
   var stack = [];
@@ -108,32 +97,6 @@ function eqHelp(x, y, depth, stack)
   return true;
 }
 
-// GUID
-
-var count = 0;
-function guid()
-{
-  return count++;
-}
-
-
-// RECORDS
-
-
-
-
-//// LIST STUFF ////
-
-var Nil = { ctor: '[]' };
-
-function Cons(hd, tl)
-{
-  return {
-    ctor: '::',
-    _0: hd,
-    _1: tl
-  };
-}
 
 var _elm_lang$core$Basics$snd = function (_p2) {
   var _p3 = _p2;
@@ -146,7 +109,6 @@ var _elm_lang$core$Basics$fst = function (_p4) {
 
 var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
 
-var _elm_lang$core$Basics$round = round;
 
 
 //import Native.Utils //
@@ -156,33 +118,7 @@ var _elm_lang$core$Maybe$Just = function (a) {
   return {ctor: 'Just', _0: a};
 };
 
-var Nil = { ctor: '[]' };
 
-function Cons(hd, tl)
-{
-  return { ctor: '::', _0: hd, _1: tl };
-}
-
-function fromArray(arr)
-{
-  var out = Nil;
-  for (var i = arr.length; i--; )
-  {
-    out = Cons(arr[i], out);
-  }
-  return out;
-}
-
-function toArray(xs)
-{
-  var out = [];
-  while (xs.ctor !== '[]')
-  {
-    out.push(xs._0);
-    xs = xs._1;
-  }
-  return out;
-}
 
 
 var _elm_lang$core$Result$Ok = function (a) {
@@ -345,16 +281,7 @@ function succeed(value)
   };
 }
 
-function onError(task, callback)
-{
-  return {
-    ctor: '_Task_onError',
-    task: task,
-    callback: callback
-  };
-}
 
-onError = F2(onError)
 
 function andThen(task, callback)
 {
@@ -398,7 +325,6 @@ function rawSpawn(task)
 {
   var process = {
     ctor: '_Process',
-    id: guid(),
     root: task,
     stack: null,
     mailbox: []
@@ -425,10 +351,7 @@ function step(numSteps, process)
 
     if (ctor === '_Task_succeed')
     {
-      while (process.stack && process.stack.ctor === '_Task_onError')
-      {
-        process.stack = process.stack.rest;
-      }
+
       if (process.stack === null)
       {
         break;
@@ -459,18 +382,6 @@ function step(numSteps, process)
     {
       process.stack = {
         ctor: '_Task_andThen',
-        callback: process.root.callback,
-        rest: process.stack
-      };
-      process.root = process.root.task;
-      ++numSteps;
-      continue;
-    }
-
-    if (ctor === '_Task_onError')
-    {
-      process.stack = {
-        ctor: '_Task_onError',
         callback: process.root.callback,
         rest: process.stack
       };
@@ -924,15 +835,6 @@ function diffHelp(a, b, patches, index)
       diffHelp(aSubNode, bSubNode, patches, index + 1);
       return;
 
-    case 'text':
-      if (a.text !== b.text)
-      {
-        patches.push(makePatch('p-text', index, b.text));
-        return;
-      }
-
-      return;
-
     case 'node':
       // Bail if obvious indicators have changed. Implies more serious
       // structural changes such that it's not worth it to diff.
@@ -1010,11 +912,7 @@ function diffFacts(a, b, category)
     var bValue = b[aKey];
 
     // reference equal, so don't worry about it
-    if (aValue === bValue && aKey !== 'value'
-      || category === EVENT_KEY && equality(aValue, bValue))
-    {
-      continue;
-    }
+
 
     diff = diff || {};
     diff[aKey] = bValue;
@@ -1042,16 +940,6 @@ function diffChildren(aParent, bParent, patches, rootIndex)
   var aLen = aChildren.length;
   var bLen = bChildren.length;
 
-  // FIGURE OUT IF THERE ARE INSERTS OR REMOVALS
-
-  if (aLen > bLen)
-  {
-    patches.push(makePatch('p-remove-last', rootIndex, aLen - bLen));
-  }
-  else if (aLen < bLen)
-  {
-    patches.push(makePatch('p-append', rootIndex, bChildren.slice(aLen)));
-  }
 
   // PAIRWISE DIFF EVERYTHING ELSE
 
@@ -1200,10 +1088,6 @@ function applyPatch(domNode, patch)
       applyFacts(domNode, patch.eventNode, patch.data);
       return domNode;
 
-    case 'p-text':
-      domNode.replaceData(0, domNode.length, patch.data);
-      return domNode;
-
     case 'p-tagger':
       domNode.elm_event_node_ref.tagger = patch.data;
       return domNode;
@@ -1214,29 +1098,6 @@ function applyPatch(domNode, patch)
       {
         domNode.removeChild(domNode.lastChild);
       }
-      return domNode;
-
-    case 'p-append':
-      var newNodes = patch.data;
-      for (var i = 0; i < newNodes.length; i++)
-      {
-        domNode.appendChild(render(newNodes[i], patch.eventNode));
-      }
-      return domNode;
-
-    case 'p-remove':
-      var data = patch.data;
-      if (typeof data === 'undefined')
-      {
-        domNode.parentNode.removeChild(domNode);
-        return domNode;
-      }
-      var entry = data.entry;
-      if (typeof entry.index !== 'undefined')
-      {
-        domNode.parentNode.removeChild(domNode);
-      }
-      entry.data = applyPatchesHelp(domNode, data.patches);
       return domNode;
 
     default:
@@ -1264,14 +1125,7 @@ function applyPatchRedraw(domNode, vNode, eventNode)
 
 ////////////  PROGRAMS  ////////////
 
-var _elm_lang$virtual_dom$VirtualDom$on = F2(
-  function (eventName, decoder) {
-      return {
-        key: EVENT_KEY,
-        realKey: eventName,
-        value: decoder
-      };
-  });
+
 
   function organizeFacts(factList)
   {
@@ -1341,9 +1195,9 @@ var _elm_lang$virtual_dom$VirtualDom$on = F2(
 var button = node('button')
 var span = node('span');
 
-  var toPx = function (k) {
-    return _elm_lang$core$Basics$round(k) + 'px';
-  };
+var toPx = function (k) {
+  return Math.round(k) + 'px';
+};
 
 var _debois$elm_mdl$Material_Ripple$styles = F2(
   function (m, frame) {
@@ -1352,7 +1206,7 @@ var _debois$elm_mdl$Material_Ripple$styles = F2(
     var offset = 'translate(' + toPx(m.x) + ', ' + toPx(m.y) + ')';
     var rippleSize = toPx(
       (Math.sqrt((r.width * r.width) + (r.height * r.height)) * 2.0) + 2.0);
-    var scale = frame === 0 ? 'scale(0.0001, 0.0001)' : '';
+    var scale = frame ? 'scale(0.0001, 0.0001)' : '';
     var transformString = 'translate(-50%, -50%) ' + offset + scale;
     return [
         { _0: 'width', _1: rippleSize},
@@ -1399,50 +1253,22 @@ let touchesY = function (e) {
   return e.touches[0].clientY
 }
 
-var _debois$elm_mdl$Material_Ripple$Frame = function (a) {
-  return {ctor: 'Frame', _0: a};
-};
+var _debois$elm_mdl$Material_Ripple$Frame = {ctor: 'Frame'}
 var _elm_lang$html$Html_Attributes$classList = function (list) {
   return {
     key: 'className',
-    value: 'mdl-ripple ' + toArray(list).filter(_elm_lang$core$Basics$snd).map(_elm_lang$core$Basics$fst)
+    value: 'mdl-ripple ' + list.filter(_elm_lang$core$Basics$snd).map(_elm_lang$core$Basics$fst)
   };
 };
 
 
-function update(oldRecord, updatedFields)
-{
-  var newRecord = {};
-  for (var key in oldRecord)
-  {
-    var value = (key in updatedFields) ? updatedFields[key] : oldRecord[key];
-    newRecord[key] = value;
-  }
-  return newRecord;
-}
-var _debois$elm_mdl$Material_Ripple$update = F2(
-  function (action, model) {
-    switch (action.ctor) {
-      case 'Down':
-        var _p5 = action._0;
-        return (eq(_p5.type$, 'mousedown') && model.ignoringMouseDown) ? (
-          update(model,{ignoringMouseDown: false})) : update(model,{
-              animation: _debois$elm_mdl$Material_Ripple$Frame(0),
-              metrics: _debois$elm_mdl$Material_Ripple$computeMetrics(_p5),
-              ignoringMouseDown: eq(_p5.type$, 'touchstart') ? true : model.ignoringMouseDown
-            });
-      case 'Up':
-        return (update(model,{animation: {ctor: 'Inert'}}));
-      default:
-        return (model)
 
-    }
-  });
 var _debois$elm_mdl$Material_Ripple$upOn = function (name) {
-  return A2(
-    _elm_lang$virtual_dom$VirtualDom$on,
-    name,
-    function(){return {ctor: 'Up'}});
+  return {
+    key: EVENT_KEY,
+    realKey: name,
+    value: function(){return {ctor: 'Up'}}
+  }
 };
 var geometryDecoder =
 function (e) {
@@ -1456,12 +1282,13 @@ function (e) {
 }
 
 var _debois$elm_mdl$Material_Ripple$downOn$ = function (name) {
-    return _elm_lang$virtual_dom$VirtualDom$on(
-      name)(
-        function (value) {
-          return viewLift({ctor: 'Down', _0: geometryDecoder(value)});
-        }
-        )
+    return {
+      key: EVENT_KEY,
+      realKey: name,
+      value: function (value) {
+        return viewLift({ctor: 'Down', _0: geometryDecoder(value)});
+      }
+    }
   };
 var _debois$elm_mdl$Material_Button$blurAndForward = function (event) {
   return {
@@ -1471,10 +1298,38 @@ var _debois$elm_mdl$Material_Button$blurAndForward = function (event) {
   }
 };
 
+function update(oldRecord, updatedFields)
+{
+  var newRecord = {};
+  for (var key in oldRecord)
+  {
+    var value = (key in updatedFields) ? updatedFields[key] : oldRecord[key];
+    newRecord[key] = value;
+  }
+  return newRecord;
+}
+var _debois$elm_mdl$Material_Ripple$update = function (action, model) {
+    switch (action.ctor) {
+      case 'Down':
+        var _p5 = action._0;
+        return (_p5.type$ === 'mousedown' && model.ignoringMouseDown) ? (
+          update(model,{ignoringMouseDown: false})) : update(model,{
+              animation: _debois$elm_mdl$Material_Ripple$Frame,
+              metrics: _debois$elm_mdl$Material_Ripple$computeMetrics(_p5),
+              ignoringMouseDown: _p5.type$ === 'touchstart' ? true : model.ignoringMouseDown
+            });
+      case 'Up':
+        return (update(model,{animation: {ctor: 'Inert'}}));
+      default:
+        return (model)
+
+    }
+  };
+
 var viewLift = function (msg) {
         return function (c) {
                 var model = c._0 || {animation: {ctor: 'Inert'}, metrics: {ctor: "Nothing"}, ignoringMouseDown: false}
-                c._0 = _debois$elm_mdl$Material_Ripple$update(msg)(model);
+                c._0 = _debois$elm_mdl$Material_Ripple$update(msg, model);
                 return  c
         }
 
@@ -1496,17 +1351,13 @@ let buttonAttrs = [
 
 var _debois$elm_mdl$Material_Button$view = (
   function (model) {
-    var stylingA = function () {
+    var stylingA;
+
       if ((model.metrics.ctor === 'Just')) {
-        if (model.animation.ctor === 'Frame') {
-          return A2(_debois$elm_mdl$Material_Ripple$styles, model.metrics._0, model.animation._0);
-        } else {
-          return A2(_debois$elm_mdl$Material_Ripple$styles, model.metrics._0, 1);
-        }
+          stylingA = _debois$elm_mdl$Material_Ripple$styles(model.metrics._0)(model.animation.ctor === 'Frame');
       } else {
-        return [];
+        stylingA = [];
       }
-    }();
 
   var styling = {
     key: STYLE_KEY,
@@ -1527,17 +1378,16 @@ var _debois$elm_mdl$Material_Button$view = (
          span,
            [
              _elm_lang$html$Html_Attributes$classList(
-             fromArray(
                [
                  {
                   _0: 'is-animating',
-                  _1: !eq(model.animation, _debois$elm_mdl$Material_Ripple$Frame(0))
+                  _1: !eq(model.animation, _debois$elm_mdl$Material_Ripple$Frame)
                  },
                  {
                    _0: 'is-visible',
                    _1: !eq(model.animation, {ctor: 'Inert'})
                  }
-               ])),
+               ]),
              styling
            ],
            [])
