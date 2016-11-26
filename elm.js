@@ -97,20 +97,6 @@ function eqHelp(x, y, depth, stack)
   return true;
 }
 
-
-var _elm_lang$core$Basics$snd = function (_p2) {
-  var _p3 = _p2;
-  return _p3._1;
-};
-var _elm_lang$core$Basics$fst = function (_p4) {
-  var _p5 = _p4;
-  return _p5._0;
-};
-
-var _elm_lang$core$Basics_ops = _elm_lang$core$Basics_ops || {};
-
-
-
 //import Native.Utils //
 
 
@@ -476,24 +462,6 @@ function runHelp(decoder, value)
     }
 
 }
-
-
-// EQUALITY
-
-function equality(a, b)
-{
-  if (a === b)
-  {
-    return true;
-  }
-
-  if (a.tag !== b.tag)
-  {
-    return false;
-  }
-
-}
-
 
 var STYLE_KEY = 'STYLE';
 var EVENT_KEY = 'EVENT';
@@ -1230,11 +1198,11 @@ var _debois$elm_mdl$Material_Ripple$update = function (action, model) {
       case 'Down':
         var _p5 = action._0;
         return (_p5.type$ === 'mousedown' && model.ignoringMouseDown) ? (
-          update(model,{ignoringMouseDown: false})) : update(model,{
+          update(model,{ignoringMouseDown: false})) : {
               animation: _debois$elm_mdl$Material_Ripple$Frame,
               metrics: _debois$elm_mdl$Material_Ripple$computeMetrics(_p5),
               ignoringMouseDown: _p5.type$ === 'touchstart' ? true : model.ignoringMouseDown
-            });
+            };
       case 'Up':
         return (update(model,{animation: {ctor: 'Inert'}}));
       default:
@@ -1281,31 +1249,6 @@ span1Attrs[EVENT_KEY] = {
   touchcancel: returnUp,
 }
 
-var _elm_lang$html$Html_Attributes$classList = function (list) {
-  return {
-    key: 'className',
-    value: 'mdl-ripple ' + list.filter(_elm_lang$core$Basics$snd).map(_elm_lang$core$Basics$fst)
-  };
-};
-
-function organizeStyles(styleList)
-{
-  var styles = {};
-  var j;
-  for (j = 0; j < styleList.length; j += 1) {
-    var style = styleList[j];
-    styles[style._0] = style._1;
-  }
-  return styles;
-
-
-}
-
-var _debois$elm_mdl$Material_Ripple$styles = F2(
-  function (m, frame) {
-
-  });
-
 let getSpan2Attrs = function(animation, metrics) {
   var stylingA;
 
@@ -1331,10 +1274,10 @@ let getSpan2Attrs = function(animation, metrics) {
     }
 
   var span2ClassName = 'mdl-ripple'
-  if (!eq(animation, _debois$elm_mdl$Material_Ripple$Frame)) {
+  if (animation.ctor !==  _debois$elm_mdl$Material_Ripple$Frame.ctor) {
     span2ClassName += ' is-animating'
   }
-  if (!eq(animation, {ctor: 'Inert'})) {
+  if (animation.ctor !== 'Inert') {
     span2ClassName += ' is-visible'
   }
 
