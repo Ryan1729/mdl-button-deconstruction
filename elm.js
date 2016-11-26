@@ -1127,40 +1127,7 @@ function applyPatchRedraw(domNode, vNode, eventNode)
 
 
 
-  function organizeFacts(factList)
-  {
-    var facts = {};
 
-    var i;
-    for (i = 0; i < factList.length; i += 1) {
-      var entry = factList[i];
-      var key = entry.key;
-
-      if (key === ATTR_KEY || key === EVENT_KEY)
-      {
-        var subFacts = facts[key] || {};
-        subFacts[entry.realKey] = entry.value;
-        facts[key] = subFacts;
-      }
-      else if (key === STYLE_KEY)
-      {
-        var styles = facts[key] || {};
-        var styleList = entry.value;
-        var j;
-        for (j = 0; j < styleList.length; j += 1) {
-          var style = styleList[j];
-          styles[style._0] = style._1;
-        }
-        facts[key] = styles;
-      }
-      else
-      {
-        facts[key] = entry.value;
-      }
-    }
-
-    return facts
-  }
 
   function node(tag)
   {
@@ -1170,10 +1137,8 @@ function applyPatchRedraw(domNode, vNode, eventNode)
   }
 
 
-  function nodeHelp(tag, factList, children)
+  function nodeHelp(tag, facts, children)
   {
-    var facts = organizeFacts(factList);
-
     var descendantsCount = 0;
     var i;
     var kid;
@@ -1199,23 +1164,7 @@ var toPx = function (k) {
   return Math.round(k) + 'px';
 };
 
-var _debois$elm_mdl$Material_Ripple$styles = F2(
-  function (m, frame) {
-    var r = m.rect;
 
-    var offset = 'translate(' + toPx(m.x) + ', ' + toPx(m.y) + ')';
-    var rippleSize = toPx(
-      (Math.sqrt((r.width * r.width) + (r.height * r.height)) * 2.0) + 2.0);
-    var scale = frame ? 'scale(0.0001, 0.0001)' : '';
-    var transformString = 'translate(-50%, -50%) ' + offset + scale;
-    return [
-        { _0: 'width', _1: rippleSize},
-        { _0: 'height', _1: rippleSize},
-        { _0: '-webkit-transform', _1: transformString},
-        { _0: '-ms-transform', _1: transformString},
-        { _0: 'transform', _1: transformString}
-      ];
-  });
 
 var _debois$elm_mdl$Material_Ripple$computeMetrics = function (g) {
   var rect = g.rect;
@@ -1254,22 +1203,7 @@ let touchesY = function (e) {
 }
 
 var _debois$elm_mdl$Material_Ripple$Frame = {ctor: 'Frame'}
-var _elm_lang$html$Html_Attributes$classList = function (list) {
-  return {
-    key: 'className',
-    value: 'mdl-ripple ' + list.filter(_elm_lang$core$Basics$snd).map(_elm_lang$core$Basics$fst)
-  };
-};
 
-
-
-var _debois$elm_mdl$Material_Ripple$upOn = function (name) {
-  return {
-    key: EVENT_KEY,
-    realKey: name,
-    value: function(){return {ctor: 'Up'}}
-  }
-};
 var geometryDecoder =
 function (e) {
   return {
@@ -1280,23 +1214,6 @@ function (e) {
     touchY: touchesY(e),
     type$: e.type};
 }
-
-var _debois$elm_mdl$Material_Ripple$downOn$ = function (name) {
-    return {
-      key: EVENT_KEY,
-      realKey: name,
-      value: function (value) {
-        return viewLift({ctor: 'Down', _0: geometryDecoder(value)});
-      }
-    }
-  };
-var _debois$elm_mdl$Material_Button$blurAndForward = function (event) {
-  return {
-    key: ATTR_KEY,
-    realKey: 'on' + event,
-    value: 'this.blur(); (function(self) { var e = document.createEvent(\'Event\'); e.initEvent(\'touchcancel\', true, true); self.lastChild.dispatchEvent(e); }(this));'
-  }
-};
 
 function update(oldRecord, updatedFields)
 {
@@ -1334,63 +1251,106 @@ var viewLift = function (msg) {
         }
 
     }
-let buttonAttrs = [
 
-    _debois$elm_mdl$Material_Ripple$downOn$('mousedown'),
 
-    _debois$elm_mdl$Material_Ripple$downOn$('touchstart'),
 
-    _debois$elm_mdl$Material_Button$blurAndForward('mouseup'),
+let blurHack = 'this.blur(); (function(self) { var e = document.createEvent(\'Event\'); e.initEvent(\'touchcancel\', true, true); self.lastChild.dispatchEvent(e); }(this));'
 
-    _debois$elm_mdl$Material_Button$blurAndForward('mouseleave'),
+let startAnimating = function (value) {
+  return viewLift({ctor: 'Down', _0: geometryDecoder(value)});
+}
 
-    _debois$elm_mdl$Material_Button$blurAndForward('touchend'),
+let buttonAttrs = {
+  className: "mdl-js-ripple-effect mdl-js-button mdl-button mdl-button--raised"
+};
+buttonAttrs[EVENT_KEY] = {
+  mousedown : startAnimating,
+  touchstart : startAnimating,
+}
+buttonAttrs[ATTR_KEY] = {
+  onmouseup : blurHack,
+  onmouseleave : blurHack,
+  ontouchend : blurHack,
+}
 
-    {"key":"className","value":"mdl-js-ripple-effect mdl-js-button mdl-button mdl-button--raised"}
-    ]
+let returnUp = function(){return {ctor: 'Up'}}
+
+let span1Attrs = {};
+span1Attrs[EVENT_KEY] = {
+  blur: returnUp,
+  touchcancel: returnUp,
+}
+
+var _elm_lang$html$Html_Attributes$classList = function (list) {
+  return {
+    key: 'className',
+    value: 'mdl-ripple ' + list.filter(_elm_lang$core$Basics$snd).map(_elm_lang$core$Basics$fst)
+  };
+};
+
+function organizeStyles(styleList)
+{
+  var styles = {};
+  var j;
+  for (j = 0; j < styleList.length; j += 1) {
+    var style = styleList[j];
+    styles[style._0] = style._1;
+  }
+  return styles;
+
+
+}
+
+var _debois$elm_mdl$Material_Ripple$styles = F2(
+  function (m, frame) {
+
+  });
+
+let getSpan2Attrs = function(animation, metrics) {
+  var stylingA;
+
+    if (metrics.ctor === 'Just') {
+      var m = metrics._0
+      var frame = animation.ctor === 'Frame'
+      var r = m.rect;
+
+      var offset = 'translate(' + toPx(m.x) + ', ' + toPx(m.y) + ')';
+      var rippleSize = toPx(
+        (Math.sqrt((r.width * r.width) + (r.height * r.height)) * 2.0) + 2.0);
+      var scale = frame ? 'scale(0.0001, 0.0001)' : '';
+      var transformString = 'translate(-50%, -50%) ' + offset + scale;
+      stylingA = {
+          width : rippleSize,
+          height : rippleSize,
+          "-webkit-transform" : transformString,
+          "-ms-transform" : transformString,
+          transform : transformString,
+        };
+    } else {
+        stylingA = {};
+    }
+
+  var span2ClassName = 'mdl-ripple'
+  if (!eq(animation, _debois$elm_mdl$Material_Ripple$Frame)) {
+    span2ClassName += ' is-animating'
+  }
+  if (!eq(animation, {ctor: 'Inert'})) {
+    span2ClassName += ' is-visible'
+  }
+
+  return {
+   className: span2ClassName,
+   STYLE: stylingA
+ }
+
+}
 
 var _debois$elm_mdl$Material_Button$view = (
   function (model) {
-    var stylingA;
-
-      if ((model.metrics.ctor === 'Just')) {
-          stylingA = _debois$elm_mdl$Material_Ripple$styles(model.metrics._0)(model.animation.ctor === 'Frame');
-      } else {
-        stylingA = [];
-      }
-
-  var styling = {
-    key: STYLE_KEY,
-    value: stylingA
-  }
-
-    var node = A2(
-     span,
+    var node =
+     span(span1Attrs)(
        [
-         {
-           value: 'mdl-button__ripple-container'
-         },
-         _debois$elm_mdl$Material_Ripple$upOn('blur'),
-         _debois$elm_mdl$Material_Ripple$upOn('touchcancel')
-       ],
-       [
-         A2(
-         span,
-           [
-             _elm_lang$html$Html_Attributes$classList(
-               [
-                 {
-                  _0: 'is-animating',
-                  _1: !eq(model.animation, _debois$elm_mdl$Material_Ripple$Frame)
-                 },
-                 {
-                   _0: 'is-visible',
-                   _1: !eq(model.animation, {ctor: 'Inert'})
-                 }
-               ]),
-             styling
-           ],
-           [])
+         span(getSpan2Attrs(model.animation, model.metrics))([])
        ]);
 
     return button(buttonAttrs)(
