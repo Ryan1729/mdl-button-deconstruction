@@ -32,12 +32,10 @@ function nativeBinding(callback)
 // WORK QUEUE
 
 var working = false;
-var workQueue = [];
+
 
 function enqueue()
 {
-  workQueue.push(globalState);
-
   if (!working)
   {
     setTimeout(work, 0);
@@ -45,81 +43,63 @@ function enqueue()
   }
 }
 
-
 function work()
 {
-  var process;
-  while (globalState.numSteps < MAX_STEPS && (process = workQueue.shift()))
-  {
-    if (process.root)
+
+    while (globalState.numSteps < MAX_STEPS)
     {
+      var ctor = globalState.root.ctor;
+      console.log(ctor)
 
-      while (globalState.numSteps < MAX_STEPS)
+      if (ctor === '_Task_succeed')
       {
-        var ctor = globalState.root.ctor;
+        globalState.root = globalState.stack.callback(globalState.model);
+        globalState.stack = globalState.stack.rest;
+        ++globalState.numSteps;
+        continue;
+      }
 
-        if (ctor === '_Task_succeed')
+      if (ctor === '_Task_andThen')
+      {
+        globalState.stack = {
+          ctor: '_Task_andThen',
+          callback: globalState.root.callback,
+          rest: globalState.stack
+        };
+        globalState.root = globalState.root.task;
+        ++globalState.numSteps;
+        continue;
+      }
+
+      if (ctor === '_Task_nativeBinding')
+      {
+        globalState.root.cancel = globalState.root.callback(function(newRoot) {
+          globalState.root = newRoot;
+        });
+
+        break;
+      }
+
+      if (ctor === '_Task_receive')
+      {
+        if (globalState.mailbox.length === 0)
         {
-
-          if (globalState.stack === null)
-          {
-            break;
-          }
-          globalState.root = globalState.stack.callback(globalState.model);
-          globalState.stack = globalState.stack.rest;
-          ++globalState.numSteps;
-          continue;
-        }
-
-        if (ctor === '_Task_andThen')
-        {
-          globalState.stack = {
-            ctor: '_Task_andThen',
-            callback: globalState.root.callback,
-            rest: globalState.stack
-          };
-          globalState.root = globalState.root.task;
-          ++globalState.numSteps;
-          continue;
-        }
-
-        if (ctor === '_Task_nativeBinding')
-        {
-          globalState.root.cancel = globalState.root.callback(function(newRoot) {
-            globalState.root = newRoot;
-          });
-
           break;
         }
 
-        if (ctor === '_Task_receive')
-        {
-          if (globalState.mailbox.length === 0)
-          {
-            break;
-          }
-
-          globalState.root = globalState.root.callback(globalState.mailbox.shift());
-          ++globalState.numSteps;
-          continue;
-        }
-
-        throw new Error(ctor);
+        globalState.root = globalState.root.callback(globalState.mailbox.shift());
+        ++globalState.numSteps;
+        continue;
       }
 
-      if (globalState.numSteps < MAX_STEPS)
-      {
-        globalState.numSteps += 1;
-      } 
+      throw new Error(ctor);
     }
-  }
-  if (!process)
-  {
+    console.log(globalState.numSteps)
+
     working = false;
-    return;
-  }
-  setTimeout(work, 0);
+    globalState.numSteps = 0
 }
+
 
 var EVENT_KEY = 'EVENT';
 var ATTR_KEY = 'ATTR';
