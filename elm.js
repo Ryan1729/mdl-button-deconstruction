@@ -14,20 +14,17 @@ function errorHtml(message)
 
 // PROGRAM SUCCESS
 
-function succeed(value)
-{
-  return {
+let succeed = {
     ctor: '_Task_succeed',
-    value: value
   };
-}
 
-function andThen(task, callback)
+
+function andThen(task)
 {
   return {
     ctor: '_Task_andThen',
     task: task,
-    callback: callback
+    callback: loop
   };
 }
 
@@ -50,7 +47,7 @@ var workQueue = [];
 
 function enqueue()
 {
-  workQueue.push(mainProcess);
+  workQueue.push(globalState);
 
   if (!working)
   {
@@ -67,39 +64,40 @@ function work()
   {
     if (process.root)
     {
+
       while (numSteps < MAX_STEPS)
       {
-        var ctor = mainProcess.root.ctor;
+        var ctor = globalState.root.ctor;
 
         if (ctor === '_Task_succeed')
         {
 
-          if (mainProcess.stack === null)
+          if (globalState.stack === null)
           {
             break;
           }
-          mainProcess.root = mainProcess.stack.callback(mainProcess.root.value);
-          mainProcess.stack = mainProcess.stack.rest;
+          globalState.root = globalState.stack.callback(globalState.model);
+          globalState.stack = globalState.stack.rest;
           ++numSteps;
           continue;
         }
 
         if (ctor === '_Task_andThen')
         {
-          mainProcess.stack = {
+          globalState.stack = {
             ctor: '_Task_andThen',
-            callback: mainProcess.root.callback,
-            rest: mainProcess.stack
+            callback: globalState.root.callback,
+            rest: globalState.stack
           };
-          mainProcess.root = mainProcess.root.task;
+          globalState.root = globalState.root.task;
           ++numSteps;
           continue;
         }
 
         if (ctor === '_Task_nativeBinding')
         {
-          mainProcess.root.cancel = mainProcess.root.callback(function(newRoot) {
-            mainProcess.root = newRoot;
+          globalState.root.cancel = globalState.root.callback(function(newRoot) {
+            globalState.root = newRoot;
             enqueue();
           });
 
@@ -108,13 +106,12 @@ function work()
 
         if (ctor === '_Task_receive')
         {
-          var mailbox = mainProcess.mailbox;
-          if (mailbox.length === 0)
+          if (globalState.mailbox.length === 0)
           {
             break;
           }
 
-          mainProcess.root = mainProcess.root.callback(mailbox.shift());
+          globalState.root = globalState.root.callback(globalState.mailbox.shift());
           ++numSteps;
           continue;
         }
@@ -149,7 +146,7 @@ var ATTR_KEY = 'ATTR';
 function renderer(parent, initialVirtualNode)
 {
   var eventNode = { tagger: function (msg){
-      mainProcess.mailbox.push(msg);
+      globalState.mailbox.push(msg);
       enqueue(); }, parent: undefined };
 
   var domNode = render(initialVirtualNode, eventNode);
@@ -182,8 +179,7 @@ function renderer(parent, initialVirtualNode)
     }
   }
 
-  return {
-     update: function (vNode)
+  return function (vNode)
       {
         if (state === 'NO_REQUEST')
         {
@@ -192,7 +188,7 @@ function renderer(parent, initialVirtualNode)
         state = 'PENDING_REQUEST';
         nextVirtualNode = vNode;
       }
-    };
+
 }
 
 
@@ -211,19 +207,9 @@ function render(vNode, eventNode)
   {
     case 'tagger':
       var subNode = vNode.node;
-      var tagger = vNode.tagger;
-
-      while (subNode.type === 'tagger')
-      {
-        typeof tagger !== 'object'
-          ? tagger = [tagger, subNode.tagger]
-          : tagger.push(subNode.tagger);
-
-        subNode = subNode.node;
-      }
 
       var subEventRoot = {
-        tagger: tagger,
+        tagger: viewLift,
         parent: eventNode
       };
 
@@ -380,33 +366,9 @@ function diffHelp(a, b, patches, index)
   {
     case 'tagger':
       // gather nested taggers
-      var aTaggers = a.tagger;
-      var bTaggers = b.tagger;
-      var nesting = false;
-
       var aSubNode = a.node;
-      while (aSubNode.type === 'tagger')
-      {
-        nesting = true;
-
-        typeof aTaggers !== 'object'
-          ? aTaggers = [aTaggers, aSubNode.tagger]
-          : aTaggers.push(aSubNode.tagger);
-
-        aSubNode = aSubNode.node;
-      }
 
       var bSubNode = b.node;
-      while (bSubNode.type === 'tagger')
-      {
-        nesting = true;
-
-        typeof bTaggers !== 'object'
-          ? bTaggers = [bTaggers, bSubNode.tagger]
-          : bTaggers.push(bSubNode.tagger);
-
-        bSubNode = bSubNode.node;
-      }
 
 
       // diff everything below the taggers
@@ -645,24 +607,20 @@ function (e) {
 }
 
 var viewLift = function (msg) {
-        return function (c) {
-                var model = c._0 || {isVisible: false, metrics: {ctor: "Nothing"}}
-                switch (msg.ctor) {
-                  case 'Down':
-                    c._0 = {
+        return function () {
+                var model = globalState.model._0 || {isVisible: false, metrics: {ctor: "viewLift metrics"}}
+                if (msg.ctor === 'Down') {
+                    globalState.model._0 = {
                           isVisible: true,
                           metrics: _debois$elm_mdl$Material_Ripple$computeMetrics(msg._0),
                         };
-                    break;
-                  case 'Up':
-                    c._0 =  {
+                } else {
+                    globalState.model._0 =  {
                       isVisible : false,
                       metrics : model.metrics,
                     }
-                    break;
-
                 }
-                return  c
+                return  globalState.model
         }
     }
 
@@ -731,77 +689,70 @@ let getSpan2Attrs = function(isVisible, metrics) {
 
 }
 
-var _debois$elm_mdl$Material_Button$view = (
-  function (model) {
-    var node =
-     span(span1Attrs,[
-         span(getSpan2Attrs(model.isVisible, model.metrics),[])
-       ]);
-
-    return button(buttonAttrs,
-              [
-               {
-                    type: 'text',
-                    text: 'a test Button with a long label'
-                },
-              {
-                  type: 'tagger',
-                  tagger: viewLift,
-                  node: node,
-                  descendantsCount: 1 + (node.descendantsCount || 0)
-              }
-            ]
-          );
-  });
-
-var accidentalGlobalModel = {ctor: 'Nothing'};
 
 var Elm = {};
 Elm.ChangeMe = Elm.ChangeMe || {};
 
-var view =  function (mdl) {
-  return _debois$elm_mdl$Material_Button$view(mdl._0 || {isVisible: false, metrics: {ctor: "Nothing"}});
+var view =  function () {
+  var model = globalState.model._0 || {isVisible: false, metrics: {ctor: "metrics"}}
+
+  var node =
+   span(span1Attrs,[
+       span(getSpan2Attrs(model.isVisible, model.metrics),[])
+     ]);
+
+  return button(buttonAttrs,
+            [
+             {
+                  type: 'text',
+                  text: 'a test Button with a long label'
+              },
+            {
+                type: 'tagger',
+                node: node,
+                descendantsCount: 1 + (node.descendantsCount || 0)
+            }
+          ]
+        );
+
 };
 
-var mainProcess;
+var globalState;
+
+// ambient state
+var ambient;
+
+function loop()
+{
+  var handleMsg = {
+    ctor: '_Task_receive',
+    callback: function(msg) {
+      return nativeBinding(function(callback) {
+        msg()
+
+        ambient(view());
+        callback(succeed);
+      });
+    }
+  };
+  return andThen(handleMsg);
+}
 
 function embed(rootDomNode)
 {
   try
   {
-
-    // ambient state
-    var ambient;
-
     var initApp = nativeBinding(function(callback) {
-      ambient = renderer(rootDomNode, view({}));
-      callback(succeed({}));
+      ambient = renderer(rootDomNode, view());
+      callback(succeed);
     });
 
-
-    function loop(model)
-    {
-      var handleMsg = {
-        ctor: '_Task_receive',
-        callback: function(msg) {
-          return nativeBinding(function(callback) {
-            msg(model)
-            model = accidentalGlobalModel
-            ambient.update(view(model));
-            callback(succeed(model));
-          });
-        }
-      };
-      return andThen(handleMsg, loop);
-    }
-
-    var task = andThen(initApp, loop);
-
-    mainProcess = {
+    globalState = {
       ctor: '_Process',
-      root: task,
+      root: andThen(initApp),
       stack: null,
-      mailbox: []
+      mailbox: [],
+      model: {ctor: 'Model'}
     };
 
     enqueue();
