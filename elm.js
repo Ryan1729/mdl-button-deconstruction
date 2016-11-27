@@ -49,7 +49,6 @@ function work()
     while (globalState.numSteps < MAX_STEPS)
     {
       var ctor = globalState.root.ctor;
-      console.log(ctor)
 
       if (ctor === '_Task_succeed')
       {
@@ -73,9 +72,8 @@ function work()
 
       if (ctor === '_Task_nativeBinding')
       {
-        globalState.root.cancel = globalState.root.callback(function(newRoot) {
-          globalState.root = newRoot;
-        });
+        globalState.root.cancel = globalState.root.callback();
+          globalState.root = succeed;
 
         break;
       }
@@ -94,7 +92,6 @@ function work()
 
       throw new Error(ctor);
     }
-    console.log(globalState.numSteps)
 
     working = false;
     globalState.numSteps = 0
@@ -634,11 +631,10 @@ function loop()
   var handleMsg = {
     ctor: '_Task_receive',
     callback: function(msg) {
-      return nativeBinding(function(callback) {
+      return nativeBinding(function() {
         msg()
 
         ambient(view());
-        callback(succeed);
       });
     }
   };
@@ -654,62 +650,11 @@ function embed(rootDomNode)
 {
   try
   {
-    var initApp = nativeBinding(function(callback) {
-      let initialVirtualNode = view()
-
-      var eventNode = {
-        tagger: function (msg){
-          globalState.mailbox.push(msg);
-          enqueue(); },
-         rootDomNode: undefined
-        };
-
-      var domNode = render(initialVirtualNode, eventNode);
-      rootDomNode.appendChild(domNode);
-
-      var currentVirtualNode = initialVirtualNode;
-      var nextVirtualNode = initialVirtualNode;
-
-      function updateIfNeeded()
-      {
-        if (globalState.state === 'PENDING_REQUEST')
-        {
-            rAF(updateIfNeeded);
-            globalState.state = 'NO_REQUEST';
-
-            var patches = [];
-            diffHelp(currentVirtualNode, nextVirtualNode, patches, 0)
-            if (patches.length !== 0)
-            {
-              addDomNodes(domNode, currentVirtualNode, patches);
-              for (var i = 0; i < patches.length; i++)
-              {
-                var patch = patches[i];
-                applyFacts(patch.domNode, patch.eventNode, patch.data);
-              }
-            }
-            currentVirtualNode = nextVirtualNode;
-        }
-      }
-
-      ambient = function (vNode)
-          {
-            if (globalState.state === 'NO_REQUEST')
-            {
-              rAF(updateIfNeeded);
-            }
-            globalState.state = 'PENDING_REQUEST';
-            nextVirtualNode = vNode;
-          }
-
-      callback(succeed);
-    });
-
     globalState = {
       ctor: '_Process',
       root: {
         ctor: '_Task_andThen',
-        task: initApp,
+        task: succeed,
         callback: loop
       },
       stack: null,
@@ -719,7 +664,53 @@ function embed(rootDomNode)
       numSteps: 0
     };
 
+    let initialVirtualNode = view()
+    var eventNode = {
+      tagger: function (msg){
+        globalState.mailbox.push(msg);
+        enqueue(); },
+       rootDomNode: undefined
+      };
+
     enqueue();
+
+    var domNode = render(initialVirtualNode, eventNode);
+    rootDomNode.appendChild(domNode);
+
+    var currentVirtualNode = initialVirtualNode;
+    var nextVirtualNode = initialVirtualNode;
+
+    function updateIfNeeded()
+    {
+      if (globalState.state === 'PENDING_REQUEST')
+      {
+          rAF(updateIfNeeded);
+          globalState.state = 'NO_REQUEST';
+
+          var patches = [];
+          diffHelp(currentVirtualNode, nextVirtualNode, patches, 0)
+          if (patches.length !== 0)
+          {
+            addDomNodes(domNode, currentVirtualNode, patches);
+            for (var i = 0; i < patches.length; i++)
+            {
+              var patch = patches[i];
+              applyFacts(patch.domNode, patch.eventNode, patch.data);
+            }
+          }
+          currentVirtualNode = nextVirtualNode;
+      }
+    }
+
+    ambient = function (vNode)
+        {
+          if (globalState.state === 'NO_REQUEST')
+          {
+            rAF(updateIfNeeded);
+          }
+          globalState.state = 'PENDING_REQUEST';
+          nextVirtualNode = vNode;
+        }
 
     return {};
   }
