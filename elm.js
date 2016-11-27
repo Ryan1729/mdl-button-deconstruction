@@ -12,11 +12,7 @@ function errorHtml(message)
     + '</div>';
 }
 
-
 // PROGRAM SUCCESS
-
-
-
 
 function succeed(value)
 {
@@ -47,83 +43,14 @@ function nativeBinding(callback)
   };
 }
 
-// STEP PROCESSES
-
-function step(numSteps, process)
-{
-  while (numSteps < MAX_STEPS)
-  {
-    var ctor = process.root.ctor;
-
-    if (ctor === '_Task_succeed')
-    {
-
-      if (process.stack === null)
-      {
-        break;
-      }
-      process.root = process.stack.callback(process.root.value);
-      process.stack = process.stack.rest;
-      ++numSteps;
-      continue;
-    }
-
-    if (ctor === '_Task_andThen')
-    {
-      process.stack = {
-        ctor: '_Task_andThen',
-        callback: process.root.callback,
-        rest: process.stack
-      };
-      process.root = process.root.task;
-      ++numSteps;
-      continue;
-    }
-
-    if (ctor === '_Task_nativeBinding')
-    {
-      process.root.cancel = process.root.callback(function(newRoot) {
-        process.root = newRoot;
-        enqueue(process);
-      });
-
-      break;
-    }
-
-    if (ctor === '_Task_receive')
-    {
-      var mailbox = process.mailbox;
-      if (mailbox.length === 0)
-      {
-        break;
-      }
-
-      process.root = process.root.callback(mailbox.shift());
-      ++numSteps;
-      continue;
-    }
-
-    throw new Error(ctor);
-  }
-
-  if (numSteps < MAX_STEPS)
-  {
-    return numSteps + 1;
-  }
-  enqueue(process);
-
-  return numSteps;
-}
-
-
 // WORK QUEUE
 
 var working = false;
 var workQueue = [];
 
-function enqueue(process)
+function enqueue()
 {
-  workQueue.push(process);
+  workQueue.push(mainProcess);
 
   if (!working)
   {
@@ -132,15 +59,75 @@ function enqueue(process)
   }
 }
 
+var numSteps = 0;
 function work()
 {
-  var numSteps = 0;
   var process;
   while (numSteps < MAX_STEPS && (process = workQueue.shift()))
   {
     if (process.root)
     {
-      numSteps = step(numSteps, process);
+      while (numSteps < MAX_STEPS)
+      {
+        var ctor = mainProcess.root.ctor;
+
+        if (ctor === '_Task_succeed')
+        {
+
+          if (mainProcess.stack === null)
+          {
+            break;
+          }
+          mainProcess.root = mainProcess.stack.callback(mainProcess.root.value);
+          mainProcess.stack = mainProcess.stack.rest;
+          ++numSteps;
+          continue;
+        }
+
+        if (ctor === '_Task_andThen')
+        {
+          mainProcess.stack = {
+            ctor: '_Task_andThen',
+            callback: mainProcess.root.callback,
+            rest: mainProcess.stack
+          };
+          mainProcess.root = mainProcess.root.task;
+          ++numSteps;
+          continue;
+        }
+
+        if (ctor === '_Task_nativeBinding')
+        {
+          mainProcess.root.cancel = mainProcess.root.callback(function(newRoot) {
+            mainProcess.root = newRoot;
+            enqueue();
+          });
+
+          break;
+        }
+
+        if (ctor === '_Task_receive')
+        {
+          var mailbox = mainProcess.mailbox;
+          if (mailbox.length === 0)
+          {
+            break;
+          }
+
+          mainProcess.root = mainProcess.root.callback(mailbox.shift());
+          ++numSteps;
+          continue;
+        }
+
+        throw new Error(ctor);
+      }
+
+      if (numSteps < MAX_STEPS)
+      {
+        numSteps += 1;
+      } else {
+        enqueue();
+      }
     }
   }
   if (!process)
@@ -159,9 +146,11 @@ var ATTR_KEY = 'ATTR';
 
 ////////////  RENDERER  ////////////
 
-function renderer(parent, tagger, initialVirtualNode)
+function renderer(parent, initialVirtualNode)
 {
-  var eventNode = { tagger: tagger, parent: undefined };
+  var eventNode = { tagger: function (msg){
+      mainProcess.mailbox.push(msg);
+      enqueue(); }, parent: undefined };
 
   var domNode = render(initialVirtualNode, eventNode);
   parent.appendChild(domNode);
@@ -774,6 +763,8 @@ var view =  function (mdl) {
   return _debois$elm_mdl$Material_Button$view(mdl._0 || {isVisible: false, metrics: {ctor: "Nothing"}});
 };
 
+var mainProcess;
+
 function embed(rootDomNode)
 {
   try
@@ -783,10 +774,7 @@ function embed(rootDomNode)
     var ambient;
 
     var initApp = nativeBinding(function(callback) {
-      ambient = renderer(rootDomNode, function (msg){
-          mainProcess.mailbox.push(msg);
-          enqueue(mainProcess); },
-        view({}));
+      ambient = renderer(rootDomNode, view({}));
       callback(succeed({}));
     });
 
@@ -809,14 +797,14 @@ function embed(rootDomNode)
 
     var task = andThen(initApp, loop);
 
-    var mainProcess = {
+    mainProcess = {
       ctor: '_Process',
       root: task,
       stack: null,
       mailbox: []
     };
 
-    enqueue(mainProcess);
+    enqueue();
 
     return {};
   }
@@ -825,6 +813,6 @@ function embed(rootDomNode)
     rootDomNode.innerHTML = errorHtml(e.message);
     throw e;
   }
-};
+}
 
 Elm.ChangeMe.embed = embed
