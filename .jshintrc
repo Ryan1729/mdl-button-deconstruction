@@ -6,6 +6,7 @@
   "funcscope": true,
   "esnext": true,
   "eqnull": true,
+  "browser": true,
   /*"maxerr": 255,*/
   "maxerr": 100,
   "shadow": true

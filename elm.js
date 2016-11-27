@@ -1,22 +1,4 @@
-
-
 'use strict';
-
-function F2(fun)
-{
-  function wrapper(a) { return function(b) { return fun(a,b); }; }
-  wrapper.arity = 2;
-  wrapper.func = fun;
-  return wrapper;
-}
-
-function A2(fun, a, b)
-{
-  return fun.arity === 2
-    ? fun.func(a, b)
-    : fun(a)(b);
-}
-
 
 var _elm_lang$core$Maybe$Just = function (a) {
   return {ctor: 'Just', _0: a};
@@ -33,80 +15,7 @@ function errorHtml(message)
 
 // PROGRAM SUCCESS
 
-function makeEmbed(main)
-{
-  return function embed(rootDomNode)
-  {
-    try
-    {
-      main.renderer = renderer
-      return makeEmbedHelp(main, rootDomNode);
-    }
-    catch (e)
-    {
-      rootDomNode.innerHTML = errorHtml(e.message);
-      throw e;
-    }
-  };
-}
 
-// SETUP RUNTIME SYSTEM
-
-function makeEmbedHelp(program, rootDomNode)
-{
-  var init = program.init;
-  var update = program.update;
-  var view = program.view;
-  var makeRenderer = program.renderer;
-
-  // ambient state
-  var renderer;
-
-  // init and update state in main process
-  var initApp = nativeBinding(function(callback) {
-    var model = init();
-    renderer = makeRenderer(rootDomNode, enqueue, view(model));
-    callback(succeed(model));
-  });
-
-  function onMessage(msg, model)
-  {
-    return nativeBinding(function(callback) {
-      model = A2(update, msg, model);
-      renderer.update(view(model));
-      callback(succeed(model));
-    });
-  }
-
-  var mainProcess = spawnLoop(initApp, onMessage);
-
-  function enqueue(msg)
-  {
-    rawSend(mainProcess, msg);
-  }
-
-  return {};
-}
-
-
-
-// HELPER for STATEFUL LOOPS
-
-function spawnLoop(init, onMessage)
-{
-
-  function loop(state)
-  {
-    var handleMsg = receive(function(msg) {
-      return onMessage(msg, state);
-    });
-    return A2(andThen, handleMsg, loop);
-  }
-
-  var task = A2(andThen, init, loop);
-
-  return rawSpawn(task);
-}
 
 
 function succeed(value)
@@ -117,8 +26,6 @@ function succeed(value)
   };
 }
 
-
-
 function andThen(task, callback)
 {
   return {
@@ -127,8 +34,6 @@ function andThen(task, callback)
     callback: callback
   };
 }
-
-andThen = F2(andThen)
 
 
 var MAX_STEPS = 10000;
@@ -140,37 +45,6 @@ function nativeBinding(callback)
     callback: callback,
     cancel: null
   };
-}
-
-function receive(callback)
-{
-  return {
-    ctor: '_Task_receive',
-    callback: callback
-  };
-}
-
-
-// PROCESSES
-
-function rawSpawn(task)
-{
-  var process = {
-    ctor: '_Process',
-    root: task,
-    stack: null,
-    mailbox: []
-  };
-
-  enqueue(process);
-
-  return process;
-}
-
-function rawSend(process, msg)
-{
-  process.mailbox.push(msg);
-  enqueue(process);
 }
 
 // STEP PROCESSES
@@ -276,12 +150,8 @@ function work()
   }
   setTimeout(work, 0);
 }
-// DECODE
 
 
-
-
-var STYLE_KEY = 'STYLE';
 var EVENT_KEY = 'EVENT';
 var ATTR_KEY = 'ATTR';
 
@@ -300,39 +170,44 @@ function renderer(parent, tagger, initialVirtualNode)
   var currentVirtualNode = initialVirtualNode;
   var nextVirtualNode = initialVirtualNode;
 
-  function registerVirtualNode(vNode)
-  {
-    if (state === 'NO_REQUEST')
-    {
-      rAF(updateIfNeeded);
-    }
-    state = 'PENDING_REQUEST';
-    nextVirtualNode = vNode;
-  }
+
 
   function updateIfNeeded()
   {
-    switch (state)
+    if (state === 'PENDING_REQUEST')
     {
-
-      case 'PENDING_REQUEST':
         rAF(updateIfNeeded);
         state = 'NO_REQUEST';
 
         var patches = diff(currentVirtualNode, nextVirtualNode);
-        domNode = applyPatches(domNode, currentVirtualNode, patches, eventNode);
+        if (patches.length !== 0)
+        {
+          addDomNodes(domNode, currentVirtualNode, patches);
+          for (var i = 0; i < patches.length; i++)
+          {
+            var patch = patches[i];
+            applyFacts(patch.domNode, patch.eventNode, patch.data);
+          }
+        }
         currentVirtualNode = nextVirtualNode;
-
-        return;
     }
   }
 
-  return { update: registerVirtualNode };
+  return {
+     update: function (vNode)
+      {
+        if (state === 'NO_REQUEST')
+        {
+          rAF(updateIfNeeded);
+        }
+        state = 'PENDING_REQUEST';
+        nextVirtualNode = vNode;
+      }
+    };
 }
 
 
-var rAF =
-  typeof requestAnimationFrame !== 'undefined'
+var rAF = typeof requestAnimationFrame !== 'undefined'
     ? requestAnimationFrame
     : function(cb) { setTimeout(cb, 1000 / 60); };
 
@@ -345,7 +220,6 @@ function render(vNode, eventNode)
 {
   switch (vNode.type)
   {
-
     case 'tagger':
       var subNode = vNode.node;
       var tagger = vNode.tagger;
@@ -364,9 +238,7 @@ function render(vNode, eventNode)
         parent: eventNode
       };
 
-      var domNode = render(subNode, subEventRoot);
-      domNode.elm_event_node_ref = subEventRoot;
-      return domNode;
+      return render(subNode, subEventRoot);
 
     case 'text':
       return document.createTextNode(vNode.text);
@@ -401,7 +273,7 @@ function applyFacts(domNode, eventNode, facts)
 
     switch (key)
     {
-      case STYLE_KEY:
+      case 'STYLE':
         applyStyles(domNode, value);
         break;
 
@@ -411,13 +283,6 @@ function applyFacts(domNode, eventNode, facts)
 
       case ATTR_KEY:
         applyAttrs(domNode, value);
-        break;
-
-      case 'value':
-        if (domNode[key] !== value)
-        {
-          domNode[key] = value;
-        }
         break;
 
       default:
@@ -453,7 +318,18 @@ function applyEvents(domNode, eventNode, events)
     }
     else if (typeof handler === 'undefined')
     {
-      var handler = makeEventHandler(eventNode, value);
+      var handler = function eventHandler(event)
+      {
+        var message = value(event);
+
+        var currentEventNode = eventNode;
+        while (currentEventNode)
+        {
+          message = currentEventNode.tagger(message);
+          currentEventNode = currentEventNode.parent;
+        }
+
+      };
       domNode.addEventListener(key, handler);
       allHandlers[key] = handler;
     }
@@ -464,24 +340,6 @@ function applyEvents(domNode, eventNode, events)
   }
 
   domNode.elm_handlers = allHandlers;
-}
-
-function makeEventHandler(eventNode, info)
-{
-  function eventHandler(event)
-  {
-    var message = info(event);
-
-    var currentEventNode = eventNode;
-    while (currentEventNode)
-    {
-      message = currentEventNode.tagger(message);
-      currentEventNode = currentEventNode.parent;
-    }
-
-  };
-
-  return eventHandler;
 }
 
 function applyAttrs(domNode, attrs)
@@ -575,7 +433,21 @@ function diffHelp(a, b, patches, index)
         patches.push(makePatch(index, factsDiff));
       }
 
-      diffChildren(a, b, patches, index);
+      var aChildren = a.children;
+      var bChildren = b.children;
+
+      var aLen = aChildren.length;
+      var bLen = bChildren.length;
+
+      // PAIRWISE DIFF EVERYTHING ELSE
+      var minLen = aLen < bLen ? aLen : bLen;
+      for (var i = 0; i < minLen; i++)
+      {
+        index++;
+        var aChild = aChildren[i];
+        diffHelp(aChild, bChildren[i], patches, index);
+        index += aChild.descendantsCount || 0;
+      }
       return;
   }
 }
@@ -587,7 +459,7 @@ function diffFacts(a, b, category)
   // look for changes and removals
   for (var aKey in a)
   {
-    if (aKey === STYLE_KEY || aKey === EVENT_KEY || aKey === ATTR_KEY)
+    if (aKey === 'STYLE' || aKey === EVENT_KEY || aKey === ATTR_KEY)
     {
       var subDiff = diffFacts(a[aKey], b[aKey] || {}, aKey);
       if (subDiff)
@@ -606,7 +478,7 @@ function diffFacts(a, b, category)
         (typeof category === 'undefined')
           ? (typeof a[aKey] === 'string' ? '' : null)
           :
-        (category === STYLE_KEY)
+        (category === 'STYLE')
           ? ''
           :
         (category === EVENT_KEY || category === ATTR_KEY)
@@ -618,9 +490,6 @@ function diffFacts(a, b, category)
     }
 
     var bValue = b[aKey];
-
-    // reference equal, so don't worry about it
-
 
     diff = diff || {};
     diff[aKey] = bValue;
@@ -640,28 +509,6 @@ function diffFacts(a, b, category)
 }
 
 
-function diffChildren(aParent, bParent, patches, rootIndex)
-{
-  var aChildren = aParent.children;
-  var bChildren = bParent.children;
-
-  var aLen = aChildren.length;
-  var bLen = bChildren.length;
-
-
-  // PAIRWISE DIFF EVERYTHING ELSE
-
-  var index = rootIndex;
-  var minLen = aLen < bLen ? aLen : bLen;
-  for (var i = 0; i < minLen; i++)
-  {
-    index++;
-    var aChild = aChildren[i];
-    diffHelp(aChild, bChildren[i], patches, index);
-    index += aChild.descendantsCount || 0;
-  }
-}
-
 ////////////  ADD DOM NODES  ////////////
 //
 // Each DOM node has an "index" assigned in order of traversal. It is important
@@ -670,14 +517,14 @@ function diffChildren(aParent, bParent, patches, rootIndex)
 // the DOM if we know there are no patches there.
 
 
-function addDomNodes(domNode, vNode, patches, eventNode)
+function addDomNodes(domNode, vNode, patches)
 {
-  addDomNodesHelp(domNode, vNode, patches, 0, 0, vNode.descendantsCount, eventNode);
+  addDomNodesHelp(domNode, vNode, patches, 0, 0, vNode.descendantsCount);
 }
 
 
 // assumes `patches` is non-empty and indexes increase monotonically.
-function addDomNodesHelp(domNode, vNode, patches, i, low, high, eventNode)
+function addDomNodesHelp(domNode, vNode, patches, i, low, high)
 {
   var patch = patches[i];
   var index = patch.index;
@@ -685,7 +532,6 @@ function addDomNodesHelp(domNode, vNode, patches, i, low, high, eventNode)
   while (index === low)
   {
     patch.domNode = domNode;
-    patch.eventNode = eventNode;
 
     i++;
 
@@ -705,7 +551,7 @@ function addDomNodesHelp(domNode, vNode, patches, i, low, high, eventNode)
         subNode = subNode.node;
       }
 
-      return addDomNodesHelp(domNode, subNode, patches, i, low + 1, high, domNode.elm_event_node_ref);
+      return addDomNodesHelp(domNode, subNode, patches, i, low + 1, high);
 
     case 'node':
       var vChildren = vNode.children;
@@ -717,7 +563,7 @@ function addDomNodesHelp(domNode, vNode, patches, i, low, high, eventNode)
         var nextLow = low + (vChild.descendantsCount || 0);
         if (low <= index && index <= nextLow)
         {
-          i = addDomNodesHelp(childNodes[j], vChild, patches, i, low, nextLow, eventNode);
+          i = addDomNodesHelp(childNodes[j], vChild, patches, i, low, nextLow);
           if (!(patch = patches[i]) || (index = patch.index) > high)
           {
             return i;
@@ -733,56 +579,25 @@ function addDomNodesHelp(domNode, vNode, patches, i, low, high, eventNode)
   }
 }
 
-
-
-////////////  APPLY PATCHES  ////////////
-
-
-function applyPatches(rootDomNode, oldVirtualNode, patches, eventNode)
-{
-  if (patches.length === 0)
-  {
-    return rootDomNode;
-  }
-
-  addDomNodes(rootDomNode, oldVirtualNode, patches, eventNode);
-  for (var i = 0; i < patches.length; i++)
-  {
-    var patch = patches[i];
-    applyFacts(patch.domNode, patch.eventNode, patch.data);
-  }
-  return rootDomNode;
-
-}
-
-////////////  PROGRAMS  ////////////
-
-
 function node(tag)
 {
-  return F2(function(factList, kidList) {
-    return nodeHelp(tag, factList, kidList);
-  });
-}
+  return function(facts, children) {
+    var descendantsCount = 0;
+    var i;
+    var kid;
+    for (i = 0; i < children.length; i += 1) {
+      kid = children[i]
+      descendantsCount += (kid.descendantsCount || 0);
+    }
+    descendantsCount += children.length;
 
-
-function nodeHelp(tag, facts, children)
-{
-  var descendantsCount = 0;
-  var i;
-  var kid;
-  for (i = 0; i < children.length; i += 1) {
-    kid = children[i]
-    descendantsCount += (kid.descendantsCount || 0);
-  }
-  descendantsCount += children.length;
-
-  return {
-    type: 'node',
-    tag: tag,
-    facts: facts,
-    children: children,
-    descendantsCount: descendantsCount
+    return {
+      type: 'node',
+      tag: tag,
+      facts: facts,
+      children: children,
+      descendantsCount: descendantsCount
+    };
   };
 }
 
@@ -840,29 +655,26 @@ function (e) {
     type$: e.type};
 }
 
-var _debois$elm_mdl$Material_Ripple$update = function (action, model) {
-    switch (action.ctor) {
-      case 'Down':
-        return {
-              isVisible: true,
-              metrics: _debois$elm_mdl$Material_Ripple$computeMetrics(action._0),
-            };
-      case 'Up':
-        return {
-          isVisible : false,
-          metrics : model.metrics,
-        }
-
-    }
-  };
-
 var viewLift = function (msg) {
         return function (c) {
                 var model = c._0 || {isVisible: false, metrics: {ctor: "Nothing"}}
-                c._0 = _debois$elm_mdl$Material_Ripple$update(msg, model);
+                switch (msg.ctor) {
+                  case 'Down':
+                    c._0 = {
+                          isVisible: true,
+                          metrics: _debois$elm_mdl$Material_Ripple$computeMetrics(msg._0),
+                        };
+                    break;
+                  case 'Up':
+                    c._0 =  {
+                      isVisible : false,
+                      metrics : model.metrics,
+                    }
+                    break;
+
+                }
                 return  c
         }
-
     }
 
 
@@ -933,12 +745,11 @@ let getSpan2Attrs = function(isVisible, metrics) {
 var _debois$elm_mdl$Material_Button$view = (
   function (model) {
     var node =
-     span(span1Attrs)(
-       [
-         span(getSpan2Attrs(model.isVisible, model.metrics))([])
+     span(span1Attrs,[
+         span(getSpan2Attrs(model.isVisible, model.metrics),[])
        ]);
 
-    return button(buttonAttrs)(
+    return button(buttonAttrs,
               [
                {
                     type: 'text',
@@ -956,25 +767,64 @@ var _debois$elm_mdl$Material_Button$view = (
 
 var accidentalGlobalModel = {ctor: 'Nothing'};
 
-var _user$project$ChangeMe$main = {
-    init:  function (_p3) {
-      return  {};
-    },
-    update: F2(
-      function (msg, model) {
-        var r = msg(model)
-
-        return accidentalGlobalModel
-      }),
-    view:  function (mdl) {
-      return (
-            _debois$elm_mdl$Material_Button$view(
-            mdl._0 || {isVisible: false, metrics: {ctor: "Nothing"}}));
-    },
-    renderer: renderer
-};
-
 var Elm = {};
 Elm.ChangeMe = Elm.ChangeMe || {};
 
-Elm.ChangeMe.embed = makeEmbed(_user$project$ChangeMe$main)
+var view =  function (mdl) {
+  return _debois$elm_mdl$Material_Button$view(mdl._0 || {isVisible: false, metrics: {ctor: "Nothing"}});
+};
+
+function embed(rootDomNode)
+{
+  try
+  {
+
+    // ambient state
+    var ambient;
+
+    var initApp = nativeBinding(function(callback) {
+      ambient = renderer(rootDomNode, function (msg){
+          mainProcess.mailbox.push(msg);
+          enqueue(mainProcess); },
+        view({}));
+      callback(succeed({}));
+    });
+
+
+    function loop(model)
+    {
+      var handleMsg = {
+        ctor: '_Task_receive',
+        callback: function(msg) {
+          return nativeBinding(function(callback) {
+            msg(model)
+            model = accidentalGlobalModel
+            ambient.update(view(model));
+            callback(succeed(model));
+          });
+        }
+      };
+      return andThen(handleMsg, loop);
+    }
+
+    var task = andThen(initApp, loop);
+
+    var mainProcess = {
+      ctor: '_Process',
+      root: task,
+      stack: null,
+      mailbox: []
+    };
+
+    enqueue(mainProcess);
+
+    return {};
+  }
+  catch (e)
+  {
+    rootDomNode.innerHTML = errorHtml(e.message);
+    throw e;
+  }
+};
+
+Elm.ChangeMe.embed = embed
