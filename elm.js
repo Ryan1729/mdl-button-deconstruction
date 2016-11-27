@@ -12,92 +12,6 @@ function errorHtml(message)
     + '</div>';
 }
 
-// PROGRAM SUCCESS
-
-let succeed = {
-    ctor: '_Task_succeed',
-  };
-
-var MAX_STEPS = 10000;
-
-function nativeBinding(callback)
-{
-  return {
-    ctor: '_Task_nativeBinding',
-    callback: callback,
-    cancel: null
-  };
-}
-
-// WORK QUEUE
-
-var working = false;
-
-
-function enqueue()
-{
-  if (!working)
-  {
-    setTimeout(work, 0);
-    working = true;
-  }
-}
-
-function work()
-{
-
-    while (globalState.numSteps < MAX_STEPS)
-    {
-      var ctor = globalState.root.ctor;
-
-      if (ctor === '_Task_succeed')
-      {
-        globalState.root = globalState.stack.callback(globalState.model);
-        globalState.stack = globalState.stack.rest;
-        ++globalState.numSteps;
-        continue;
-      }
-
-      if (ctor === '_Task_andThen')
-      {
-        globalState.stack = {
-          ctor: '_Task_andThen',
-          callback: globalState.root.callback,
-          rest: globalState.stack
-        };
-        globalState.root = globalState.root.task;
-        ++globalState.numSteps;
-        continue;
-      }
-
-      if (ctor === '_Task_nativeBinding')
-      {
-        globalState.root.cancel = globalState.root.callback();
-          globalState.root = succeed;
-
-        break;
-      }
-
-      if (ctor === '_Task_receive')
-      {
-        if (globalState.mailbox.length === 0)
-        {
-          break;
-        }
-
-        globalState.root = globalState.root.callback(globalState.mailbox.shift());
-        ++globalState.numSteps;
-        continue;
-      }
-
-      throw new Error(ctor);
-    }
-
-    working = false;
-    globalState.numSteps = 0
-}
-
-
 var EVENT_KEY = 'EVENT';
 var ATTR_KEY = 'ATTR';
 
@@ -241,12 +155,6 @@ function applyAttrs(domNode, attrs)
     }
   }
 }
-
-////////////  DIFF  ////////////
-
-
-
-
 
 function makePatch(index, data)
 {
@@ -605,46 +513,19 @@ var view =  function () {
        span(getSpan2Attrs(model.isVisible, model.metrics),[])
      ]);
 
-  return button(buttonAttrs,
-            [
-             {
+  return button(buttonAttrs, [{
                   type: 'text',
                   text: 'a test Button with a long label'
               },
-            {
+              {
                 type: 'tagger',
                 node: node,
                 descendantsCount: 1 + (node.descendantsCount || 0)
-            }
-          ]
-        );
+            }]);
 
 };
 
 var globalState;
-
-// ambient state
-var ambient;
-
-function loop()
-{
-  var handleMsg = {
-    ctor: '_Task_receive',
-    callback: function(msg) {
-      return nativeBinding(function() {
-        msg()
-
-        ambient(view());
-      });
-    }
-  };
-  return {
-    ctor: '_Task_andThen',
-    task: handleMsg,
-    callback: loop
-  }
-
-}
 
 function embed(rootDomNode)
 {
@@ -652,27 +533,25 @@ function embed(rootDomNode)
   {
     globalState = {
       ctor: '_Process',
-      root: {
-        ctor: '_Task_andThen',
-        task: succeed,
-        callback: loop
-      },
-      stack: null,
-      mailbox: [],
       model: {ctor: 'Model'},
       state: 'NO_REQUEST',
-      numSteps: 0
     };
 
     let initialVirtualNode = view()
     var eventNode = {
       tagger: function (msg){
-        globalState.mailbox.push(msg);
-        enqueue(); },
+
+          msg()
+
+          if (globalState.state === 'NO_REQUEST')
+          {
+            rAF(updateIfNeeded);
+          }
+          globalState.state = 'PENDING_REQUEST';
+          nextVirtualNode = view();
+         },
        rootDomNode: undefined
       };
-
-    enqueue();
 
     var domNode = render(initialVirtualNode, eventNode);
     rootDomNode.appendChild(domNode);
@@ -698,19 +577,8 @@ function embed(rootDomNode)
               applyFacts(patch.domNode, patch.eventNode, patch.data);
             }
           }
-          currentVirtualNode = nextVirtualNode;
       }
     }
-
-    ambient = function (vNode)
-        {
-          if (globalState.state === 'NO_REQUEST')
-          {
-            rAF(updateIfNeeded);
-          }
-          globalState.state = 'PENDING_REQUEST';
-          nextVirtualNode = vNode;
-        }
 
     return {};
   }
