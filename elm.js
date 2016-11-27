@@ -18,17 +18,6 @@ let succeed = {
     ctor: '_Task_succeed',
   };
 
-
-function andThen(task)
-{
-  return {
-    ctor: '_Task_andThen',
-    task: task,
-    callback: loop
-  };
-}
-
-
 var MAX_STEPS = 10000;
 
 function nativeBinding(callback)
@@ -56,16 +45,16 @@ function enqueue()
   }
 }
 
-var numSteps = 0;
+
 function work()
 {
   var process;
-  while (numSteps < MAX_STEPS && (process = workQueue.shift()))
+  while (globalState.numSteps < MAX_STEPS && (process = workQueue.shift()))
   {
     if (process.root)
     {
 
-      while (numSteps < MAX_STEPS)
+      while (globalState.numSteps < MAX_STEPS)
       {
         var ctor = globalState.root.ctor;
 
@@ -78,7 +67,7 @@ function work()
           }
           globalState.root = globalState.stack.callback(globalState.model);
           globalState.stack = globalState.stack.rest;
-          ++numSteps;
+          ++globalState.numSteps;
           continue;
         }
 
@@ -90,7 +79,7 @@ function work()
             rest: globalState.stack
           };
           globalState.root = globalState.root.task;
-          ++numSteps;
+          ++globalState.numSteps;
           continue;
         }
 
@@ -98,7 +87,6 @@ function work()
         {
           globalState.root.cancel = globalState.root.callback(function(newRoot) {
             globalState.root = newRoot;
-            enqueue();
           });
 
           break;
@@ -112,19 +100,17 @@ function work()
           }
 
           globalState.root = globalState.root.callback(globalState.mailbox.shift());
-          ++numSteps;
+          ++globalState.numSteps;
           continue;
         }
 
         throw new Error(ctor);
       }
 
-      if (numSteps < MAX_STEPS)
+      if (globalState.numSteps < MAX_STEPS)
       {
-        numSteps += 1;
-      } else {
-        enqueue();
-      }
+        globalState.numSteps += 1;
+      } 
     }
   }
   if (!process)
@@ -135,62 +121,8 @@ function work()
   setTimeout(work, 0);
 }
 
-
 var EVENT_KEY = 'EVENT';
 var ATTR_KEY = 'ATTR';
-
-
-
-////////////  RENDERER  ////////////
-
-function renderer(parent, initialVirtualNode)
-{
-  var eventNode = { tagger: function (msg){
-      globalState.mailbox.push(msg);
-      enqueue(); }, parent: undefined };
-
-  var domNode = render(initialVirtualNode, eventNode);
-  parent.appendChild(domNode);
-
-  var state = 'NO_REQUEST';
-  var currentVirtualNode = initialVirtualNode;
-  var nextVirtualNode = initialVirtualNode;
-
-
-
-  function updateIfNeeded()
-  {
-    if (state === 'PENDING_REQUEST')
-    {
-        rAF(updateIfNeeded);
-        state = 'NO_REQUEST';
-
-        var patches = diff(currentVirtualNode, nextVirtualNode);
-        if (patches.length !== 0)
-        {
-          addDomNodes(domNode, currentVirtualNode, patches);
-          for (var i = 0; i < patches.length; i++)
-          {
-            var patch = patches[i];
-            applyFacts(patch.domNode, patch.eventNode, patch.data);
-          }
-        }
-        currentVirtualNode = nextVirtualNode;
-    }
-  }
-
-  return function (vNode)
-      {
-        if (state === 'NO_REQUEST')
-        {
-          rAF(updateIfNeeded);
-        }
-        state = 'PENDING_REQUEST';
-        nextVirtualNode = vNode;
-      }
-
-}
-
 
 var rAF = typeof requestAnimationFrame !== 'undefined'
     ? requestAnimationFrame
@@ -336,12 +268,7 @@ function applyAttrs(domNode, attrs)
 ////////////  DIFF  ////////////
 
 
-function diff(a, b)
-{
-  var patches = [];
-  diffHelp(a, b, patches, 0);
-  return patches;
-}
+
 
 
 function makePatch(index, data)
@@ -735,7 +662,12 @@ function loop()
       });
     }
   };
-  return andThen(handleMsg);
+  return {
+    ctor: '_Task_andThen',
+    task: handleMsg,
+    callback: loop
+  }
+
 }
 
 function embed(rootDomNode)
@@ -743,16 +675,68 @@ function embed(rootDomNode)
   try
   {
     var initApp = nativeBinding(function(callback) {
-      ambient = renderer(rootDomNode, view());
+      let initialVirtualNode = view()
+
+      var eventNode = {
+        tagger: function (msg){
+          globalState.mailbox.push(msg);
+          enqueue(); },
+         rootDomNode: undefined
+        };
+
+      var domNode = render(initialVirtualNode, eventNode);
+      rootDomNode.appendChild(domNode);
+
+      var currentVirtualNode = initialVirtualNode;
+      var nextVirtualNode = initialVirtualNode;
+
+      function updateIfNeeded()
+      {
+        if (globalState.state === 'PENDING_REQUEST')
+        {
+            rAF(updateIfNeeded);
+            globalState.state = 'NO_REQUEST';
+
+            var patches = [];
+            diffHelp(currentVirtualNode, nextVirtualNode, patches, 0)
+            if (patches.length !== 0)
+            {
+              addDomNodes(domNode, currentVirtualNode, patches);
+              for (var i = 0; i < patches.length; i++)
+              {
+                var patch = patches[i];
+                applyFacts(patch.domNode, patch.eventNode, patch.data);
+              }
+            }
+            currentVirtualNode = nextVirtualNode;
+        }
+      }
+
+      ambient = function (vNode)
+          {
+            if (globalState.state === 'NO_REQUEST')
+            {
+              rAF(updateIfNeeded);
+            }
+            globalState.state = 'PENDING_REQUEST';
+            nextVirtualNode = vNode;
+          }
+
       callback(succeed);
     });
 
     globalState = {
       ctor: '_Process',
-      root: andThen(initApp),
+      root: {
+        ctor: '_Task_andThen',
+        task: initApp,
+        callback: loop
+      },
       stack: null,
       mailbox: [],
-      model: {ctor: 'Model'}
+      model: {ctor: 'Model'},
+      state: 'NO_REQUEST',
+      numSteps: 0
     };
 
     enqueue();
