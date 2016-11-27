@@ -1,5 +1,5 @@
 
-(function() {
+
 'use strict';
 
 function F2(fun)
@@ -978,8 +978,3 @@ var Elm = {};
 Elm.ChangeMe = Elm.ChangeMe || {};
 
 Elm.ChangeMe.embed = makeEmbed(_user$project$ChangeMe$main)
-
-this.Elm = Elm;
-return;
-
-}).call(this);
