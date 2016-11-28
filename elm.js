@@ -105,5 +105,3 @@ function embed(rootDomNode, label)
     update()
     return {};
 }
-
-Elm.ChangeMe.embed = embed
