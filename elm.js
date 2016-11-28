@@ -420,19 +420,19 @@ function (e) {
 
 var viewLift = function (msg) {
         return function () {
-                var model = globalState.model._0 || {isVisible: false, metrics: {ctor: "viewLift metrics"}}
+                var model = globalState._0 || {isVisible: false, metrics: {ctor: "viewLift metrics"}}
                 if (msg.ctor === 'Down') {
-                    globalState.model._0 = {
+                    globalState._0 = {
                           isVisible: true,
                           metrics: _debois$elm_mdl$Material_Ripple$computeMetrics(msg._0),
                         };
                 } else {
-                    globalState.model._0 =  {
+                    globalState._0 =  {
                       isVisible : false,
                       metrics : model.metrics,
                     }
                 }
-                return  globalState.model
+                return  globalState
         }
     }
 
@@ -506,7 +506,7 @@ var Elm = {};
 Elm.ChangeMe = Elm.ChangeMe || {};
 
 var view =  function () {
-  var model = globalState.model._0 || {isVisible: false, metrics: {ctor: "metrics"}}
+  var model = globalState._0 || {isVisible: false, metrics: {ctor: "metrics"}}
 
   var node =
    span(span1Attrs,[
@@ -531,11 +531,7 @@ function embed(rootDomNode)
 {
   try
   {
-    globalState = {
-      ctor: '_Process',
-      model: {ctor: 'Model'},
-      state: 'NO_REQUEST',
-    };
+    globalState = {};
 
     let initialVirtualNode = view()
     var eventNode = {
@@ -543,14 +539,10 @@ function embed(rootDomNode)
 
           msg()
 
-          if (globalState.state === 'NO_REQUEST')
-          {
-            rAF(updateIfNeeded);
-          }
-          globalState.state = 'PENDING_REQUEST';
+            rAF(updateEvenIfNotNeeded);
+
           nextVirtualNode = view();
          },
-       rootDomNode: undefined
       };
 
     var domNode = render(initialVirtualNode, eventNode);
@@ -559,13 +551,8 @@ function embed(rootDomNode)
     var currentVirtualNode = initialVirtualNode;
     var nextVirtualNode = initialVirtualNode;
 
-    function updateIfNeeded()
+    function updateEvenIfNotNeeded()
     {
-      if (globalState.state === 'PENDING_REQUEST')
-      {
-          rAF(updateIfNeeded);
-          globalState.state = 'NO_REQUEST';
-
           var patches = [];
           diffHelp(currentVirtualNode, nextVirtualNode, patches, 0)
           if (patches.length !== 0)
@@ -577,7 +564,6 @@ function embed(rootDomNode)
               applyFacts(patch.domNode, patch.eventNode, patch.data);
             }
           }
-      }
     }
 
     return {};
