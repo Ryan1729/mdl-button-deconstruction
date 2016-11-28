@@ -63,35 +63,24 @@ function applyEvents(domNode, eventNode, events)
 
   for (var key in events)
   {
-    var handler = allHandlers[key];
     var value = events[key];
 
-    if (typeof value === 'undefined')
-    {
-      domNode.removeEventListener(key, handler);
-      allHandlers[key] = undefined;
-    }
-    else if (typeof handler === 'undefined')
-    {
+
       var handler = function eventHandler(event)
       {
-        var message = value(event);
+        value(event);
 
         var currentEventNode = eventNode;
         while (currentEventNode)
         {
-          message = currentEventNode.tagger(message);
+          currentEventNode.tagger();
           currentEventNode = currentEventNode.parent;
         }
 
       };
       domNode.addEventListener(key, handler);
       allHandlers[key] = handler;
-    }
-    else
-    {
-      handler.info = value;
-    }
+
   }
 
   domNode.elm_handlers = allHandlers;
@@ -113,58 +102,6 @@ function applyAttrs(domNode, attrs)
   }
 }
 
-function node(tag)
-{
-  return function(facts, children) {
-    var descendantsCount = 0;
-    var i;
-    var kid;
-    for (i = 0; i < children.length; i += 1) {
-      kid = children[i]
-      descendantsCount += (kid.descendantsCount || 0);
-    }
-    descendantsCount += children.length;
-
-    return {
-      type: 'node',
-      tag: tag,
-      facts: facts,
-      children: children,
-      descendantsCount: descendantsCount
-    };
-  };
-}
-
-var makeButton = node('button')
-var span = node('span');
-
-var toPx = function (k) {
-  return Math.round(k) + 'px';
-};
-
-var _debois$elm_mdl$Material_Ripple$computeMetrics = function (g) {
-  var rect = g.rect;
-
-  var set = function (x, y) {
-      return _elm_lang$core$Maybe$Just(
-        {rect: rect, x: x - rect.left, y: y - rect.top});
-    };
-
-  if ((g.clientX == null) || (g.clientY == null)) {
-    if ((g.touchX == null) || (g.touchY == null)) {
-      return {ctor: 'Nothing'};
-    } else {
-      return set(g.touchX, g.touchY);
-    }
-  } else {
-    if ((g.clientX === 0.0) && (g.clientY === 0.0)) {
-      return _elm_lang$core$Maybe$Just(
-        {rect: rect, x: rect.width / 2.0, y: rect.height / 2.0});
-    } else {
-      return set(g.clientX, g.clientY);
-    }
-  }
-};
 let touchesX = function (e) {
   if(e.touches == null) {
     return undefined
@@ -178,41 +115,39 @@ let touchesY = function (e) {
   return e.touches[0].clientY
 }
 
-var geometryDecoder =
-function (e) {
-  return {
-    rect: e.currentTarget.getBoundingClientRect(),
-    clientX: e.clientX,
-    clientY: e.clientY,
-    touchX: touchesX(e),
-    touchY: touchesY(e),
-    type$: e.type};
-}
+var geometryDecoder = function (g) {
+  var rect = g.currentTarget.getBoundingClientRect();
 
-var viewLift = function (msg) {
-        return function () {
-                var model = globalState._0
-                if (msg.ctor === 'Down') {
-                    globalState._0 = {
-                          isVisible: true,
-                          metrics: _debois$elm_mdl$Material_Ripple$computeMetrics(msg._0),
-                        };
-                } else {
-                    globalState._0 =  {
-                      isVisible : false,
-                      metrics : model.metrics,
-                    }
-                }
-                return  globalState
-        }
+  var set = function (x, y) {
+      return _elm_lang$core$Maybe$Just(
+        {rect: rect, x: x - rect.left, y: y - rect.top});
+    };
+
+  if ((g.clientX == null) || (g.clientY == null)) {
+    if ((touchesX(g) == null) || (touchesY(g) == null)) {
+      return {ctor: 'Nothing'};
+    } else {
+      return set(g.touchX, g.touchY);
     }
+  } else {
+    if ((g.clientX === 0.0) && (g.clientY === 0.0)) {
+      return _elm_lang$core$Maybe$Just(
+        {rect: rect, x: rect.width / 2.0, y: rect.height / 2.0});
+    } else {
+      return set(g.clientX, g.clientY);
+    }
+  }
+};
 
 
 let blurHack = 'this.blur(); (function(self) { var e = document.createEvent(\'Event\'); e.initEvent(\'touchcancel\', true, true); self.lastChild.dispatchEvent(e); }(this));'
 
-let startAnimating = function (value) {
-  return viewLift({ctor: 'Down', _0: geometryDecoder(value)});
-}
+let startAnimating =  function (value) {
+        globalState = {
+              isVisible: true,
+              metrics: geometryDecoder(value),
+            };
+    }
 
 let buttonAttrs = {
   className: "mdl-js-ripple-effect mdl-js-button mdl-button mdl-button--raised"
@@ -234,6 +169,11 @@ span1Attrs[EVENT_KEY] = {
   blur: returnUp,
   touchcancel: returnUp,
 }
+
+var toPx = function (k) {
+  return Math.round(k) + 'px';
+};
+
 
 let getSpan2Attrs = function(isVisible, metrics) {
   var stylingA;
@@ -285,23 +225,9 @@ function embed(rootDomNode)
   {
     globalState = {};
 
-    var model = {isVisible: false, metrics: {ctor: "metrics"}}
 
-    var node =
-     span(span1Attrs,[
-         span(getSpan2Attrs(model.isVisible, model.metrics),[])
-       ]);
-
-    let initialVirtualNode = makeButton(buttonAttrs, [
-                {
-                  type: 'tagger',
-                  node: node,
-                  descendantsCount: 4
-              }]);
     var eventNode = {
-      tagger: function (msg){
-
-          msg()
+      tagger: function (){
 
           rAF(updateEvenIfNotNeeded);
 
@@ -310,28 +236,24 @@ function embed(rootDomNode)
 
     var button = document.createElement('button');
 
-    applyFacts(button, eventNode, initialVirtualNode.facts);
-
-    var children = initialVirtualNode.children;
+    applyFacts(button, eventNode, buttonAttrs);
 
     button.appendChild(document.createTextNode( 'a test Button with a long label'));
 
-    var subNode = children[0].node;
-
     var subEventRoot = {
-      tagger: viewLift,
+      tagger: function () {
+              globalState.isVisible = false
+          },
       parent: eventNode
     };
 
-    var span1 = document.createElement(subNode.tag);
+    var span1 = document.createElement('span');
 
-    applyFacts(span1, subEventRoot, subNode.facts);
+    applyFacts(span1, subEventRoot, span1Attrs);
 
-    var children = subNode.children;
+    var span2 = document.createElement('span');
 
-    var span2 = document.createElement(children[0].tag);
-
-    applyFacts(span2, undefined, children[0].facts);
+    applyFacts(span2, undefined, getSpan2Attrs(false, {}));
 
     span1.appendChild(span2);
     button.appendChild(span1);
@@ -340,11 +262,9 @@ function embed(rootDomNode)
 
     function updateEvenIfNotNeeded()
     {
-          var model = globalState._0
+        var b = getSpan2Attrs(globalState.isVisible, globalState.metrics)
 
-          var b = getSpan2Attrs(model.isVisible, model.metrics)
-
-          applyFacts(span2, undefined, b);
+        applyFacts(span2, undefined, b);
 
     }
 
