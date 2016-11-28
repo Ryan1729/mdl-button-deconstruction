@@ -20,49 +20,6 @@ var rAF = typeof requestAnimationFrame !== 'undefined'
     : function(cb) { setTimeout(cb, 1000 / 60); };
 
 
-
-////////////  RENDER  ////////////
-
-
-function render(vNode, eventNode)
-{
-  switch (vNode.type)
-  {
-    case 'tagger':
-      var subNode = vNode.node;
-
-      var subEventRoot = {
-        tagger: viewLift,
-        parent: eventNode
-      };
-
-      return render(subNode, subEventRoot);
-
-    case 'text':
-      return document.createTextNode(vNode.text);
-
-    case 'node':
-      var domNode = document.createElement(vNode.tag);
-
-      applyFacts(domNode, eventNode, vNode.facts);
-
-      var children = vNode.children;
-
-      for (var i = 0; i < children.length; i++)
-      {
-        domNode.appendChild(render(children[i], eventNode));
-      }
-
-      return domNode;
-
-  }
-}
-
-
-
-////////////  APPLY FACTS  ////////////
-
-
 function applyFacts(domNode, eventNode, facts)
 {
   for (var key in facts)
@@ -156,192 +113,6 @@ function applyAttrs(domNode, attrs)
   }
 }
 
-function makePatch(index, data)
-{
-  return {
-    index: index,
-    data: data,
-    domNode: undefined,
-    eventNode: undefined
-  };
-}
-
-
-function diffHelp(a, b, patches, index)
-{
-  if (a === b)
-  {
-    return;
-  }
-
-  switch (b.type)
-  {
-    case 'tagger':
-      // gather nested taggers
-      var aSubNode = a.node;
-
-      var bSubNode = b.node;
-
-
-      // diff everything below the taggers
-      diffHelp(aSubNode, bSubNode, patches, index + 1);
-      return;
-
-    case 'node':
-
-      var factsDiff = diffFacts(a.facts, b.facts);
-
-      if (typeof factsDiff !== 'undefined')
-      {
-        patches.push(makePatch(index, factsDiff));
-      }
-
-      var aChildren = a.children;
-      var bChildren = b.children;
-
-      var aLen = aChildren.length;
-      var bLen = bChildren.length;
-
-      // PAIRWISE DIFF EVERYTHING ELSE
-      var minLen = aLen < bLen ? aLen : bLen;
-      for (var i = 0; i < minLen; i++)
-      {
-        index++;
-        var aChild = aChildren[i];
-        diffHelp(aChild, bChildren[i], patches, index);
-        index += aChild.descendantsCount || 0;
-      }
-      return;
-  }
-}
-
-function diffFacts(a, b, category)
-{
-  var diff;
-
-  // look for changes and removals
-  for (var aKey in a)
-  {
-    if (aKey === 'STYLE' || aKey === EVENT_KEY || aKey === ATTR_KEY)
-    {
-      var subDiff = diffFacts(a[aKey], b[aKey] || {}, aKey);
-      if (subDiff)
-      {
-        diff = diff || {};
-        diff[aKey] = subDiff;
-      }
-      continue;
-    }
-
-    // remove if not in the new facts
-    if (!(aKey in b))
-    {
-      diff = diff || {};
-      diff[aKey] =
-        (typeof category === 'undefined')
-          ? (typeof a[aKey] === 'string' ? '' : null)
-          :
-        (category === 'STYLE')
-          ? ''
-          :
-        (category === EVENT_KEY || category === ATTR_KEY)
-          ? undefined
-          :
-        { value: undefined };
-
-      continue;
-    }
-
-    var bValue = b[aKey];
-
-    diff = diff || {};
-    diff[aKey] = bValue;
-  }
-
-  // add new stuff
-  for (var bKey in b)
-  {
-    if (!(bKey in a))
-    {
-      diff = diff || {};
-      diff[bKey] = b[bKey];
-    }
-  }
-
-  return diff;
-}
-
-
-////////////  ADD DOM NODES  ////////////
-//
-// Each DOM node has an "index" assigned in order of traversal. It is important
-// to minimize our crawl over the actual DOM, so these indexes (along with the
-// descendantsCount of virtual nodes) let us skip touching entire subtrees of
-// the DOM if we know there are no patches there.
-
-
-function addDomNodes(domNode, vNode, patches)
-{
-  addDomNodesHelp(domNode, vNode, patches, 0, 0, vNode.descendantsCount);
-}
-
-
-// assumes `patches` is non-empty and indexes increase monotonically.
-function addDomNodesHelp(domNode, vNode, patches, i, low, high)
-{
-  var patch = patches[i];
-  var index = patch.index;
-
-  while (index === low)
-  {
-    patch.domNode = domNode;
-
-    i++;
-
-    if (!(patch = patches[i]) || (index = patch.index) > high)
-    {
-      return i;
-    }
-  }
-
-  switch (vNode.type)
-  {
-    case 'tagger':
-      var subNode = vNode.node;
-
-      while (subNode.type === "tagger")
-      {
-        subNode = subNode.node;
-      }
-
-      return addDomNodesHelp(domNode, subNode, patches, i, low + 1, high);
-
-    case 'node':
-      var vChildren = vNode.children;
-      var childNodes = domNode.childNodes;
-      for (var j = 0; j < vChildren.length; j++)
-      {
-        low++;
-        var vChild = vChildren[j];
-        var nextLow = low + (vChild.descendantsCount || 0);
-        if (low <= index && index <= nextLow)
-        {
-          i = addDomNodesHelp(childNodes[j], vChild, patches, i, low, nextLow);
-          if (!(patch = patches[i]) || (index = patch.index) > high)
-          {
-            return i;
-          }
-        }
-        low = nextLow;
-      }
-      return i;
-
-
-    case 'text':
-      throw new Error('should never traverse `text` or `thunk` nodes like this');
-  }
-}
-
 function node(tag)
 {
   return function(facts, children) {
@@ -364,7 +135,7 @@ function node(tag)
   };
 }
 
-var button = node('button')
+var makeButton = node('button')
 var span = node('span');
 
 var toPx = function (k) {
@@ -420,7 +191,7 @@ function (e) {
 
 var viewLift = function (msg) {
         return function () {
-                var model = globalState._0 || {isVisible: false, metrics: {ctor: "viewLift metrics"}}
+                var model = globalState._0
                 if (msg.ctor === 'Down') {
                     globalState._0 = {
                           isVisible: true,
@@ -505,25 +276,6 @@ let getSpan2Attrs = function(isVisible, metrics) {
 var Elm = {};
 Elm.ChangeMe = Elm.ChangeMe || {};
 
-var view =  function () {
-  var model = globalState._0 || {isVisible: false, metrics: {ctor: "metrics"}}
-
-  var node =
-   span(span1Attrs,[
-       span(getSpan2Attrs(model.isVisible, model.metrics),[])
-     ]);
-
-  return button(buttonAttrs, [{
-                  type: 'text',
-                  text: 'a test Button with a long label'
-              },
-              {
-                type: 'tagger',
-                node: node,
-                descendantsCount: 1 + (node.descendantsCount || 0)
-            }]);
-
-};
 
 var globalState;
 
@@ -533,37 +285,67 @@ function embed(rootDomNode)
   {
     globalState = {};
 
-    let initialVirtualNode = view()
+    var model = {isVisible: false, metrics: {ctor: "metrics"}}
+
+    var node =
+     span(span1Attrs,[
+         span(getSpan2Attrs(model.isVisible, model.metrics),[])
+       ]);
+
+    let initialVirtualNode = makeButton(buttonAttrs, [
+                {
+                  type: 'tagger',
+                  node: node,
+                  descendantsCount: 4
+              }]);
     var eventNode = {
       tagger: function (msg){
 
           msg()
 
-            rAF(updateEvenIfNotNeeded);
+          rAF(updateEvenIfNotNeeded);
 
-          nextVirtualNode = view();
          },
       };
 
-    var domNode = render(initialVirtualNode, eventNode);
-    rootDomNode.appendChild(domNode);
+    var button = document.createElement('button');
 
-    var currentVirtualNode = initialVirtualNode;
-    var nextVirtualNode = initialVirtualNode;
+    applyFacts(button, eventNode, initialVirtualNode.facts);
+
+    var children = initialVirtualNode.children;
+
+    button.appendChild(document.createTextNode( 'a test Button with a long label'));
+
+    var subNode = children[0].node;
+
+    var subEventRoot = {
+      tagger: viewLift,
+      parent: eventNode
+    };
+
+    var span1 = document.createElement(subNode.tag);
+
+    applyFacts(span1, subEventRoot, subNode.facts);
+
+    var children = subNode.children;
+
+    var span2 = document.createElement(children[0].tag);
+
+    applyFacts(span2, undefined, children[0].facts);
+
+    span1.appendChild(span2);
+    button.appendChild(span1);
+
+    rootDomNode.appendChild(button);
 
     function updateEvenIfNotNeeded()
     {
-          var patches = [];
-          diffHelp(currentVirtualNode, nextVirtualNode, patches, 0)
-          if (patches.length !== 0)
-          {
-            addDomNodes(domNode, currentVirtualNode, patches);
-            for (var i = 0; i < patches.length; i++)
-            {
-              var patch = patches[i];
-              applyFacts(patch.domNode, patch.eventNode, patch.data);
-            }
-          }
+          var model = globalState._0
+
+          var b = getSpan2Attrs(model.isVisible, model.metrics)
+
+          applyFacts(span2, undefined, b);
+
     }
 
     return {};
