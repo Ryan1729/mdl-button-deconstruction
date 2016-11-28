@@ -1,37 +1,36 @@
 function embed(rootDomNode, label)
 {
-  'use strict';
-  var rAF = typeof requestAnimationFrame !== 'undefined'
-      ? requestAnimationFrame
-      : function(cb) { setTimeout(cb, 1000 / 60); };
+    'use strict';
+    var rAF = typeof requestAnimationFrame !== 'undefined'
+        ? requestAnimationFrame
+        : function(cb) { setTimeout(cb, 1000 / 60); };
 
-  var geometryDecoder = function (g) {
-    var rect = g.currentTarget.getBoundingClientRect();
+    var geometryDecoder = function (g) {
+      var rect = g.currentTarget.getBoundingClientRect();
 
-    var set = function (x, y) {
-        return {rect: rect, x: x - rect.left, y: y - rect.top};
-      };
-
-    if ((g.clientX == null) || (g.clientY == null)) {
-      if(g.touches == null) {
-        return null
-      } else {
-        var touch = g.touches[0]
-        return set(touch.touchX, touch.touchY);
-      }
-    } else {
-      if ((g.clientX === 0.0) && (g.clientY === 0.0)) {
-        return {rect: rect, x: rect.width / 2.0, y: rect.height / 2.0};
-      } else {
-        return set(g.clientX, g.clientY);
-      }
-    }
-  };
-
-    var globalState = {
-          isVisible: false,
-          metrics: null,
+      var set = function (x, y) {
+          return {rect: rect, x: x - rect.left, y: y - rect.top};
         };
+
+      if ((g.clientX == null) || (g.clientY == null)) {
+        if(g.touches == null) {
+          return null
+        } else {
+          var touch = g.touches[0]
+          return set(touch.touchX, touch.touchY);
+        }
+      } else {
+        if ((g.clientX === 0.0) && (g.clientY === 0.0)) {
+          return {rect: rect, x: rect.width / 2.0, y: rect.height / 2.0};
+        } else {
+          return set(g.clientX, g.clientY);
+        }
+      }
+    };
+
+    var isVisible = false,
+        metrics = null;
+
 
     var button = document.createElement('button');
 
@@ -39,7 +38,7 @@ function embed(rootDomNode, label)
 
     var ripple = function () {
       button.blur();
-      globalState.isVisible = false
+      isVisible = false
       rAF(update);
 
     }
@@ -49,10 +48,8 @@ function embed(rootDomNode, label)
 
     var buttonHandler = function eventHandler(event)
     {
-      globalState = {
-            isVisible: true,
-            metrics: geometryDecoder(event),
-          };
+      isVisible = true
+      metrics = geometryDecoder(event)
       rAF(update);
     };
 
@@ -73,14 +70,13 @@ function embed(rootDomNode, label)
 
     function update()
     {
-        if (globalState.metrics != null) {
-          var m = globalState.metrics
-          var r = m.rect;
+        if (metrics != null) {
+          var r = metrics.rect;
 
-          var offset = 'translate(' + toPx(m.x) + ', ' + toPx(m.y) + ')';
+          var offset = 'translate(' + toPx(metrics.x) + ', ' + toPx(metrics.y) + ')';
           var rippleSize = toPx(
             (Math.sqrt((r.width * r.width) + (r.height * r.height)) * 2.0) + 2.0);
-          var scale = globalState.isVisible ? 'scale(0.0001, 0.0001)' : '';
+          var scale = isVisible ? 'scale(0.0001, 0.0001)' : '';
           var transformString = 'translate(-50%, -50%) ' + offset + scale;
 
           var style = span.style
@@ -94,7 +90,7 @@ function embed(rootDomNode, label)
         }
 
         span.className = 'mdl-ripple'
-        if (globalState.isVisible) {
+        if (isVisible) {
           span.className += ' is-visible'
         } else {
           span.className += ' is-animating'
@@ -103,5 +99,6 @@ function embed(rootDomNode, label)
     }
 
     update()
-    return {};
+
+    return button
 }
