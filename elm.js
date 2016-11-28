@@ -1,99 +1,46 @@
-'use strict';
-
-var _elm_lang$core$Maybe$Just = function (a) {
-  return {ctor: 'Just', _0: a};
-};
-
-function errorHtml(message)
+function embed(rootDomNode, label)
 {
-  return '<div style="padding-left:1em;">'
-    + '<h2 style="font-weight:normal;"><b>Oops!</b> Something went wrong when starting your Elm program.</h2>'
-    + '<pre style="padding-left:1em;">' + message + '</pre>'
-    + '</div>';
-}
+  'use strict';
+  var rAF = typeof requestAnimationFrame !== 'undefined'
+      ? requestAnimationFrame
+      : function(cb) { setTimeout(cb, 1000 / 60); };
 
-var rAF = typeof requestAnimationFrame !== 'undefined'
-    ? requestAnimationFrame
-    : function(cb) { setTimeout(cb, 1000 / 60); };
+  var geometryDecoder = function (g) {
+    var rect = g.currentTarget.getBoundingClientRect();
 
-let touchesX = function (e) {
-  if(e.touches == null) {
-    return undefined
-  }
-  return e.touches[0].clientX
-}
-let touchesY = function (e) {
-  if(e.touches == null) {
-    return undefined
-  }
-  return e.touches[0].clientY
-}
+    var set = function (x, y) {
+        return {rect: rect, x: x - rect.left, y: y - rect.top};
+      };
 
-var geometryDecoder = function (g) {
-  var rect = g.currentTarget.getBoundingClientRect();
-
-  var set = function (x, y) {
-      return _elm_lang$core$Maybe$Just(
-        {rect: rect, x: x - rect.left, y: y - rect.top});
-    };
-
-  if ((g.clientX == null) || (g.clientY == null)) {
-    if ((touchesX(g) == null) || (touchesY(g) == null)) {
-      return {ctor: 'Nothing'};
+    if ((g.clientX == null) || (g.clientY == null)) {
+      if(g.touches == null) {
+        return null
+      } else {
+        var touch = g.touches[0]
+        return set(touch.touchX, touch.touchY);
+      }
     } else {
-      return set(g.touchX, g.touchY);
+      if ((g.clientX === 0.0) && (g.clientY === 0.0)) {
+        return {rect: rect, x: rect.width / 2.0, y: rect.height / 2.0};
+      } else {
+        return set(g.clientX, g.clientY);
+      }
     }
-  } else {
-    if ((g.clientX === 0.0) && (g.clientY === 0.0)) {
-      return _elm_lang$core$Maybe$Just(
-        {rect: rect, x: rect.width / 2.0, y: rect.height / 2.0});
-    } else {
-      return set(g.clientX, g.clientY);
-    }
-  }
-};
+  };
 
-let blurHack = 'this.blur(); (function(self) { var e = document.createEvent(\'Event\'); e.initEvent(\'touchcancel\', true, true); self.lastChild.dispatchEvent(e); }(this));'
-
-
-
-var Elm = {};
-Elm.ChangeMe = Elm.ChangeMe || {};
-
-
-var globalState;
-
-function embed(rootDomNode)
-{
-  try
-  {
-    globalState = {
+    var globalState = {
           isVisible: false,
-          metrics: {},
+          metrics: null,
         };
 
     var button = document.createElement('button');
 
-    // button.setAttribute('onmouseup', blurHack);
-
-
     button.className =  "mdl-js-ripple-effect mdl-js-button mdl-button mdl-button--raised"
-
-    let startAnimating =  function (value) {
-            globalState = {
-                  isVisible: true,
-                  metrics: geometryDecoder(value),
-                };
-        }
-
-
 
     var ripple = function () {
       button.blur();
-
-      var e = document.createEvent('Event');
-      e.initEvent('touchcancel', true, true);
-      button.lastChild.dispatchEvent(e);
+      globalState.isVisible = false
+      rAF(update);
 
     }
     button.addEventListener('mouseup', ripple);
@@ -106,41 +53,28 @@ function embed(rootDomNode)
             isVisible: true,
             metrics: geometryDecoder(event),
           };
-      rAF(updateEvenIfNotNeeded);
+      rAF(update);
     };
 
     button.addEventListener('mousedown', buttonHandler);
     button.addEventListener('touchstart', buttonHandler);
 
-    button.appendChild(document.createTextNode( 'a test Button with a long label'));
+    button.appendChild(document.createTextNode(label));
 
-    var span1 = document.createElement('span');
+    var span = document.createElement('span');
 
-    var span1Handler = function eventHandler(event)
-    {
-      globalState.isVisible = false
-      rAF(updateEvenIfNotNeeded);
-    };
-    span1.addEventListener('blur', span1Handler);
-    span1.addEventListener('touchcancel', span1Handler);
-
-
-    var span2 = document.createElement('span');
-
-    span1.appendChild(span2);
-    button.appendChild(span1);
+    button.appendChild(span);
 
     rootDomNode.appendChild(button);
-
 
     var toPx = function (k) {
       return Math.round(k) + 'px';
     };
 
-    function updateEvenIfNotNeeded()
+    function update()
     {
-        if (globalState.metrics.ctor === 'Just') {
-          var m = globalState.metrics._0
+        if (globalState.metrics != null) {
+          var m = globalState.metrics
           var r = m.rect;
 
           var offset = 'translate(' + toPx(m.x) + ', ' + toPx(m.y) + ')';
@@ -149,34 +83,27 @@ function embed(rootDomNode)
           var scale = globalState.isVisible ? 'scale(0.0001, 0.0001)' : '';
           var transformString = 'translate(-50%, -50%) ' + offset + scale;
 
-          var span2Style = span2.style
+          var style = span.style
 
-
-          span2Style.width = rippleSize
-          span2Style.height = rippleSize
-          span2Style['-webkit-transform'] = transformString
-          span2Style['-ms-transform'] = transformString
-          span2Style.transform = transformString
+          style.width = rippleSize
+          style.height = rippleSize
+          style['-webkit-transform'] = transformString
+          style['-ms-transform'] = transformString
+          style.transform = transformString
 
         }
 
-        span2.className = 'mdl-ripple'
+        span.className = 'mdl-ripple'
         if (globalState.isVisible) {
-          span2.className += ' is-visible'
+          span.className += ' is-visible'
         } else {
-          span2.className += ' is-animating'
+          span.className += ' is-animating'
         }
 
     }
 
-    updateEvenIfNotNeeded()
+    update()
     return {};
-  }
-  catch (e)
-  {
-    rootDomNode.innerHTML = errorHtml(e.message);
-    throw e;
-  }
 }
 
 Elm.ChangeMe.embed = embed
