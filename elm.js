@@ -12,95 +12,9 @@ function errorHtml(message)
     + '</div>';
 }
 
-var EVENT_KEY = 'EVENT';
-var ATTR_KEY = 'ATTR';
-
 var rAF = typeof requestAnimationFrame !== 'undefined'
     ? requestAnimationFrame
     : function(cb) { setTimeout(cb, 1000 / 60); };
-
-
-function applyFacts(domNode, eventNode, facts)
-{
-  for (var key in facts)
-  {
-    var value = facts[key];
-
-    switch (key)
-    {
-      case 'STYLE':
-        applyStyles(domNode, value);
-        break;
-
-      case EVENT_KEY:
-        applyEvents(domNode, eventNode, value);
-        break;
-
-      case ATTR_KEY:
-        applyAttrs(domNode, value);
-        break;
-
-      default:
-        domNode[key] = value;
-        break;
-    }
-  }
-}
-
-function applyStyles(domNode, styles)
-{
-  var domNodeStyle = domNode.style;
-
-  for (var key in styles)
-  {
-    domNodeStyle[key] = styles[key];
-  }
-}
-
-function applyEvents(domNode, eventNode, events)
-{
-  var allHandlers = domNode.elm_handlers || {};
-
-  for (var key in events)
-  {
-    var value = events[key];
-
-
-      var handler = function eventHandler(event)
-      {
-        value(event);
-
-        var currentEventNode = eventNode;
-        while (currentEventNode)
-        {
-          currentEventNode.tagger();
-          currentEventNode = currentEventNode.parent;
-        }
-
-      };
-      domNode.addEventListener(key, handler);
-      allHandlers[key] = handler;
-
-  }
-
-  domNode.elm_handlers = allHandlers;
-}
-
-function applyAttrs(domNode, attrs)
-{
-  for (var key in attrs)
-  {
-    var value = attrs[key];
-    if (typeof value === 'undefined')
-    {
-      domNode.removeAttribute(key);
-    }
-    else
-    {
-      domNode.setAttribute(key, value);
-    }
-  }
-}
 
 let touchesX = function (e) {
   if(e.touches == null) {
@@ -139,78 +53,8 @@ var geometryDecoder = function (g) {
   }
 };
 
-
 let blurHack = 'this.blur(); (function(self) { var e = document.createEvent(\'Event\'); e.initEvent(\'touchcancel\', true, true); self.lastChild.dispatchEvent(e); }(this));'
 
-let startAnimating =  function (value) {
-        globalState = {
-              isVisible: true,
-              metrics: geometryDecoder(value),
-            };
-    }
-
-let buttonAttrs = {
-  className: "mdl-js-ripple-effect mdl-js-button mdl-button mdl-button--raised"
-};
-buttonAttrs[EVENT_KEY] = {
-  mousedown : startAnimating,
-  touchstart : startAnimating,
-}
-buttonAttrs[ATTR_KEY] = {
-  onmouseup : blurHack,
-  onmouseleave : blurHack,
-  ontouchend : blurHack,
-}
-
-let returnUp = function(){return {ctor: 'Up'}}
-
-let span1Attrs = {};
-span1Attrs[EVENT_KEY] = {
-  blur: returnUp,
-  touchcancel: returnUp,
-}
-
-var toPx = function (k) {
-  return Math.round(k) + 'px';
-};
-
-
-let getSpan2Attrs = function(isVisible, metrics) {
-  var stylingA;
-
-    if (metrics.ctor === 'Just') {
-      var m = metrics._0
-      var r = m.rect;
-
-      var offset = 'translate(' + toPx(m.x) + ', ' + toPx(m.y) + ')';
-      var rippleSize = toPx(
-        (Math.sqrt((r.width * r.width) + (r.height * r.height)) * 2.0) + 2.0);
-      var scale = isVisible ? 'scale(0.0001, 0.0001)' : '';
-      var transformString = 'translate(-50%, -50%) ' + offset + scale;
-      stylingA = {
-          width : rippleSize,
-          height : rippleSize,
-          "-webkit-transform" : transformString,
-          "-ms-transform" : transformString,
-          transform : transformString,
-        };
-    } else {
-        stylingA = {};
-    }
-
-  var span2ClassName = 'mdl-ripple'
-  if (isVisible) {
-    span2ClassName += ' is-visible'
-  } else {
-    span2ClassName += ' is-animating'
-  }
-
-  return {
-   className: span2ClassName,
-   STYLE: stylingA
- }
-
-}
 
 
 var Elm = {};
@@ -223,51 +67,109 @@ function embed(rootDomNode)
 {
   try
   {
-    globalState = {};
-
-
-    var eventNode = {
-      tagger: function (){
-
-          rAF(updateEvenIfNotNeeded);
-
-         },
-      };
+    globalState = {
+          isVisible: false,
+          metrics: {},
+        };
 
     var button = document.createElement('button');
 
-    applyFacts(button, eventNode, buttonAttrs);
+    // button.setAttribute('onmouseup', blurHack);
+
+
+    button.className =  "mdl-js-ripple-effect mdl-js-button mdl-button mdl-button--raised"
+
+    let startAnimating =  function (value) {
+            globalState = {
+                  isVisible: true,
+                  metrics: geometryDecoder(value),
+                };
+        }
+
+
+
+    var ripple = function () {
+      button.blur();
+
+      var e = document.createEvent('Event');
+      e.initEvent('touchcancel', true, true);
+      button.lastChild.dispatchEvent(e);
+
+    }
+    button.addEventListener('mouseup', ripple);
+    button.addEventListener('mouseleave', ripple);
+    button.addEventListener('ontouchend', ripple);
+
+    var buttonHandler = function eventHandler(event)
+    {
+      globalState = {
+            isVisible: true,
+            metrics: geometryDecoder(event),
+          };
+      rAF(updateEvenIfNotNeeded);
+    };
+
+    button.addEventListener('mousedown', buttonHandler);
+    button.addEventListener('touchstart', buttonHandler);
 
     button.appendChild(document.createTextNode( 'a test Button with a long label'));
 
-    var subEventRoot = {
-      tagger: function () {
-              globalState.isVisible = false
-          },
-      parent: eventNode
-    };
-
     var span1 = document.createElement('span');
 
-    applyFacts(span1, subEventRoot, span1Attrs);
+    var span1Handler = function eventHandler(event)
+    {
+      globalState.isVisible = false
+      rAF(updateEvenIfNotNeeded);
+    };
+    span1.addEventListener('blur', span1Handler);
+    span1.addEventListener('touchcancel', span1Handler);
+
 
     var span2 = document.createElement('span');
-
-    applyFacts(span2, undefined, getSpan2Attrs(false, {}));
 
     span1.appendChild(span2);
     button.appendChild(span1);
 
     rootDomNode.appendChild(button);
 
+
+    var toPx = function (k) {
+      return Math.round(k) + 'px';
+    };
+
     function updateEvenIfNotNeeded()
     {
-        var b = getSpan2Attrs(globalState.isVisible, globalState.metrics)
+        if (globalState.metrics.ctor === 'Just') {
+          var m = globalState.metrics._0
+          var r = m.rect;
 
-        applyFacts(span2, undefined, b);
+          var offset = 'translate(' + toPx(m.x) + ', ' + toPx(m.y) + ')';
+          var rippleSize = toPx(
+            (Math.sqrt((r.width * r.width) + (r.height * r.height)) * 2.0) + 2.0);
+          var scale = globalState.isVisible ? 'scale(0.0001, 0.0001)' : '';
+          var transformString = 'translate(-50%, -50%) ' + offset + scale;
+
+          var span2Style = span2.style
+
+
+          span2Style.width = rippleSize
+          span2Style.height = rippleSize
+          span2Style['-webkit-transform'] = transformString
+          span2Style['-ms-transform'] = transformString
+          span2Style.transform = transformString
+
+        }
+
+        span2.className = 'mdl-ripple'
+        if (globalState.isVisible) {
+          span2.className += ' is-visible'
+        } else {
+          span2.className += ' is-animating'
+        }
 
     }
 
+    updateEvenIfNotNeeded()
     return {};
   }
   catch (e)
